@@ -14,6 +14,10 @@ inputs:
       The Golangci-lint version that has to be installed and used.
     default: v1.55.2
     required: true
+  golang-unit-tests-exclusions:
+    description: |
+      The Golang paths that should be excluded from unit testing.
+    default: ' '
 runs:
   using: 'composite'
   steps:
@@ -37,3 +41,15 @@ runs:
     - uses: securego/gosec@v2.18.2
       with:
         args: ./...
+    #
+    # unit tests
+    #
+    - name: unit tests
+      shell: bash
+      run: |
+        go test \
+          -short \
+          -cover \
+          -v \
+          -coverprofile=coverage.txt \
+          -covermode=atomic $(go list ./... | grep -v ${{ inputs.golang-unit-tests-exclusions }})
