@@ -52,4 +52,4 @@ runs:
           -cover \
           -v \
           -coverprofile=coverage.txt \
-          -covermode=atomic $(go list ./... | grep -v ${{ inputs.golang-unit-tests-exclusions }})
+          -covermode=atomic $(go list ./... | grep -v "${{ inputs.golang-unit-tests-exclusions }}")
