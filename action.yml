@@ -24,6 +24,4 @@ runs:
     #
     - uses: golangci/golangci-lint-action@v3.0.0
       with:
-        args: |
-          --timeout 2m30s
-          --config configs/.golangci.yml
+        args: --timeout 2m30s --config configs/.golangci.yml
