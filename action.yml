@@ -9,6 +9,11 @@ inputs:
       The Golang version that has to be installed and used.
     default: 1.21.5
     required: true
+  golangci-lint-version:
+    description: |
+      The Golangci-lint version that has to be installed and used.
+    default: v1.55.2
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -25,3 +30,4 @@ runs:
     - uses: golangci/golangci-lint-action@v3.0.0
       with:
         args: --timeout 2m30s --config configs/.golangci.yml
+        version: ${{ inputs.golangci-lint-version }}
