@@ -31,3 +31,9 @@ runs:
       with:
         args: --timeout 2m30s --config configs/.golangci.yml
         version: ${{ inputs.golangci-lint-version }}
+    #
+    # run gosec
+    #
+    - uses: securego/gosec@v2.18.2
+      with:
+        args: ./...
