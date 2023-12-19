@@ -1,0 +1,26 @@
+---
+name: mcaf-mcvs-golang-action
+description: |
+  The Mission Critical Acceleration Framework (MCAF)
+  Mission Critical Vulnerability Scanner (MCVS) Golang action.
+inputs:
+  golang-version:
+    description: |
+      The Golang version that has to be installed and used.
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    #
+    # install a certain golang version
+    #
+    - uses: actions/setup-go@v4.0.0
+      with:
+        go-version: ${{ inputs.golang-version }}
+        cache: false
+    #
+    # run golangci-lint
+    #
+    - uses: golangci/golangci-lint-action@v3.0.0
+      with:
+        args: --timeout 2m30s
