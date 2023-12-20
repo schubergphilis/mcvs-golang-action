@@ -29,11 +29,25 @@ runs:
         go-version: ${{ inputs.golang-version }}
         cache: false
     #
+    # code security scanning
+    #
+    - uses: aquasecurity/trivy-action@0.14.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+    #
     # run golangci-lint
     #
-    - uses: golangci/golangci-lint-action@v3.0.0
+    - uses: golangci/golangci-lint-action@v3.7.0
       with:
-        args: --timeout 2m30s --config configs/.golangci.yml
+        args: |-
+          --config configs/.golangci.yml \
+          --out-format=colored-line-number \
+          --timeout 2m30s \
+          -v
         version: ${{ inputs.golangci-lint-version }}
     #
     # run gosec
@@ -52,4 +66,4 @@ runs:
           -cover \
           -v \
           -coverprofile=coverage.txt \
-          -covermode=atomic $(go list ./... | grep -v ${{ inputs.golang-unit-tests-exclusions }})
+          -covermode=atomic $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
