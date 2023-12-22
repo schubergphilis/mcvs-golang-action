@@ -29,7 +29,7 @@ runs:
     #
     # code security scanning
     #
-    - uses: aquasecurity/trivy-action@0.14.0
+    - uses: aquasecurity/trivy-action@0.16.0
       with:
         scan-type: 'fs'
         scan-ref: '.'
