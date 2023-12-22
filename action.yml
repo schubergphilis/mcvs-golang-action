@@ -1,0 +1,64 @@
+---
+name: mcvs-golang-action
+description: |
+  The Mission Critical Vulnerability Scanner (MCVS) Golang action.
+inputs:
+  golang-unit-tests-exclusions:
+    description: |
+      The Golang paths that should be excluded from unit testing.
+    default: ' '
+  golangci-lint-version:
+    description: |
+      The Golangci-lint version that has to be installed and used.
+    default: v1.55.2
+    required: true
+  golang-number-of-tests-in-parallel:
+    description: |
+      Number of test in parallel.
+    default: '1'
+runs:
+  using: 'composite'
+  steps:
+    #
+    # install the golang version that has been defined in the go.mod file
+    #
+    - uses: actions/setup-go@v4.0.0
+      with:
+        go-version-file: 'go.mod'
+        cache: false
+    #
+    # code security scanning
+    #
+    - uses: aquasecurity/trivy-action@0.14.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+    #
+    # run golangci-lint
+    #
+    - uses: golangci/golangci-lint-action@v3.7.0
+      with:
+        args: |-
+          --enable-all \
+          --out-format=colored-line-number \
+          --timeout 2m30s \
+          -v
+        version: ${{ inputs.golangci-lint-version }}
+    #
+    # unit tests
+    #
+    - name: unit tests
+      shell: bash
+      run: |
+        go test \
+          -cover \
+          -covermode=atomic \
+          -coverprofile=coverage.txt \
+          -p ${{ inputs.golang-number-of-tests-in-parallel }} \
+          -race \
+          -short \
+          -v \
+          $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
