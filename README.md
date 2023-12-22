@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: schubergphilis/golang-action@v0.1.0
+      - uses: schubergphilis/mcvs-golang-action@v0.1.1
         with:
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
