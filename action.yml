@@ -1,32 +1,30 @@
 ---
-name: mcaf-mcvs-golang-action
+name: mcvs-golang-action
 description: |
-  The Mission Critical Acceleration Framework (MCAF)
-  Mission Critical Vulnerability Scanner (MCVS) Golang action.
+  The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
-  golang-version:
+  golang-unit-tests-exclusions:
     description: |
-      The Golang version that has to be installed and used.
-    default: 1.21.5
-    required: true
+      The Golang paths that should be excluded from unit testing.
+    default: ' '
   golangci-lint-version:
     description: |
       The Golangci-lint version that has to be installed and used.
     default: v1.55.2
     required: true
-  golang-unit-tests-exclusions:
+  golang-number-of-tests-in-parallel:
     description: |
-      The Golang paths that should be excluded from unit testing.
-    default: ' '
+      Number of test in parallel.
+    default: '1'
 runs:
   using: 'composite'
   steps:
     #
-    # install a certain golang version
+    # install the golang version that has been defined in the go.mod file
     #
     - uses: actions/setup-go@v4.0.0
       with:
-        go-version: ${{ inputs.golang-version }}
+        go-version-file: 'go.mod'
         cache: false
     #
     # code security scanning
@@ -44,17 +42,11 @@ runs:
     - uses: golangci/golangci-lint-action@v3.7.0
       with:
         args: |-
-          --config configs/.golangci.yml \
+          --enable-all \
           --out-format=colored-line-number \
           --timeout 2m30s \
           -v
         version: ${{ inputs.golangci-lint-version }}
-    #
-    # run gosec
-    #
-    - uses: securego/gosec@v2.18.2
-      with:
-        args: ./...
     #
     # unit tests
     #
@@ -62,8 +54,11 @@ runs:
       shell: bash
       run: |
         go test \
-          -short \
           -cover \
-          -v \
+          -covermode=atomic \
           -coverprofile=coverage.txt \
-          -covermode=atomic $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
+          -p ${{ inputs.golang-number-of-tests-in-parallel }} \
+          -race \
+          -short \
+          -v \
+          $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
