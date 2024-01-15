@@ -29,7 +29,7 @@ runs:
     #
     # Code security scanning.
     #
-    - uses: 030/trivyignore-validator-action@v0.1.1
+    - uses: 030/trivyignore-validator-action@v0.1.2
     - uses: aquasecurity/trivy-action@0.16.1
       with:
         scan-type: 'fs'
