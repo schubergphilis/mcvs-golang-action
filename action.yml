@@ -27,6 +27,23 @@ runs:
         go-version-file: 'go.mod'
         cache: false
     #
+    # Check for 'incorrect import order', let pipeline fail if true and provide
+    # instruction to remediate it. Note: check is included in golangci-lint,
+    # but it does not provide clarity how to resolve it when positive.
+    #
+    - name: gci
+      shell: bash
+      run: |
+        go install github.com/daixiang0/gci@v0.11.2
+        if ~/go/bin/gci list --skip-generated . | grep -q ".*\.go$"; then
+          echo "One or more 'incorrect import order' detected:"
+          echo ""
+          echo "$(~/go/bin/gci diff --skip-generated .)"
+          echo ""
+          echo "Resolve it by issuing: '~/go/bin/gci write --skip-generated .'"
+          exit 1
+        fi
+    #
     # Code security scanning.
     #
     - uses: 030/trivyignore-validator-action@v0.1.2
