@@ -24,3 +24,17 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | golang-unit-tests-exclusions       | ' '     |
 | golangci-lint-version              | v1.55.2 |
 | golang-number-of-tests-in-parallel | 4       |
+
+## integration
+
+In order to run integration tests ensure that the code resides in a file with
+a `_integration_test.go` postfix, e.g., `some_integration_test.go` and add the
+following header:
+
+```bash
+//go:build integration
+```
+
+Once this has been added and `go test ./... --tags=integration` is issued like
+in this action, both unit and integration tests will be run. If the `--tags`
+step is omitted, only unit tests will be run.
