@@ -23,4 +23,4 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | ---------------------------------- | ------- |
 | golang-unit-tests-exclusions       | ' '     |
 | golangci-lint-version              | v1.55.2 |
-| golang-number-of-tests-in-parallel | 1       |
+| golang-number-of-tests-in-parallel | 4       |
