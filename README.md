@@ -27,14 +27,14 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 ## integration
 
-In order to run integration tests ensure that the code resides in a file with
-a `_integration_test.go` postfix, e.g., `some_integration_test.go` and add the
-following header:
+To execute integration tests, make sure that the code is located in a file with
+a `_integration_test.go` postfix, such as `some_integration_test.go`.
+Additionally, include the following header in the file:
 
 ```bash
 //go:build integration
 ```
 
-Once this has been added and `go test ./... --tags=integration` is issued like
-in this action, both unit and integration tests will be run. If the `--tags`
-step is omitted, only unit tests will be run.
+After adding this header, issue the command `go test ./... --tags=integration`
+as demonstrated in this example. This action will run both unit and integration
+tests. If the `--tags` step is omitted, only unit tests will be executed.

@@ -73,6 +73,19 @@ runs:
       shell: bash
       run: |
         go test \
+          -p ${{ inputs.golang-number-of-tests-in-parallel }} \
+          -race \
+          -short \
+          -v \
+          $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
+    #
+    # Both unit and integration tests including code coverage.
+    #
+    - name: unit & integrations tests and code coverage
+      shell: bash
+      run: |
+        go test \
+          --tags=integration \
           -cover \
           -covermode=atomic \
           -coverprofile=coverage.txt \
