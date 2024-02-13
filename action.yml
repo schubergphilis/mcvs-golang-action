@@ -29,7 +29,7 @@ runs:
     #
     # Verify downloaded dependencies.
     #
-    - uses:
+    - name: verify golang modules
       shell: bash
       run: |
         go mod verify
