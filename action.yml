@@ -65,7 +65,7 @@ runs:
     #
     # Run golangci-lint.
     #
-    - uses: golangci/golangci-lint-action@v3.7.1
+    - uses: golangci/golangci-lint-action@v5.1.0
       with:
         args: |-
           --enable-all \
