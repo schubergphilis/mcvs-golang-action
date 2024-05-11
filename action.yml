@@ -41,13 +41,11 @@ runs:
     - name: gci
       shell: bash
       run: |
-        go install github.com/daixiang0/gci@v0.11.2
-        if ~/go/bin/gci list --skip-generated . | grep -q ".*\.go$"; then
-          echo "One or more 'incorrect import order' detected:"
-          echo ""
-          echo "$(~/go/bin/gci diff --skip-generated .)"
-          echo ""
-          echo "Resolve it by issuing: '~/go/bin/gci write --skip-generated .'"
+        go install github.com/daixiang0/gci@v0.13.4
+        if ~/go/bin/gci list --skip-generated . | grep "\.go$"; then
+          echo "One or more golang files detected with: 'incorrect import order':"
+          echo " * Observe: '~/go/bin/gci diff --skip-generated .'"
+          echo " * Resolve: '~/go/bin/gci write --skip-generated .'"
           exit 1
         fi
     #
