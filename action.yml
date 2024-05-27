@@ -52,7 +52,7 @@ runs:
     # Code security scanning.
     #
     - uses: 030/trivyignore-validator-action@v0.1.2
-    - uses: aquasecurity/trivy-action@0.17.0
+    - uses: aquasecurity/trivy-action@0.21.0
       with:
         scan-type: 'fs'
         scan-ref: '.'
