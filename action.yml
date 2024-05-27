@@ -6,7 +6,7 @@ inputs:
   golang-unit-tests-exclusions:
     description: |
       The Golang paths that should be excluded from unit testing.
-    default: ' '
+    default: " "
   golangci-lint-version:
     description: |
       The Golangci-lint version that has to be installed and used.
@@ -15,16 +15,16 @@ inputs:
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
-    default: '4'
+    default: "4"
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     #
     # Install the golang version that has been defined in the go.mod file.
     #
     - uses: actions/setup-go@v5.0.1
       with:
-        go-version-file: 'go.mod'
+        go-version-file: "go.mod"
         cache: false
     #
     # Verify downloaded dependencies.
@@ -51,14 +51,20 @@ runs:
     #
     # Code security scanning.
     #
+    - uses: anchore/scan-action@v3.6.4
+      with:
+        only-fixed: false
+        output-format: table
+        path: "."
+        severity-cutoff: high
     - uses: 030/trivyignore-validator-action@v0.1.2
     - uses: aquasecurity/trivy-action@0.21.0
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        exit-code: '1'
+        scan-type: "fs"
+        scan-ref: "."
+        exit-code: "1"
         ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
+        severity: "CRITICAL,HIGH"
         trivyignores: .trivyignore
     #
     # Run golangci-lint.
