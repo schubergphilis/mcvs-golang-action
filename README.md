@@ -4,18 +4,18 @@ Mission Critical Vulnerability Scanner (MCVS) Golang Action is a custom
 [GitHub Action](https://github.com/features/actions) that consists of the
 following steps:
 
-* Install the Golang version that is defined in the project `go.mod`.
-* Verify to be downloaded Golang modules.
-* Check for incorrect import order and indicate how to resolve it.
-* Code security scanning and suppression of certain CVEs for a maximum one
+- Install the Golang version that is defined in the project `go.mod`.
+- Verify to be downloaded Golang modules.
+- Check for incorrect import order and indicate how to resolve it.
+- Code security scanning and suppression of certain CVEs for a maximum of one
   month. In some situations a particular CVE will be resolved in a couple of
   weeks and this allows the developer to continue in a safe way while knowing
   that the pipeline will fail again if the issue has not been resolved in a
   couple of weeks.
-* Linting.
-* Unit tests.
-* Integration tests.
-* Code coverage.
+- Linting.
+- Unit tests.
+- Integration tests.
+- Code coverage.
 
 In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
