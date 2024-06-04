@@ -1,4 +1,4 @@
-# mcvs-golang-action
+# MCVS-golang-action
 
 Mission Critical Vulnerability Scanner (MCVS) Golang Action is a custom
 [GitHub Action](https://github.com/features/actions) that consists of the
@@ -19,7 +19,7 @@ following steps:
 
 In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
-fail if an issue arrises.
+fail if an issue arises.
 
 ## usage
 
@@ -30,7 +30,7 @@ Create a `.github/workflows/golang.yml` file with the following content:
 name: Golang
 'on': push
 jobs:
-  mvcs-golang-action:
+  MCVS-golang-action:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4.1.1

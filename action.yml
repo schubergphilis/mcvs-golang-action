@@ -20,6 +20,13 @@ runs:
   using: "composite"
   steps:
     #
+    # YAML linting.
+    #
+    - run: |
+        pip install --user yamllint==1.35.1
+        yamllint .
+      shell: bash
+    #
     # Install the golang version that has been defined in the go.mod file.
     #
     - uses: actions/setup-go@v5.0.1
