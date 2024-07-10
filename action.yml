@@ -29,7 +29,7 @@ runs:
     #
     # Install the golang version that has been defined in the go.mod file.
     #
-    - uses: actions/setup-go@v5.0.1
+    - uses: actions/setup-go@v5.0.2
       with:
         go-version-file: "go.mod"
         cache: false
