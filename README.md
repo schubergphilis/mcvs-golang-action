@@ -25,19 +25,31 @@ fail if an issue arises.
 
 Create a `.github/workflows/golang.yml` file with the following content:
 
-```bash
+```yaml
 ---
 name: Golang
-'on': push
+"on": push
 jobs:
   MCVS-golang-action:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        step:
+          - yamllint
+          - verify-go-modules
+          - gci
+          - code-scan-grype
+          - code-scan-trivy
+          - golangci
+          - unit-tests
+          - integration-tests
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v0.1.1
         with:
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          step: ${{ matrix.step }}
 ```
 
 and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).

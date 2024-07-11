@@ -16,6 +16,9 @@ inputs:
     description: |
       Number of test in parallel.
     default: "4"
+  step:
+    description: The MCVS-golang-action step to execute
+    required: true
 runs:
   using: "composite"
   steps:
@@ -25,18 +28,21 @@ runs:
     - run: |
         pip install --user yamllint==1.35.1
         yamllint .
+      if: ${{ inputs.step == 'yamllint' }}
       shell: bash
     #
     # Install the golang version that has been defined in the go.mod file.
     #
-    - uses: actions/setup-go@v5.0.1
-      with:
-        go-version-file: "go.mod"
-        cache: false
+    # - uses: actions/setup-go@v5.0.1
+    #   if: ${{ inputs.step == 'verify-go-modules' || inputs.step == 'gci' || inputs.step == 'unit-tests' || inputs.step == 'integration-tests' }}
+    #   with:
+    #     go-version-file: "go.mod"
+    #     cache: false
     #
     # Verify downloaded dependencies.
     #
     - name: verify golang modules
+      if: ${{ inputs.step == 'verify-go-modules' }}
       shell: bash
       run: |
         go mod verify
@@ -46,6 +52,7 @@ runs:
     # but it does not provide clarity how to resolve it when positive.
     #
     - name: gci
+      if: ${{ inputs.step == 'gci' }}
       shell: bash
       run: |
         go install github.com/daixiang0/gci@v0.13.4
@@ -59,13 +66,16 @@ runs:
     # Code security scanning.
     #
     - uses: anchore/scan-action@v3.6.4
+      if: ${{ inputs.step == 'code-scan-grype' }}
       with:
         only-fixed: false
         output-format: table
         path: "."
         severity-cutoff: high
     - uses: 030/trivyignore-validator-action@v0.1.2
+      if: ${{ inputs.step == 'code-scan-trivy' }}
     - uses: aquasecurity/trivy-action@0.23.0
+      if: ${{ inputs.step == 'code-scan-trivy' }}
       with:
         scan-type: "fs"
         scan-ref: "."
@@ -77,6 +87,7 @@ runs:
     # Run golangci-lint.
     #
     - uses: golangci/golangci-lint-action@v6.0.1
+      if: ${{ inputs.step == 'golangci' }}
       with:
         args: |-
           --enable-all \
@@ -88,6 +99,7 @@ runs:
     # Unit tests.
     #
     - name: unit tests
+      if: ${{ inputs.step == 'unit-tests' }}
       shell: bash
       run: |
         go test \
@@ -100,6 +112,7 @@ runs:
     # Both unit and integration tests including code coverage.
     #
     - name: unit & integrations tests and code coverage
+      if: ${{ inputs.step == 'integration-tests' }}
       shell: bash
       run: |
         go test \
