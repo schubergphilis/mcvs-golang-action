@@ -65,7 +65,7 @@ runs:
         path: "."
         severity-cutoff: high
     - uses: 030/trivyignore-validator-action@v0.1.2
-    - uses: aquasecurity/trivy-action@0.23.0
+    - uses: aquasecurity/trivy-action@0.24.0
       with:
         scan-type: "fs"
         scan-ref: "."
