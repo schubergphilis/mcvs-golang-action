@@ -40,6 +40,10 @@ runs:
       shell: bash
       run: |
         go mod verify
+    - uses: golang/govulncheck-action@v1.0.3
+      with:
+        go-version-file: go.mod
+        go-package: ./...
     #
     # Check for 'incorrect import order', let pipeline fail if true and provide
     # instruction to remediate it. Note: check is included in golangci-lint,
