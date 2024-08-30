@@ -3,6 +3,10 @@ name: mcvs-golang-action
 description: |
   The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
+  code_coverage_expected:
+    description: |
+      The minimum code coverage.
+    default: "80"
   golang-unit-tests-exclusions:
     description: |
       The Golang paths that should be excluded from unit testing.
@@ -91,6 +95,18 @@ runs:
     #
     # Unit tests.
     #
+    - name: code coverage
+      shell: bash
+      run: |
+        go test -v -coverpkg=./... -coverprofile=profile.cov ./...
+        code_coverage_actual=$(go tool cover -func profile.cov |\
+          grep total: |\
+          awk '{print $3}' |\
+          sed 's/%//')
+        if (( $(echo "${{ inputs.code_coverage_expected }} > ${code_coverage_actual}" | bc -l) )); then
+          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '${{ inputs.code_coverage_expected }}'."
+          exit 1
+        fi
     - name: unit tests
       shell: bash
       run: |
