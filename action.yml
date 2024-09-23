@@ -95,18 +95,6 @@ runs:
     #
     # Unit tests.
     #
-    - name: code coverage
-      shell: bash
-      run: |
-        go test -v -coverpkg=./... -coverprofile=profile.cov ./...
-        code_coverage_actual=$(go tool cover -func profile.cov |\
-          grep total: |\
-          awk '{print $3}' |\
-          sed 's/%//')
-        if (( $(echo "${{ inputs.code_coverage_expected }} > ${code_coverage_actual}" | bc -l) )); then
-          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '${{ inputs.code_coverage_expected }}'."
-          exit 1
-        fi
     - name: unit tests
       shell: bash
       run: |
@@ -117,18 +105,25 @@ runs:
           -v \
           $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
     #
-    # Both unit and integration tests including code coverage.
+    # Unit & integration tests including code coverage.
     #
     - name: unit & integrations tests and code coverage
       shell: bash
       run: |
         go test \
-          --tags=integration \
-          -cover \
-          -covermode=atomic \
-          -coverprofile=coverage.txt \
+          -coverpkg=./... \
+          -coverprofile=profile.cov \
           -p ${{ inputs.golang-number-of-tests-in-parallel }} \
           -race \
           -short \
+          --tags=integration \
           -v \
           $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
+        code_coverage_actual=$(go tool cover -func profile.cov |\
+          grep total: |\
+          awk '{print $3}' |\
+          sed 's/%//')
+        if (( $(echo "${{ inputs.code_coverage_expected }} > ${code_coverage_actual}" | bc -l) )); then
+          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '${{ inputs.code_coverage_expected }}'."
+          exit 1
+        fi
