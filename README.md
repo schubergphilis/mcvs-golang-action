@@ -21,14 +21,17 @@ In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
 fail if an issue arises.
 
-## usage
+## Usage
 
 Create a `.github/workflows/golang.yml` file with the following content:
 
-```bash
+```yaml
 ---
 name: Golang
-'on': push
+"on": push
+permissions:
+  contents: read
+  packages: read
 jobs:
   MCVS-golang-action:
     runs-on: ubuntu-20.04
@@ -38,18 +41,26 @@ jobs:
         with:
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
-| option                             | default |
-| ---------------------------------- | ------- |
-| code_coverage_expected             | 80      |
-| golang-unit-tests-exclusions       | ' '     |
-| golangci-lint-version              | v1.55.2 |
-| golang-number-of-tests-in-parallel | 4       |
+<!-- markdownlint-disable MD013 -->
 
-## integration
+| Option                             | Default                              | Required | Description                                                                                                      |
+| :--------------------------------- | :----------------------------------- | -------- | :--------------------------------------------------------------------------------------------------------------- |
+| code_coverage_expected             | 80                                   |          |                                                                                                                  |
+| golang-unit-tests-exclusions       | ' '                                  |          |                                                                                                                  |
+| golangci-lint-version              | v1.55.2                              |          |                                                                                                                  |
+| golang-number-of-tests-in-parallel | 4                                    |          |                                                                                                                  |
+| token                              | ' '                                  | x        | GitHub token that is required to push an image to the registry of the project and to pull cached Trivy DB images |
+| trivy-action-db                    | ghcr.io/aquasecurity/trivy-db:2      |          | Replace this with a cached image to prevent bump into pull rate limiting issues                                  |
+| trivy-action-java-db               | ghcr.io/aquasecurity/trivy-java-db:1 |          | Replace this with a cached image to prevent bump into pull rate limiting issues                                  |
+
+<!-- markdownlint-enable MD013 -->
+
+## Integration
 
 To execute integration tests, make sure that the code is located in a file with
 a `_integration_test.go` postfix, such as `some_integration_test.go`.

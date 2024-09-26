@@ -15,11 +15,23 @@ inputs:
     description: |
       The Golangci-lint version that has to be installed and used.
     default: v1.55.2
-    required: true
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
     default: "4"
+  trivy-action-db:
+    default: "ghcr.io/aquasecurity/trivy-db:2"
+    description: |
+      OCI repository to retrieve trivy-db from.
+  trivy-action-java-db:
+    description: |
+      OCI repository to retrieve trivy-java-db from.
+    default: "ghcr.io/aquasecurity/trivy-java-db:1"
+  token:
+    description: |
+      A token is required to allow the mcvs-golang-action to pull the
+      cached trivy DBs to prevent bump into pull rate limits.
+    required: true
 runs:
   using: "composite"
   steps:
@@ -73,7 +85,17 @@ runs:
         path: "."
         severity-cutoff: high
     - uses: 030/trivyignore-validator-action@v0.1.2
+    - name: Log in to GitHub Packages Docker registry
+      shell: bash
+      run: |
+        echo "${{ inputs.token }}" |\
+          docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - uses: aquasecurity/trivy-action@0.24.0
+      env:
+        TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
+        TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
+        TRIVY_PASSWORD: ${{ inputs.token }}
+        TRIVY_USERNAME: ${{ github.actor }}
       with:
         scan-type: "fs"
         scan-ref: "."
