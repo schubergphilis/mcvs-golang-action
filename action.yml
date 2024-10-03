@@ -106,7 +106,7 @@ runs:
     #
     # Run golangci-lint.
     #
-    - uses: golangci/golangci-lint-action@v6.1.0
+    - uses: golangci/golangci-lint-action@v6.1.1
       with:
         args: |-
           --enable-all \
