@@ -90,7 +90,7 @@ runs:
       run: |
         echo "${{ inputs.token }}" |\
           docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    - uses: aquasecurity/trivy-action@0.24.0
+    - uses: aquasecurity/trivy-action@0.25.0
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
         TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
