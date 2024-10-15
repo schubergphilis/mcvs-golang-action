@@ -78,7 +78,7 @@ runs:
     #
     # Code security scanning.
     #
-    - uses: anchore/scan-action@v4.1.2
+    - uses: anchore/scan-action@v5.0.1
       with:
         only-fixed: false
         output-format: table
