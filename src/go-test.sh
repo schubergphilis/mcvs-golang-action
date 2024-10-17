@@ -15,10 +15,6 @@ variables() {
     fi
   fi
 
-  if [ -n "${COVERPKG}" ]; then
-    COVERPKG="-coverpkg=${COVERPKG}"
-  fi
-
   if [ -n "${COVERPROFILE}" ]; then
     COVERPROFILE="-coverprofile=${COVERPROFILE}"
   fi
@@ -27,8 +23,15 @@ variables() {
     TAGS="--tags=${TAGS}"
   fi
 
+  GO_LIST_TEST_EXCLUSIONS=$(go list $TAGS ./... | grep -v ${GOLANG_TEST_EXCLUSIONS})
+
+  if [ -n "${COVERPKG}" ]; then
+    COVERPKG="-coverpkg=$(echo "${GO_LIST_TEST_EXCLUSIONS}" | tr '\n' ',')"
+  fi
+
   echo "COVERPKG: ${COVERPKG}"
   echo "COVERPROFILE: ${COVERPROFILE}"
+  echo "GO_LIST_TEST_EXCLUSIONS: ${GO_LIST_TEST_EXCLUSIONS}"
   echo "GOLANG_PARALLEL_TESTS: ${GOLANG_PARALLEL_TESTS}"
   echo "GOLANG_TEST_EXCLUSIONS: ${GOLANG_TEST_EXCLUSIONS}"
   echo "TAGS: ${TAGS}"
@@ -43,7 +46,7 @@ run_go_tests() {
     $COVERPKG \
     $COVERPROFILE \
     $TAGS \
-    $(go list $TAGS ./... | grep -v ${GOLANG_TEST_EXCLUSIONS})
+    $(echo "${GO_LIST_TEST_EXCLUSIONS}")
 }
 
 main() {
