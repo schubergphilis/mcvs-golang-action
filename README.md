@@ -60,7 +60,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 <!-- markdownlint-enable MD013 -->
 
-## Integration
+### Integration
 
 To execute integration tests, make sure that the code is located in a file with
 a `_integration_test.go` postfix, such as `some_integration_test.go`.
@@ -73,3 +73,8 @@ Additionally, include the following header in the file:
 After adding this header, issue the command `go test ./... --tags=integration`
 as demonstrated in this example. This action will run both unit and integration
 tests. If the `--tags` step is omitted, only unit tests will be executed.
+
+### Component
+
+See the integration paragraph for the steps and replace `integration` with
+`component` to run them.

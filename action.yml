@@ -18,7 +18,6 @@ inputs:
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
-    default: "4"
   trivy-action-db:
     default: "ghcr.io/aquasecurity/trivy-db:2"
     description: |
@@ -120,32 +119,50 @@ runs:
     - name: unit tests
       shell: bash
       run: |
-        go test \
-          -p ${{ inputs.golang-number-of-tests-in-parallel }} \
-          -race \
-          -short \
-          -v \
-          $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
+        ${GITHUB_ACTION_PATH}/src/go-test.sh \
+          "" \
+          "" \
+          "${{ inputs.golang-number-of-tests-in-parallel }}" \
+          "${{ inputs.golang-unit-tests-exclusions }}" \
+          ""
     #
     # Unit & integration tests including code coverage.
     #
     - name: unit & integrations tests and code coverage
       shell: bash
       run: |
-        go test \
-          -coverpkg=./... \
-          -coverprofile=profile.cov \
-          -p ${{ inputs.golang-number-of-tests-in-parallel }} \
-          -race \
-          -short \
-          --tags=integration \
-          -v \
-          $(go list ./... | grep -v '${{ inputs.golang-unit-tests-exclusions }}')
-        code_coverage_actual=$(go tool cover -func profile.cov |\
+        ${GITHUB_ACTION_PATH}/src/go-test.sh \
+          "./..." \
+          "profile.cov" \
+          "${{ inputs.golang-number-of-tests-in-parallel }}" \
+          "${{ inputs.golang-unit-tests-exclusions }}" \
+          "integration"
+
+        code_coverage_output=$(go tool cover -func profile.cov)
+        code_coverage_actual=$(echo "${code_coverage_output}" |\
           grep total: |\
           awk '{print $3}' |\
           sed 's/%//')
+
+        echo "Code coverage overview:"
+        echo "${code_coverage_output}"
+
         if (( $(echo "${{ inputs.code_coverage_expected }} > ${code_coverage_actual}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '${{ inputs.code_coverage_expected }}'."
           exit 1
+        elif (( $(echo "${code_coverage_actual} > ${{ inputs.code_coverage_expected }}" | bc -l) )); then
+          echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold to align with the expected: '${{ inputs.code_coverage_expected }}'."
+          exit 1
         fi
+    #
+    # Component tests.
+    #
+    - name: component tests
+      shell: bash
+      run: |
+        ${GITHUB_ACTION_PATH}/src/go-test.sh \
+          "" \
+          "" \
+          "${{ inputs.golang-number-of-tests-in-parallel }}" \
+          "${{ inputs.golang-unit-tests-exclusions }}" \
+          "component"
