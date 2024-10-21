@@ -4,17 +4,21 @@ description: |
   The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
   code_coverage_expected:
+    default: "80"
     description: |
       The minimum code coverage.
-    default: "80"
+  gci:
+    default: "true"
+    description: |
+      Whether to check gci. Disable if the project provides an alternative way.
   golang-unit-tests-exclusions:
+    default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
-    default: " "
   golangci-lint-version:
+    default: v1.55.2
     description: |
       The Golangci-lint version that has to be installed and used.
-    default: v1.55.2
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
@@ -65,6 +69,7 @@ runs:
     # but it does not provide clarity how to resolve it when positive.
     #
     - name: gci
+      if: inputs.gci == 'true'
       shell: bash
       run: |
         go install github.com/daixiang0/gci@v0.13.4
@@ -85,16 +90,34 @@ runs:
         severity-cutoff: high
     - uses: 030/trivyignore-validator-action@v0.1.2
     - name: Log in to GitHub Packages Docker registry
+      if: inputs.token != ''
       shell: bash
       run: |
         echo "${{ inputs.token }}" |\
           docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    #
+    # Duplicated trivy-action parameters as dependabot does NOT support
+    # anchors: https://github.com/actions/runner/issues/1182
+    #
     - uses: aquasecurity/trivy-action@0.28.0
+      if: inputs.token != ''
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
         TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
         TRIVY_PASSWORD: ${{ inputs.token }}
         TRIVY_USERNAME: ${{ github.actor }}
+      with:
+        scan-type: "fs"
+        scan-ref: "."
+        exit-code: "1"
+        ignore-unfixed: true
+        severity: "CRITICAL,HIGH"
+        trivyignores: .trivyignore
+    - uses: aquasecurity/trivy-action@0.28.0
+      if: inputs.token == ''
+      env:
+        TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
+        TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
       with:
         scan-type: "fs"
         scan-ref: "."
