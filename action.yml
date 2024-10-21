@@ -182,6 +182,8 @@ runs:
     #
     - name: component tests
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         ${GITHUB_ACTION_PATH}/src/go-test.sh \
           "" \
