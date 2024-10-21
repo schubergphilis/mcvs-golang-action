@@ -43,7 +43,7 @@ runs:
     #
     - run: |
         pip install --user yamllint==1.35.1
-        yamllint .
+        yamllint -d '{extends: default, rules: {comments: {min-spaces-from-content: 1}}}' .
       shell: bash
     #
     # Install the golang version that has been defined in the go.mod file.
