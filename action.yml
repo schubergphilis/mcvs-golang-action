@@ -153,6 +153,8 @@ runs:
     #
     - name: unit & integrations tests and code coverage
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         ${GITHUB_ACTION_PATH}/src/go-test.sh \
           "./..." \
