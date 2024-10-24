@@ -34,13 +34,25 @@ permissions:
   packages: read
 jobs:
   MCVS-golang-action:
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        testing-type:
+          - component
+          - coverage
+          - integration
+          - lint
+          - security-golang-modules
+          - security-grype
+          - security-trivy
+          - unit
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: schubergphilis/mcvs-golang-action@v0.1.1
+      - uses: schubergphilis/mcvs-golang-action@v0.9.0
         with:
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          testing-type: ${{ matrix.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
