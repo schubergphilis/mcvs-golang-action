@@ -22,6 +22,9 @@ inputs:
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
+  testing-type:
+    description: |
+      The testing type, e.g. integration, unit or some other.
   trivy-action-db:
     default: "ghcr.io/aquasecurity/trivy-db:2"
     description: |
@@ -44,18 +47,23 @@ runs:
     - run: |
         pip install --user yamllint==1.35.1
         yamllint -d '{extends: default, rules: {comments: {min-spaces-from-content: 1}}}' .
+      if: inputs.testing-type == 'lint'
       shell: bash
     #
     # Install the golang version that has been defined in the go.mod file.
     #
+    # yamllint disable rule:line-length
     - uses: actions/setup-go@v5.0.2
+      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'unit'
       with:
         go-version-file: "go.mod"
         cache: false
+    # yamllint enable rule:line-length
     #
     # Verify downloaded dependencies.
     #
     - name: verify golang modules
+      if: inputs.testing-type == 'security-golang-modules'
       shell: bash
       run: |
         go mod verify
@@ -69,7 +77,7 @@ runs:
     # but it does not provide clarity how to resolve it when positive.
     #
     - name: gci
-      if: inputs.gci == 'true'
+      if: inputs.gci == 'true' && inputs.testing-type == 'lint'
       shell: bash
       run: |
         go install github.com/daixiang0/gci@v0.13.4
@@ -82,25 +90,32 @@ runs:
     #
     # Code security scanning.
     #
+    # * Grype
+    #
     - uses: anchore/scan-action@v5.0.1
+      if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         only-fixed: false
         output-format: table
         path: "."
         severity-cutoff: high
+    #
+    # * Trivy
+    #
     - uses: 030/trivyignore-validator-action@v0.1.2
+      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
     - name: Log in to GitHub Packages Docker registry
-      if: inputs.token != ''
+      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       shell: bash
       run: |
         echo "${{ inputs.token }}" |\
           docker login ghcr.io -u ${{ github.actor }} --password-stdin
     #
-    # Duplicated trivy-action parameters as dependabot does NOT support
+    # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
     - uses: aquasecurity/trivy-action@0.28.0
-      if: inputs.token != ''
+      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
         TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
@@ -114,7 +129,7 @@ runs:
         severity: "CRITICAL,HIGH"
         trivyignores: .trivyignore
     - uses: aquasecurity/trivy-action@0.28.0
-      if: inputs.token == ''
+      if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
         TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
@@ -128,7 +143,9 @@ runs:
     #
     # Run golangci-lint.
     #
-    - uses: golangci/golangci-lint-action@v6.1.1
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6.1.1
+      if: inputs.testing-type == 'lint'
       with:
         args: |-
           --enable-all \
@@ -140,6 +157,7 @@ runs:
     # Unit tests.
     #
     - name: unit tests
+      if: inputs.testing-type == 'unit'
       shell: bash
       run: |
         ${GITHUB_ACTION_PATH}/src/go-test.sh \
@@ -149,9 +167,25 @@ runs:
           "${{ inputs.golang-unit-tests-exclusions }}" \
           ""
     #
-    # Unit & integration tests including code coverage.
+    # Integration tests.
     #
-    - name: unit & integrations tests and code coverage
+    - name: integration tests
+      if: inputs.testing-type == 'integration'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        ${GITHUB_ACTION_PATH}/src/go-test.sh \
+          "" \
+          "" \
+          "${{ inputs.golang-number-of-tests-in-parallel }}" \
+          "${{ inputs.golang-unit-tests-exclusions }}" \
+          "integration"
+    #
+    # Coverage.
+    #
+    - name: code coverage
+      if: inputs.testing-type == 'coverage'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -183,6 +217,7 @@ runs:
     # Component tests.
     #
     - name: component tests
+      if: inputs.testing-type == 'component'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
