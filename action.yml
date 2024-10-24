@@ -53,7 +53,7 @@ runs:
     # Install the golang version that has been defined in the go.mod file.
     #
     # yamllint disable rule:line-length
-    - uses: actions/setup-go@v5.0.2
+    - uses: actions/setup-go@v5.1.0
       if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'unit'
       with:
         go-version-file: "go.mod"
