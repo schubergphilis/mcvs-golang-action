@@ -23,9 +23,36 @@ fail if an issue arises.
 
 ## Usage
 
+### Locally
+
+Create a `Taskfile.yml` with the following content:
+
+```yml
+---
+version: 3
+
+vars:
+  REMOTE_URL: https://raw.githubusercontent.com
+  REMOTE_URL_REF: 100-remote-taskfile
+  REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
+
+includes:
+  remote: >-
+    {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+```
+
+and run:
+
+```zsh
+TASK_X_REMOTE_TASKFILES=1 \
+task remote:test
+```
+
+### GitHub
+
 Create a `.github/workflows/golang.yml` file with the following content:
 
-```yaml
+```yml
 ---
 name: Golang
 "on": push
@@ -60,16 +87,17 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 <!-- markdownlint-disable MD013 -->
 
-| Option                             | Default                              | Required | Description                                                                                                      |
-| :--------------------------------- | :----------------------------------- | -------- | :--------------------------------------------------------------------------------------------------------------- |
-| code_coverage_expected             | 80                                   |          |                                                                                                                  |
-| gci                                | true                                 |          | Check for 'incorrect import order'. If failed then instructions are shown to resolve the issue                   |
-| golang-unit-tests-exclusions       | ' '                                  |          |                                                                                                                  |
-| golangci-lint-version              | v1.55.2                              |          |                                                                                                                  |
-| golang-number-of-tests-in-parallel | 4                                    |          |                                                                                                                  |
-| token                              | ' '                                  | x        | GitHub token that is required to push an image to the registry of the project and to pull cached Trivy DB images |
-| trivy-action-db                    | ghcr.io/aquasecurity/trivy-db:2      |          | Replace this with a cached image to prevent bump into pull rate limiting issues                                  |
-| trivy-action-java-db               | ghcr.io/aquasecurity/trivy-java-db:1 |          | Replace this with a cached image to prevent bump into pull rate limiting issues                                  |
+| Option                             | Default                              | Required | Description                                                                                    |
+| :--------------------------------- | :----------------------------------- | -------- | :--------------------------------------------------------------------------------------------- |
+| code-coverage-expected             | 80                                   |          |                                                                                                |
+| gci                                | true                                 |          | Check for 'incorrect import order'. If failed then instructions are shown to resolve the issue |
+| golang-unit-tests-exclusions       | ' '                                  |          |                                                                                                |
+| golangci-lint-version              | v1.55.2                              |          |                                                                                                |
+| golang-number-of-tests-in-parallel | 4                                    |          |                                                                                                |
+| task-version                       |                                      |          |                                                                                                |
+| token                              | ' '                                  |          | GitHub token that is required to pull cached Trivy DB images                                   |
+| trivy-action-db                    | ghcr.io/aquasecurity/trivy-db:2      |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
+| trivy-action-java-db               | ghcr.io/aquasecurity/trivy-java-db:1 |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -83,9 +111,9 @@ Additionally, include the following header in the file:
 //go:build integration
 ```
 
-After adding this header, issue the command `go test ./... --tags=integration`
+After adding this header, issue the command `task remote:test-integration --yes`
 as demonstrated in this example. This action will run both unit and integration
-tests. If the `--tags` step is omitted, only unit tests will be executed.
+tests. If `task remote:test --yes` is executed, only unit tests will be run.
 
 ### Component
 

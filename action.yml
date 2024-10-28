@@ -3,7 +3,7 @@ name: mcvs-golang-action
 description: |
   The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
-  code_coverage_expected:
+  code-coverage-expected:
     default: "80"
     description: |
       The minimum code coverage.
@@ -22,6 +22,10 @@ inputs:
   golang-number-of-tests-in-parallel:
     description: |
       Number of test in parallel.
+  task-version:
+    default: v3.39.2
+    description: |
+      The Task version that has to be installed and used.
   testing-type:
     description: |
       The testing type, e.g. integration, unit or some other.
@@ -37,27 +41,27 @@ inputs:
     description: |
       A token is required to allow the mcvs-golang-action to pull the
       cached trivy DBs to prevent bump into pull rate limits.
-    required: true
 runs:
   using: "composite"
   steps:
     #
-    # YAML linting.
-    #
-    - run: |
-        pip install --user yamllint==1.35.1
-        yamllint -d '{extends: default, rules: {comments: {min-spaces-from-content: 1}}}' .
-      if: inputs.testing-type == 'lint'
-      shell: bash
-    #
-    # Install the golang version that has been defined in the go.mod file.
+    # Install task and the golang version that has been defined in the go.mod
+    # file.
     #
     # yamllint disable rule:line-length
     - uses: actions/setup-go@v5.1.0
-      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'unit'
+      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'lint' || inputs.testing-type == 'unit'
       with:
         go-version-file: "go.mod"
         cache: false
+    - name: install task
+      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'lint' || inputs.testing-type == 'unit'
+      shell: bash
+      run: |
+        if ! ~/go/bin/task --version | grep "Task version: ${{ inputs.task-version }}"; then
+          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^v([0-9]+).*/\1/')
+          go install github.com/go-task/task/v${major_version}/cmd/task@${{ inputs.task-version }}
+        fi
     # yamllint enable rule:line-length
     #
     # Verify downloaded dependencies.
@@ -80,14 +84,10 @@ runs:
     - name: gci
       if: inputs.gci == 'true' && inputs.testing-type == 'lint'
       shell: bash
+      env:
+        TASK_X_REMOTE_TASKFILES: 1
       run: |
-        go install github.com/daixiang0/gci@v0.13.4
-        if ~/go/bin/gci list --skip-generated . | grep "\.go$"; then
-          echo "One or more golang files detected with: 'incorrect import order':"
-          echo " * Observe: '~/go/bin/gci diff --skip-generated .'"
-          echo " * Resolve: '~/go/bin/gci write --skip-generated .'"
-          exit 1
-        fi
+        task remote:gci --yes
     #
     # Code security scanning.
     #
@@ -145,28 +145,22 @@ runs:
     # Run golangci-lint.
     #
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v6.1.1
       if: inputs.testing-type == 'lint'
-      with:
-        args: |-
-          --enable-all \
-          --out-format=colored-line-number \
-          --timeout 2m30s \
-          -v
-        version: ${{ inputs.golangci-lint-version }}
+      shell: bash
+      env:
+        TASK_X_REMOTE_TASKFILES: 1
+      run: |
+        task remote:golangci-lint --yes
     #
     # Unit tests.
     #
     - name: unit tests
       if: inputs.testing-type == 'unit'
       shell: bash
+      env:
+        TASK_X_REMOTE_TASKFILES: 1
       run: |
-        ${GITHUB_ACTION_PATH}/src/go-test.sh \
-          "" \
-          "" \
-          "${{ inputs.golang-number-of-tests-in-parallel }}" \
-          "${{ inputs.golang-unit-tests-exclusions }}" \
-          ""
+        task remote:test --yes
     #
     # Integration tests.
     #
@@ -176,12 +170,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${GITHUB_ACTION_PATH}/src/go-test.sh \
-          "" \
-          "" \
-          "${{ inputs.golang-number-of-tests-in-parallel }}" \
-          "${{ inputs.golang-unit-tests-exclusions }}" \
-          "integration"
+        task remote:test-integration --yes
     #
     # Coverage.
     #
@@ -189,31 +178,11 @@ runs:
       if: inputs.testing-type == 'coverage'
       shell: bash
       env:
+        CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
+        CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${GITHUB_ACTION_PATH}/src/go-test.sh \
-          "./..." \
-          "profile.cov" \
-          "${{ inputs.golang-number-of-tests-in-parallel }}" \
-          "${{ inputs.golang-unit-tests-exclusions }}" \
-          "integration"
-
-        code_coverage_output=$(go tool cover -func profile.cov)
-        code_coverage_actual=$(echo "${code_coverage_output}" |\
-          grep total: |\
-          awk '{print $3}' |\
-          sed 's/%//')
-
-        echo "Code coverage overview:"
-        echo "${code_coverage_output}"
-
-        if (( $(echo "${{ inputs.code_coverage_expected }} > ${code_coverage_actual}" | bc -l) )); then
-          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '${{ inputs.code_coverage_expected }}'."
-          exit 1
-        elif (( $(echo "${code_coverage_actual} > ${{ inputs.code_coverage_expected }}" | bc -l) )); then
-          echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold to align with the expected: '${{ inputs.code_coverage_expected }}'."
-          exit 1
-        fi
+        task remote:coverage --yes
     #
     # Component tests.
     #
@@ -223,9 +192,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        ${GITHUB_ACTION_PATH}/src/go-test.sh \
-          "" \
-          "" \
-          "${{ inputs.golang-number-of-tests-in-parallel }}" \
-          "${{ inputs.golang-unit-tests-exclusions }}" \
-          "component"
+        task remote:test-component --yes
