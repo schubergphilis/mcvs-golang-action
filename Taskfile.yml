@@ -1,0 +1,181 @@
+# TASK_X_REMOTE_TASKFILES=1 task remote:lint
+# cmd: steps that will be run sequentially
+# deps: tasks that will be run in parallel
+---
+version: "3"
+
+vars:
+  COVERPROFILE: profile.cov
+  GCI_VERSION: 0.13.5
+  GOLANGCI_LINT_VERSION: 1.61.0
+  GOLANG_PARALLEL_TESTS:
+    sh: |
+      if [ "$(uname -s)" = "Darwin" ]; then
+        sysctl -n hw.ncpu
+      else
+        nproc
+      fi
+  MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
+  MOCKERY_MAJOR_VERSION: v2
+  MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
+  YQ_MAJOR_VERSION: v4
+  YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
+
+tasks:
+  build-golang-download-modules:
+    silent: true
+    cmds:
+      - |
+        go mod tidy
+    desc: download go modules
+  coverage:
+    silent: true
+    cmds:
+      - task: test
+        vars:
+          TEST_EXTRA_ARGS: >-
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
+            -coverprofile={{.COVERPROFILE}}
+          TEST_TAGS: integration
+      - |
+        code_coverage_output=$(go tool cover -func {{.COVERPROFILE}})
+        code_coverage_actual=$(echo "${code_coverage_output}" |\
+          grep total: |\
+          awk '{print $3}' |\
+          sed 's/%//')
+
+        echo "Code coverage overview:"
+        echo "{{.CODE_COVERAGE_EXPECTED}}"
+        if (( $(echo "{{.CODE_COVERAGE_EXPECTED}} > ${code_coverage_actual}" | bc -l) )); then
+          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'."
+          exit 1
+        elif (( $(echo "${code_coverage_actual} > {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
+          echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold to align with the expected: '{{.CODE_COVERAGE_EXPECTED}}'."
+          exit 1
+        fi
+  coverage-visual:
+    silent: true
+    cmds:
+      - task: test
+        vars:
+          TEST_EXTRA_ARGS: >-
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
+            -coverprofile={{.COVERPROFILE}}
+          TEST_TAGS: integration
+      - |
+        go tool cover \
+          -func={{.COVERPROFILE}} > \
+          functioncoverage.out
+        go tool cover \
+          -html={{.COVERPROFILE}} \
+          -o coverage.html
+        open ./coverage.html
+  gci-install:
+    silent: true
+    cmds:
+      - |
+        if ! ~/go/bin/gci --version | grep -q "gci version {{.GCI_VERSION}}"; then
+          go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
+        fi
+  gci:
+    silent: true
+    cmds:
+      - task: gci-install
+      - |
+        if ~/go/bin/gci list --skip-generated . | grep "\.go$"; then
+          echo "One or more golang files detected with: 'incorrect import order':"
+          echo " * Observe: '~/go/bin/gci diff --skip-generated .'"
+          echo " * Resolve: '~/go/bin/gci write --skip-generated .'"
+          exit 1
+        fi
+  gci-write:
+    silent: true
+    cmds:
+      - task: gci-install
+      - ~/go/bin/gci write --skip-generated -s standard -s default .
+  golangci-lint-install:
+    silent: true
+    cmds:
+      - |
+        if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
+          curl \
+            -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
+            sh -s -- -b $(go env GOPATH)/bin v{{.GOLANGCI_LINT_VERSION}}
+        fi
+  golangci-lint-run:
+    silent: true
+    cmds:
+      - |
+        echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
+        golangci-lint run \
+          --build-tags component,e2e,integration \
+          --concurrency {{.GOLANG_PARALLEL_TESTS}} \
+          --timeout 2m30s \
+          --verbose
+  golangci-lint:
+    silent: true
+    cmds:
+      - task: golangci-lint-install
+      - task: golangci-lint-run
+  golangci-lint-run-without-cache:
+    silent: true
+    cmds:
+      - task: golangci-lint-install
+      - golangci-lint cache clean
+      - task: golangci-lint-run
+  lint:
+    silent: true
+    deps:
+      - task: gci
+      - task: golangci-lint
+  mock-generate:
+    silent: true
+    cmds:
+      - |
+        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then       
+          go install github.com/vektra/mockery/{{.MOCKERY_MAJOR_VERSION}}@{{.MOCKERY_VERSION}}
+        fi
+        echo "{{.MOCK_GENERATE_DIR}} {{.MOCK_GENERATE_INTERFACE_NAME}}"
+        {{.MOCKERY_BIN}} \
+          --dir {{.MOCK_GENERATE_DIR}} \
+          --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
+          --output {{.MOCK_GENERATE_DIR}}/mocks
+  test:
+    silent: true
+    cmds:
+      - |
+        echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
+        go test \
+          -p {{.GOLANG_PARALLEL_TESTS}} \
+          -race \
+          -short \
+          --tags={{.TEST_TAGS}} \
+          -v \
+          ./... \
+          {{.TEST_EXTRA_ARGS}}
+  test-component:
+    silent: true
+    cmds:
+      - task: test
+        vars:
+          TEST_TAGS: component
+  test-e2e:
+    silent: true
+    cmds:
+      - task: test
+        vars:
+          TEST_TAGS: e2e
+  test-integration:
+    silent: true
+    cmds:
+      - task: test
+        vars:
+          TEST_TAGS: integration
+  yq:
+    silent: true
+    cmds:
+      - |
+        if ! yq --version | grep -q "version {{.YQ_VERSION}}"; then
+          go install \
+            github.com/mikefarah/yq/{{.YQ_MAJOR_VERSION}}@{{.YQ_VERSION}}
+        fi
