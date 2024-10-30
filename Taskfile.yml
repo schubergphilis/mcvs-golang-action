@@ -44,8 +44,10 @@ tasks:
           awk '{print $3}' |\
           sed 's/%//')
 
+        echo "CODE_COVERAGE_FILE_EXCLUSIONS: {{.CODE_COVERAGE_FILE_EXCLUSIONS}}"
         echo "Code coverage overview:"
-        echo "{{.CODE_COVERAGE_EXPECTED}}"
+        echo "${code_coverage_output}"
+
         if (( $(echo "{{.CODE_COVERAGE_EXPECTED}} > ${code_coverage_actual}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'."
           exit 1
