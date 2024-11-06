@@ -113,6 +113,7 @@ tasks:
         golangci-lint run \
           --build-tags component,e2e,integration \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
+          --out-format=colored-line-number \
           --timeout 2m30s \
           --verbose
   golangci-lint:
