@@ -15,6 +15,7 @@ vars:
       else
         nproc
       fi
+  GQLGENC_VERSION: v0.25.1
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
@@ -125,6 +126,13 @@ tasks:
       - task: golangci-lint-install
       - golangci-lint cache clean
       - task: golangci-lint-run
+  gqlgenc-install:
+    silent: true
+    cmds:
+      - |
+        if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
+          go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
+        fi
   lint:
     silent: true
     deps:
