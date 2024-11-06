@@ -15,7 +15,7 @@ vars:
       else
         nproc
       fi
-  GQLGENC_VERSION: v0.25.1
+  GQLGENC_VERSION: v0.25.4
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
