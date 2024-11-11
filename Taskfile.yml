@@ -19,6 +19,11 @@ vars:
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
+  SED_INSERT_ADDITION:
+    sh: |
+      if [ "$(uname -s)" = "Darwin" ]; then
+        echo "\"\""
+      fi
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
 
