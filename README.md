@@ -98,8 +98,8 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | trivy-action-db              | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
 | trivy-action-java-db         | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
 
-Note: If an x is registered in the Default column, refer to the action.yml for
-the corresponding value.
+Note: If an **x** is registered in the Default column, refer to the
+[action.yml](action.yml) for the corresponding value.
 
 <!-- markdownlint-enable MD013 -->
 

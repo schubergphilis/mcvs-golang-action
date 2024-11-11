@@ -27,11 +27,11 @@ inputs:
       A token is required to allow the mcvs-golang-action to pull the
       cached trivy DBs to prevent bump into rate limits.
   trivy-action-db:
-    default: "ghcr.io/aquasecurity/trivy-db:2"
+    default: "public.ecr.aws/aquasecurity/trivy-db:2"
     description: |
       OCI repository to retrieve trivy-db from.
   trivy-action-java-db:
-    default: "ghcr.io/aquasecurity/trivy-java-db:1"
+    default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
 runs:
