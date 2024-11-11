@@ -55,10 +55,10 @@ tasks:
         echo "${code_coverage_output}"
 
         if (( $(echo "{{.CODE_COVERAGE_EXPECTED}} > ${code_coverage_actual}" | bc -l) )); then
-          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'."
+          echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'. Resolve the issue by writing more unit and/or integration tests."
           exit 1
         elif (( $(echo "${code_coverage_actual} > {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
-          echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold to align with the expected: '{{.CODE_COVERAGE_EXPECTED}}'."
+          echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold that is defined in the .github/workflows/golang.yml workflow to align with the expected: '{{.CODE_COVERAGE_EXPECTED}}'."
           exit 1
         fi
   coverage-visual:
