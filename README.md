@@ -87,17 +87,19 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 <!-- markdownlint-disable MD013 -->
 
-| Option                             | Default                              | Required | Description                                                                                    |
-| :--------------------------------- | :----------------------------------- | -------- | :--------------------------------------------------------------------------------------------- |
-| code-coverage-expected             | 80                                   |          |                                                                                                |
-| gci                                | true                                 |          | Check for 'incorrect import order'. If failed then instructions are shown to resolve the issue |
-| golang-unit-tests-exclusions       | ' '                                  |          |                                                                                                |
-| golangci-lint-version              | v1.55.2                              |          |                                                                                                |
-| golang-number-of-tests-in-parallel | 4                                    |          |                                                                                                |
-| task-version                       |                                      |          |                                                                                                |
-| token                              | ' '                                  |          | GitHub token that is required to pull cached Trivy DB images                                   |
-| trivy-action-db                    | ghcr.io/aquasecurity/trivy-db:2      |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
-| trivy-action-java-db               | ghcr.io/aquasecurity/trivy-java-db:1 |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
+| Option                       | Default | Required | Description                                                                                    |
+| :--------------------------- | :------ | -------- | :--------------------------------------------------------------------------------------------- |
+| code-coverage-expected       | x       |          |                                                                                                |
+| gci                          | x       |          | Check for 'incorrect import order'. If failed then instructions are shown to resolve the issue |
+| golang-unit-tests-exclusions | x       |          |                                                                                                |
+| task-version                 | x       |          |                                                                                                |
+| testing-type                 |         |          |                                                                                                |
+| token                        |         |          | GitHub token that is required to pull cached Trivy DB images                                   |
+| trivy-action-db              | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
+| trivy-action-java-db         | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
+
+Note: If an **x** is registered in the Default column, refer to the
+[action.yml](action.yml) for the corresponding value.
 
 <!-- markdownlint-enable MD013 -->
 
