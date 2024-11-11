@@ -15,13 +15,6 @@ inputs:
     default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
-  golangci-lint-version:
-    default: v1.55.2
-    description: |
-      The Golangci-lint version that has to be installed and used.
-  golang-number-of-tests-in-parallel:
-    description: |
-      Number of test in parallel.
   task-version:
     default: v3.39.2
     description: |
@@ -29,18 +22,18 @@ inputs:
   testing-type:
     description: |
       The testing type, e.g. integration, unit or some other.
+  token:
+    description: |
+      A token is required to allow the mcvs-golang-action to pull the
+      cached trivy DBs to prevent bump into rate limits.
   trivy-action-db:
     default: "ghcr.io/aquasecurity/trivy-db:2"
     description: |
       OCI repository to retrieve trivy-db from.
   trivy-action-java-db:
+    default: "ghcr.io/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
-    default: "ghcr.io/aquasecurity/trivy-java-db:1"
-  token:
-    description: |
-      A token is required to allow the mcvs-golang-action to pull the
-      cached trivy DBs to prevent bump into pull rate limits.
 runs:
   using: "composite"
   steps:
