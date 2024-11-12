@@ -84,7 +84,7 @@ tasks:
     cmds:
       - |
         if ! helm version | grep -q "{{.HELM_VERSION}}"; then
-          DESIRED_VERSION={{.HELM_VERSION}} curl \
+          curl \
             -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
         fi
