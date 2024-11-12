@@ -33,7 +33,7 @@ version: 3
 
 vars:
   REMOTE_URL: https://raw.githubusercontent.com
-  REMOTE_URL_REF: 100-remote-taskfile
+  REMOTE_URL_REF: v0.10.2
   REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
 
 includes:
@@ -73,6 +73,8 @@ jobs:
           - security-trivy
           - unit
     runs-on: ubuntu-22.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v0.9.0
