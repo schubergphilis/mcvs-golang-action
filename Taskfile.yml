@@ -16,6 +16,7 @@ vars:
         nproc
       fi
   GQLGENC_VERSION: v0.25.4
+  HELM_VERSION: v3.16.2
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
@@ -78,6 +79,15 @@ tasks:
           -html={{.COVERPROFILE}} \
           -o coverage.html
         open ./coverage.html
+  helm-install:
+    silent: true
+    cmds:
+      - |
+        if ! helm version | grep -q "{{.HELM_VERSION}}"; then
+          curl \
+            -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
+            bash -s -- --version {{.HELM_VERSION}}
+        fi
   gci-install:
     silent: true
     cmds:
