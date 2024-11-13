@@ -5,6 +5,7 @@
 version: "3"
 
 vars:
+  BUILD_TAGS: component,e2e,integration
   COVERPROFILE: profile.cov
   GCI_VERSION: 0.13.5
   GOLANGCI_LINT_VERSION: 1.61.0
@@ -126,7 +127,7 @@ tasks:
       - |
         echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
         golangci-lint run \
-          --build-tags component,e2e,integration \
+          --build-tags {{.BUILD_TAGS}} \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
           --out-format=colored-line-number \
           --timeout 2m30s \
@@ -169,7 +170,8 @@ tasks:
         {{.MOCKERY_BIN}} \
           --dir {{.MOCK_GENERATE_DIR}} \
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
-          --output {{.MOCK_GENERATE_DIR}}/mocks
+          --output {{.MOCK_GENERATE_DIR}}/mocks \
+          --tags {{.BUILD_TAGS}}
   test:
     silent: true
     cmds:
