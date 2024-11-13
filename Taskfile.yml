@@ -62,6 +62,14 @@ tasks:
           echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold that is defined in the .github/workflows/golang.yml workflow from '{{.CODE_COVERAGE_EXPECTED}}' to '${code_coverage_actual}'."
           exit 1
         fi
+    requires:
+      vars:
+        [
+          CODE_COVERAGE_EXPECTED,
+          CODE_COVERAGE_FILE_EXCLUSIONS,
+          COVERPROFILE,
+          TEST_TAGS,
+        ]
   coverage-visual:
     silent: true
     cmds:
@@ -79,6 +87,8 @@ tasks:
           -html={{.COVERPROFILE}} \
           -o coverage.html
         open ./coverage.html
+    requires:
+      vars: [CODE_COVERAGE_FILE_EXCLUSIONS, COVERPROFILE, TEST_TAGS]
   helm-install:
     silent: true
     cmds:
@@ -88,6 +98,8 @@ tasks:
             -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
         fi
+    requires:
+      vars: [HELM_VERSION]
   gci-install:
     silent: true
     cmds:
@@ -95,6 +107,8 @@ tasks:
         if ! ~/go/bin/gci --version | grep -q "gci version {{.GCI_VERSION}}"; then
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
         fi
+    requires:
+      vars: [GCI_VERSION]
   gci:
     silent: true
     cmds:
@@ -120,6 +134,8 @@ tasks:
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
             sh -s -- -b $(go env GOPATH)/bin v{{.GOLANGCI_LINT_VERSION}}
         fi
+    requires:
+      vars: [GOLANGCI_LINT_VERSION]
   golangci-lint-run:
     silent: true
     cmds:
@@ -131,6 +147,8 @@ tasks:
           --out-format=colored-line-number \
           --timeout 2m30s \
           --verbose
+    requires:
+      vars: [GOLANG_PARALLEL_TESTS]
   golangci-lint:
     silent: true
     cmds:
@@ -149,6 +167,8 @@ tasks:
         if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
+    requires:
+      vars: [GQLGENC_VERSION]
   lint:
     silent: true
     deps:
@@ -166,6 +186,15 @@ tasks:
           --dir {{.MOCK_GENERATE_DIR}} \
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --output {{.MOCK_GENERATE_DIR}}/mocks
+    requires:
+      vars:
+        [
+          MOCKERY_BIN,
+          MOCK_GENERATE_DIR,
+          MOCK_GENERATE_INTERFACE_NAME,
+          MOCKERY_MAJOR_VERSION,
+          MOCKERY_VERSION,
+        ]
   test:
     silent: true
     cmds:
@@ -179,6 +208,8 @@ tasks:
           -v \
           ./... \
           {{.TEST_EXTRA_ARGS}}
+    requires:
+      vars: [GOLANG_PARALLEL_TESTS]
   test-component:
     silent: true
     cmds:
@@ -205,3 +236,5 @@ tasks:
           go install \
             github.com/mikefarah/yq/{{.YQ_MAJOR_VERSION}}@{{.YQ_VERSION}}
         fi
+    requires:
+      vars: [YQ_VERSION, YQ_MAJOR_VERSION]
