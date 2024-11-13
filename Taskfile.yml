@@ -151,6 +151,10 @@ tasks:
         fi
   lint:
     silent: true
+    cmds:
+      - task: golangci-lint
+  lint-with-gci:
+    silent: true
     deps:
       - task: gci
       - task: golangci-lint
