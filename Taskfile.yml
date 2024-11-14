@@ -144,6 +144,7 @@ tasks:
       - task: golangci-lint-install
       - task: golangci-lint-run
   golangci-lint-run-without-cache:
+    desc: run golangci-lint without cache
     silent: true
     cmds:
       - task: golangci-lint-install
@@ -157,6 +158,7 @@ tasks:
           go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
         fi
   govulncheck:
+    desc: check for vulnerabilities with govulncheck
     silent: true
     cmds:
       - task: govulncheck-install
