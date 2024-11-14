@@ -16,6 +16,7 @@ vars:
       else
         nproc
       fi
+  GOVULNCHECK_VERSION: v1.1.3
   GQLGENC_VERSION: v0.25.4
   HELM_VERSION: v3.16.2
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
@@ -143,6 +144,19 @@ tasks:
       - task: golangci-lint-install
       - golangci-lint cache clean
       - task: golangci-lint-run
+  govulncheck-install:
+    silent: true
+    cmds:
+      - |
+        if ! govulncheck --version | grep -q {{.GOVULNCHECK_VERSION}}; then
+          go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
+        fi
+  govulncheck:
+    silent: true
+    cmds:
+      - task: govulncheck-install
+      - |
+        govulncheck -tags {{.BUILD_TAGS}} ./...
   gqlgenc-install:
     silent: true
     cmds:
