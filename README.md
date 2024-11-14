@@ -1,8 +1,13 @@
 # MCVS-golang-action
 
-Mission Critical Vulnerability Scanner (MCVS) Golang Action is a custom
-[GitHub Action](https://github.com/features/actions) that consists of the
-following steps:
+The Mission Critical Vulnerability Scanner (MCVS) Golang Action repository is a
+collection of standardized tools to ensure a certain level of quality of a
+project with Go code.
+
+## Github Action
+
+The [GitHub Action](https://github.com/features/actions) in this repository
+consists of the following steps:
 
 - Install the Golang version that is defined in the project `go.mod`.
 - Verify to be downloaded Golang modules.
@@ -20,6 +25,23 @@ following steps:
 In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
 fail if an issue arises.
+
+## Taskfile
+
+Another tool is configuration for [Task](https://taskfile.dev/). This repository
+offers a `Taskfile.yml` which contains standard tasks, like installing and
+running a linter.
+
+This `Taskfile.yml` can then be used by other projects. This has the advantage
+that you do not need to copy and paste Makefile snippets from one project to
+another. As a consequence each project using this `Taskfile.yml` immediately
+benefits from improvements made here (e.g. new tasks or improvements in the
+tasks).
+
+If you are new to Task, you may want to check out the following resources:
+- [Installation instructions](https://taskfile.dev/installation/)
+- Instructions to [configure completions](https://taskfile.dev/installation/#setup-completions)
+- [Integrations](https://taskfile.dev/integrations/) with e.g. Visual Studio Code, Sublime and IntelliJ.
 
 ## Usage
 
@@ -47,6 +69,15 @@ and run:
 TASK_X_REMOTE_TASKFILES=1 \
 task remote:test
 ```
+
+Note that the `TASK_X_REMOTE_TASKFILES` variable is required as long as the
+remote Taskfiles are still experimental. (See [issue
+1317](https://github.com/go-task/task/issues/1317) for more information.)
+
+You can use `task --list-all` to get a list of all available tasks.
+Alternatively, if you have [configured
+completions](https://taskfile.dev/installation/#setup-completions) in your
+shell, you can tab to get a list of available tasks.
 
 ### GitHub
 
