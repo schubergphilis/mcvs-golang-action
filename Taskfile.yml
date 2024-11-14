@@ -32,12 +32,13 @@ vars:
 
 tasks:
   build-golang-download-modules:
+    desc: download go modules
     silent: true
     cmds:
       - |
         go mod tidy
-    desc: download go modules
   coverage:
+    desc: check code coverage
     silent: true
     cmds:
       - task: test
@@ -65,6 +66,7 @@ tasks:
           exit 1
         fi
   coverage-visual:
+    desc: show code coverage
     silent: true
     cmds:
       - task: test
@@ -98,6 +100,7 @@ tasks:
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
         fi
   gci:
+    desc: check for incorrect import order with gci
     silent: true
     cmds:
       - task: gci-install
@@ -109,6 +112,7 @@ tasks:
           exit 1
         fi
   gci-write:
+    desc: fix incorrect import order with gci
     silent: true
     cmds:
       - task: gci-install
@@ -134,6 +138,7 @@ tasks:
           --timeout 2m30s \
           --verbose
   golangci-lint:
+    desc: run golangci-lint
     silent: true
     cmds:
       - task: golangci-lint-install
@@ -165,19 +170,22 @@ tasks:
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
   lint:
+    desc: run golangci-lint (alias for golangci-lint)
     silent: true
     cmds:
       - task: golangci-lint
   lint-with-gci:
+    desc: run gci and golangci-lint
     silent: true
     deps:
       - task: gci
       - task: golangci-lint
   mock-generate:
+    desc: generate mocks
     silent: true
     cmds:
       - |
-        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then       
+        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
           go install github.com/vektra/mockery/{{.MOCKERY_MAJOR_VERSION}}@{{.MOCKERY_VERSION}}
         fi
         echo "{{.MOCK_GENERATE_DIR}} {{.MOCK_GENERATE_INTERFACE_NAME}}"
@@ -187,6 +195,7 @@ tasks:
           --output {{.MOCK_GENERATE_DIR}}/mocks \
           --tags {{.BUILD_TAGS}}
   test:
+    desc: run unit tests
     silent: true
     cmds:
       - |
@@ -200,18 +209,21 @@ tasks:
           ./... \
           {{.TEST_EXTRA_ARGS}}
   test-component:
+    desc: run component tests
     silent: true
     cmds:
       - task: test
         vars:
           TEST_TAGS: component
   test-e2e:
+    desc: run end-to-end tests
     silent: true
     cmds:
       - task: test
         vars:
           TEST_TAGS: e2e
   test-integration:
+    desc: run integration tests
     silent: true
     cmds:
       - task: test
