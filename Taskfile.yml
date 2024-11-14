@@ -229,7 +229,7 @@ tasks:
       - task: test
         vars:
           TEST_TAGS: integration
-  yq:
+  yq-install:
     silent: true
     cmds:
       - |
