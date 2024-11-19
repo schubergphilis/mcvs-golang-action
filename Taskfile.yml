@@ -105,7 +105,7 @@ tasks:
     cmds:
       - task: gci-install
       - |
-        if ~/go/bin/gci list --skip-generated . | grep "\.go$"; then
+        if ~/go/bin/gci list --skip-generated {{.GCI_SECTIONS}} . | grep "\.go$"; then
           echo "One or more golang files detected with: 'incorrect import order':"
           echo " * Observe: '~/go/bin/gci diff --skip-generated .'"
           echo " * Resolve: '~/go/bin/gci write --skip-generated .'"
@@ -116,7 +116,7 @@ tasks:
     silent: true
     cmds:
       - task: gci-install
-      - ~/go/bin/gci write --skip-generated -s standard -s default .
+      - ~/go/bin/gci write --skip-generated {{.GCI_SECTIONS}} .
   golangci-lint-install:
     silent: true
     cmds:
