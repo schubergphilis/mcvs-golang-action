@@ -43,6 +43,18 @@ If you are new to Task, you may want to check out the following resources:
 - Instructions to [configure completions](https://taskfile.dev/installation/#setup-completions)
 - [Integrations](https://taskfile.dev/integrations/) with e.g. Visual Studio Code, Sublime and IntelliJ.
 
+### Configuration
+
+The `Taskfile.yml` in this project defines a number of variables. Some of these
+can be overridden when including this Taskfile in your project. See the example
+below, where the `GCI_SECTIONS` variable is overridden, for how to do this.
+
+The following variables can be overridden:
+
+| Variable             | Description                                                                                                                     |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| `GCI_SECTION`        | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |                                                                                               |
+
 ## Usage
 
 ### Locally
@@ -78,6 +90,19 @@ You can use `task --list-all` to get a list of all available tasks.
 Alternatively, if you have [configured
 completions](https://taskfile.dev/installation/#setup-completions) in your
 shell, you can tab to get a list of available tasks.
+
+If you want to override one of the variables in our Taskfile, you'll have adjust the `includes` sections like this:
+
+```yml
+---
+...
+
+includes:
+  remote:
+    taskfile: {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+    vars:
+      GCI_SECTIONS: '-s standard -s default -s alias'
+```
 
 ### GitHub
 
