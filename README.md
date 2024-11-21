@@ -99,7 +99,8 @@ If you want to override one of the variables in our Taskfile, you'll have adjust
 
 includes:
   remote:
-    taskfile: {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+    taskfile: >-
+      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
     vars:
       GCI_SECTIONS: '-s standard -s default -s alias'
 ```
