@@ -86,7 +86,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v5.2.1
+    - uses: anchore/scan-action@v5.3.0
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         only-fixed: false
@@ -108,7 +108,7 @@ runs:
     # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
-    - uses: aquasecurity/trivy-action@0.28.0
+    - uses: aquasecurity/trivy-action@0.29.0
       if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -122,7 +122,7 @@ runs:
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
         trivyignores: .trivyignore
-    - uses: aquasecurity/trivy-action@0.28.0
+    - uses: aquasecurity/trivy-action@0.29.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
