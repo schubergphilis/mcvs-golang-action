@@ -86,7 +86,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v5.2.1
+    - uses: anchore/scan-action@v5.3.0
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         only-fixed: false
