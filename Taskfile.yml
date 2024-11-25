@@ -3,7 +3,6 @@
 # deps: tasks that will be run in parallel
 ---
 version: "3"
-
 vars:
   BUILD_TAGS: component,e2e,integration
   COVERPROFILE: profile.cov
@@ -23,6 +22,7 @@ vars:
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
+  OPA_VERSION: v0.70.0
   SED_INSERT_ADDITION:
     sh: |
       if [ "$(uname -s)" = "Darwin" ]; then
@@ -197,6 +197,13 @@ tasks:
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --output {{.MOCK_GENERATE_DIR}}/mocks \
           --tags {{.BUILD_TAGS}}
+  opa-install:
+    silent: true
+    cmds:
+      - |
+        if ! opa version | grep -q {{.OPA_VERSION}}; then
+          go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
+        fi
   test:
     desc: run unit tests
     silent: true
