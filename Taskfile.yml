@@ -24,13 +24,14 @@ vars:
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
+  OPA_FMT: opa fmt .
   OPA_VERSION: v0.70.0
   REGAL: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
       if [ "$(uname -s)" = "Darwin" ]; then
-          echo "\"\""
+        echo "\"\""
       fi
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
@@ -201,6 +202,18 @@ tasks:
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --output {{.MOCK_GENERATE_DIR}}/mocks \
           --tags {{.BUILD_TAGS}}
+  opa-fmt:
+    desc: check formatting rego files using opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - "{{.OPA_FMT}}"
+  opa-fmt-write:
+    desc: apply formatting rego files using opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - "{{.OPA_FMT}} --write"
   opa-install:
     silent: true
     cmds:
@@ -208,6 +221,19 @@ tasks:
         if ! opa version | grep -q {{.OPA_VERSION}}; then
           go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
         fi
+  opa-run:
+    silent: true
+    cmds:
+      - |
+        for dir in $(find . -type f -name '*.rego' -exec dirname {} \; | sort -u); do
+          echo "Running opa test in directory: $dir" && (cd "$dir" && opa test . -v)
+        done
+  opa:
+    desc: run opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - task: opa-run
   regal-install:
     silent: true
     cmds:
@@ -218,6 +244,20 @@ tasks:
           curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_Darwin_arm64
           chmod +x {{.REGAL}}
         fi
+  regal-run:
+    silent: true
+    cmds:
+      - |
+        if ! regal lint .; then
+          echo "regal linting failed. Run: 'task remote:opa-fmt-write' to fix the issue"
+          exit 1
+        fi
+  regal:
+    desc: run regal
+    silent: true
+    cmds:
+      - task: regal-install
+      - task: regal-run
   test:
     desc: run unit tests
     silent: true
