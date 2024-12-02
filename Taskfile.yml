@@ -1,9 +1,12 @@
 # TASK_X_REMOTE_TASKFILES=1 task remote:lint
-# cmd: steps that will be run sequentially
-# deps: tasks that will be run in parallel
+# - cmd: steps that will be run sequentially.
+# - deps: tasks that will be run in parallel.
 ---
 version: "3"
 vars:
+  # Variables that have to be defined first as they are used in other variables.
+  OS_TYPE_MAC: Darwin
+  # Variables that are sorted alphabetically and are used in the tasks.
   BUILD_TAGS: component,e2e,integration
   COVERPROFILE: profile.cov
   GCI: "{{.GOBIN}}/gci"
@@ -14,7 +17,7 @@ vars:
   GOLANGCI_LINT_VERSION: 1.61.0
   GOLANG_PARALLEL_TESTS:
     sh: |
-      if [ "$(uname -s)" = "Darwin" ]; then
+      if [ "$(uname -s)" = "{{.OS_TYPE_MAC}}" ]; then
         sysctl -n hw.ncpu
       else
         nproc
@@ -27,11 +30,16 @@ vars:
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
   OPA_FMT: "{{.GOBIN}}/opa fmt ."
   OPA_VERSION: v0.70.0
+  OS_COMMAND: uname
+  OS_COMMAND_TYPE:
+    sh: "{{.OS_COMMAND}} -s"
+  OS_COMMAND_TYPE_ARCHITECTURE:
+    sh: "{{.OS_COMMAND}} -m"
   REGAL: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
-      if [ "$(uname -s)" = "Darwin" ]; then
+      if [ "{{.OS_COMMAND}}" = "{{.OS_TYPE_MAC}}" ]; then
         echo "\"\""
       fi
   YQ_MAJOR_VERSION: v4
@@ -262,7 +270,7 @@ tasks:
         if ! regal version | grep -q {{.REGAL_VERSION}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/StyraInc/regal/issues/1275
-          curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_Darwin_arm64
+          curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
           chmod +x {{.REGAL}}
         fi
   regal-run:
