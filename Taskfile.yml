@@ -3,12 +3,13 @@
 # deps: tasks that will be run in parallel
 ---
 version: "3"
-
 vars:
   BUILD_TAGS: component,e2e,integration
   COVERPROFILE: profile.cov
-  GCI_VERSION: 0.13.5
+  GCI: "{{.GOBIN}}/gci"
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
+  GCI_VERSION: 0.13.5
+  GOBIN: ~/go/bin
   GOLANGCI_LINT_VERSION: 1.61.0
   GOLANG_PARALLEL_TESTS:
     sh: |
@@ -23,6 +24,10 @@ vars:
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
+  OPA_FMT: "{{.GOBIN}}/opa fmt ."
+  OPA_VERSION: v0.70.0
+  REGAL: "{{.GOBIN}}/regal"
+  REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
       if [ "$(uname -s)" = "Darwin" ]; then
@@ -97,7 +102,7 @@ tasks:
     silent: true
     cmds:
       - |
-        if ! ~/go/bin/gci --version | grep -q "gci version {{.GCI_VERSION}}"; then
+        if ! {{.GCI}} --version | grep -q "gci version {{.GCI_VERSION}}"; then
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
         fi
   gci:
@@ -106,10 +111,10 @@ tasks:
     cmds:
       - task: gci-install
       - |
-        if ~/go/bin/gci list --skip-generated {{.GCI_SECTIONS}} . | grep "\.go$"; then
+        if {{.GCI}} list --skip-generated {{.GCI_SECTIONS}} . | grep "\.go$"; then
           echo "One or more golang files detected with: 'incorrect import order':"
-          echo " * Observe: '~/go/bin/gci diff --skip-generated .'"
-          echo " * Resolve: '~/go/bin/gci write --skip-generated .'"
+          echo " * Observe: '{{.GCI}} diff --skip-generated .'"
+          echo " * Resolve: '{{.GCI}} write --skip-generated .'"
           exit 1
         fi
   gci-write:
@@ -117,7 +122,7 @@ tasks:
     silent: true
     cmds:
       - task: gci-install
-      - ~/go/bin/gci write --skip-generated {{.GCI_SECTIONS}} .
+      - "{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} ."
   golangci-lint-install:
     silent: true
     cmds:
@@ -197,6 +202,62 @@ tasks:
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --output {{.MOCK_GENERATE_DIR}}/mocks \
           --tags {{.BUILD_TAGS}}
+  opa-fmt:
+    desc: check formatting rego files using opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - "{{.OPA_FMT}}"
+  opa-fmt-write:
+    desc: apply formatting rego files using opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - "{{.OPA_FMT}} --write"
+  opa-install:
+    silent: true
+    cmds:
+      - |
+        if ! opa version | grep -q {{.OPA_VERSION}}; then
+          go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
+        fi
+  opa-run:
+    silent: true
+    cmds:
+      - |
+        for dir in $(find . -type f -name '*.rego' -exec dirname {} \; | sort -u); do
+          echo "Running opa test in directory: $dir" && (cd "$dir" && opa test . -v)
+        done
+  opa:
+    desc: run opa
+    silent: true
+    cmds:
+      - task: opa-install
+      - task: opa-run
+  regal-install:
+    silent: true
+    cmds:
+      - |
+        if ! regal version | grep -q {{.REGAL_VERSION}}; then
+          # regal version installed using `go install` does not include
+          # version, see: https://github.com/StyraInc/regal/issues/1275
+          curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_Darwin_arm64
+          chmod +x {{.REGAL}}
+        fi
+  regal-run:
+    silent: true
+    cmds:
+      - |
+        if ! regal lint .; then
+          echo "regal linting failed. Run: 'task remote:opa-fmt-write' to fix the issue"
+          exit 1
+        fi
+  regal:
+    desc: run regal
+    silent: true
+    cmds:
+      - task: regal-install
+      - task: regal-run
   test:
     desc: run unit tests
     silent: true
