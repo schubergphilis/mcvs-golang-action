@@ -24,7 +24,7 @@ vars:
   MOCKERY_BIN: "{{.GOPATH}}/bin/mockery"
   MOCKERY_MAJOR_VERSION: v2
   MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.46.0"
-  OPA_FMT: opa fmt .
+  OPA_FMT: "{{.GOBIN}}/opa fmt ."
   OPA_VERSION: v0.70.0
   REGAL: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
