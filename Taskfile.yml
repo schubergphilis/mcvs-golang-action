@@ -10,6 +10,7 @@ vars:
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
   GCI_VERSION: 0.13.5
   GOBIN: ~/go/bin
+  GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 1.61.0
   GOLANG_PARALLEL_TESTS:
     sh: |
@@ -89,6 +90,26 @@ tasks:
           -html={{.COVERPROFILE}} \
           -o coverage.html
         open ./coverage.html
+  format:
+    desc: format go files
+    silent: true
+    cmds:
+      - task: gofumpt
+      - task: gci-write
+      - go mod tidy
+  gofumpt-install:
+    silent: true
+    cmds:
+      - |
+        if ! gofumpt --version | grep -q "{{.GOFUMPT_VERSION}}"; then
+          go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
+        fi
+  gofumpt:
+    desc: format go files with gofumpt
+    silent: true
+    cmds:
+      - task: gofumpt-install
+      - gofumpt -w .
   helm-install:
     silent: true
     cmds:
