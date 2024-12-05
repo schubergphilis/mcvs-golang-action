@@ -255,10 +255,37 @@ tasks:
     cmds:
       - |
         for dir in $(find . -type f -name '*.rego' -exec dirname {} \; | sort -u); do
-          echo "Running opa test in directory: $dir" && (cd "$dir" && opa test . -v)
+          echo "Running opa test in directory: $dir"
+          (cd "$dir" && opa test . -v --explain={{.QUERY_EXPLANATION}})
+
+          opa_code_coverage_overview=$(cd "$dir" && opa test . -c)
+          echo "OPA code coverage overview:"
+          echo "${opa_code_coverage_overview}"
+
+          opa_code_coverage_actual=$(echo "${opa_code_coverage_overview}" | jq .coverage)
+          echo "opa_code_coverage_actual: ${opa_code_coverage_actual}"
+
+          int_number=$(echo "$opa_code_coverage_actual" | bc)
+          echo "int_number: ${int_number}"
+
+          echo "opa_code_coverage_actual: ${opa_code_coverage_actual}"
+          opa_code_coverage_actual_significance_of_two=$(echo $opa_code_coverage_actual | bc -l | xargs printf "%.2f")
+          echo "opa_code_coverage_actual_significance_of_two: ${opa_code_coverage_actual_significance_of_two}"
+
+          if (( $(echo "{{.OPA_CODE_COVERAGE_EXPECTED}} > ${opa_code_coverage_actual_significance_of_two}" | bc -l) )); then
+            echo "The actual OPA code coverage: '${opa_code_coverage_actual_significance_of_two}' is too low. Expected: '{{.OPA_CODE_COVERAGE_EXPECTED}}'. Resolve the issue by writing more OPA unit tests."
+            exit 1
+          elif (( $(echo "${opa_code_coverage_actual_significance_of_two} > {{.OPA_CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
+            echo "The actual OPA code coverage: '${opa_code_coverage_actual_significance_of_two}' exceeds the expected coverage. Please adjust the threshold that is defined in the applicable GitHub workflow from '{{.OPA_CODE_COVERAGE_EXPECTED}}' to '${opa_code_coverage_actual_significance_of_two}'."
+            exit 1
+          fi
         done
+    vars:
+      QUERY_EXPLANATION: '{{.QUERY_EXPLANATION | default "fails"}}'
   opa:
-    desc: run opa
+    desc: |
+      Install and run OPA. Issue: 'task remote:opa QUERY_EXPLANATION=full' to
+      follow the complete policy evaluation.
     silent: true
     cmds:
       - task: opa-install
