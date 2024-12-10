@@ -254,11 +254,13 @@ tasks:
     silent: true
     cmds:
       - |
-        for dir in $(find . -type f -name '*.rego' -exec dirname {} \; | sort -u); do
-          echo "Running opa test in directory: $dir"
-          (cd "$dir" && opa test . -v --explain={{.QUERY_EXPLANATION}})
+        opa_cmd="opa test . --ignore \"*.json\""
 
-          opa_code_coverage_overview=$(cd "$dir" && opa test . -c)
+        for dir in $(find . -type f -name '*.rego' -exec dirname {} \; | sort -u); do
+          echo "Running ${opa_cmd} in directory: $dir"
+          (cd "$dir" && ${opa_cmd} -v --explain={{.QUERY_EXPLANATION}})
+
+          opa_code_coverage_overview=$(cd "$dir" && ${opa_cmd} -c)
           echo "OPA code coverage overview:"
           echo "${opa_code_coverage_overview}"
 
