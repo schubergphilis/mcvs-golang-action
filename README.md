@@ -39,6 +39,7 @@ benefits from improvements made here (e.g. new tasks or improvements in the
 tasks).
 
 If you are new to Task, you may want to check out the following resources:
+
 - [Installation instructions](https://taskfile.dev/installation/)
 - Instructions to [configure completions](https://taskfile.dev/installation/#setup-completions)
 - [Integrations](https://taskfile.dev/integrations/) with e.g. Visual Studio Code, Sublime and IntelliJ.
@@ -51,9 +52,9 @@ below, where the `GCI_SECTIONS` variable is overridden, for how to do this.
 
 The following variables can be overridden:
 
-| Variable             | Description                                                                                                                     |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| `GCI_SECTION`        | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |                                                                                               |
+| Variable      | Description                                                                                                                     |
+| :------------ | :------------------------------------------------------------------------------------------------------------------------------ | --- |
+| `GCI_SECTION` | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |     |
 
 ## Usage
 
@@ -95,14 +96,13 @@ If you want to override one of the variables in our Taskfile, you'll have adjust
 
 ```yml
 ---
-...
-
+---
 includes:
   remote:
     taskfile: >-
       {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
     vars:
-      GCI_SECTIONS: '-s standard -s default -s alias'
+      GCI_SECTIONS: "-s standard -s default -s alias"
 ```
 
 ### GitHub
@@ -146,16 +146,17 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 <!-- markdownlint-disable MD013 -->
 
-| Option                       | Default | Required | Description                                                                                    |
-| :--------------------------- | :------ | -------- | :--------------------------------------------------------------------------------------------- |
-| code-coverage-expected       | x       |          |                                                                                                |
-| gci                          | x       |          | Check for 'incorrect import order'. If failed then instructions are shown to resolve the issue |
-| golang-unit-tests-exclusions | x       |          |                                                                                                |
-| task-version                 | x       |          |                                                                                                |
-| testing-type                 |         |          |                                                                                                |
-| token                        |         |          | GitHub token that is required to pull cached Trivy DB images                                   |
-| trivy-action-db              | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
-| trivy-action-java-db         | x       |          | Replace this with a cached image to prevent bump into pull rate limiting issues                |
+| Option                                          | Default | Required |
+| :---------------------------------------------- | :------ | -------- |
+| code-coverage-expected                          | x       |          |
+| gci                                             | x       |          |
+| github-token-for-downloading-private-go-modules |         |          |
+| golang-unit-tests-exclusions                    | x       |          |
+| task-version                                    | x       |          |
+| testing-type                                    |         |          |
+| token                                           |         |          |
+| trivy-action-db                                 | x       |          |
+| trivy-action-java-db                            | x       |          |
 
 Note: If an **x** is registered in the Default column, refer to the
 [action.yml](action.yml) for the corresponding value.
