@@ -54,7 +54,7 @@ runs:
       if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'lint' || inputs.testing-type == 'unit'
       shell: bash
       run: |
-        if ! ~/go/bin/task --version | grep -q "Task version: ${{ inputs.task-version }}"; then
+        if ! task --version | grep -q "Task version: ${{ inputs.task-version }}"; then
           major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^v([0-9]+).*/\1/')
           go install github.com/go-task/task/v${major_version}/cmd/task@${{ inputs.task-version }}
         fi
