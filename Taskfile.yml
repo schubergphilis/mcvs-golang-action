@@ -15,6 +15,11 @@ vars:
   GOBIN:
     sh: |
       if [ -z "${GOBIN}" ]; then
+        if [ -n "${GITHUB_ACTIONS}" ]; then
+          echo /home/runner/go/bin
+          exit 0
+        fi
+
         echo "GOBIN has not been not set. Ensure that it has been set on the system."
         exit 1
       fi
@@ -157,6 +162,11 @@ tasks:
     cmds:
       - task: gci-install
       - "{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} ."
+  golang-log:
+    cmds:
+      - |
+        echo "GOBIN: {{.GOBIN}}"
+        echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
   golangci-lint-install:
     silent: true
     cmds:
@@ -169,8 +179,8 @@ tasks:
   golangci-lint-run:
     silent: true
     cmds:
+      - task: golang-log
       - |
-        echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
         golangci-lint run \
           --build-tags {{.BUILD_TAGS}} \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
@@ -325,8 +335,8 @@ tasks:
     desc: run unit tests
     silent: true
     cmds:
+      - task: golang-log
       - |
-        echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
         go test \
           -p {{.GOLANG_PARALLEL_TESTS}} \
           -race \
