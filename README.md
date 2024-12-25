@@ -53,8 +53,8 @@ below, where the `GCI_SECTIONS` variable is overridden, for how to do this.
 The following variables can be overridden:
 
 | Variable      | Description                                                                                                                     |
-| :------------ | :------------------------------------------------------------------------------------------------------------------------------ | --- |
-| `GCI_SECTION` | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |     |
+| :------------ | :------------------------------------------------------------------------------------------------------------------------------ |
+| `GCI_SECTION` | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |
 
 ## Usage
 
@@ -96,13 +96,15 @@ If you want to override one of the variables in our Taskfile, you'll have adjust
 
 ```yml
 ---
----
 includes:
   remote:
     taskfile: >-
       {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
     vars:
-      GCI_SECTIONS: "-s standard -s default -s alias"
+      GCI_SECTIONS: >-
+        -s standard
+        -s default
+        -s alias
 ```
 
 ### GitHub
