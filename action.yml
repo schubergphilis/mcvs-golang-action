@@ -3,6 +3,8 @@ name: mcvs-golang-action
 description: |
   The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
+  build-tags:
+    description: "What kind of code should be checked, e.g. component, e2e"
   code-coverage-expected:
     default: "80"
     description: |
@@ -146,6 +148,7 @@ runs:
       if: inputs.testing-type == 'lint'
       shell: bash
       env:
+        BUILD_TAGS: ${{ inputs.build-tags }}
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         task remote:golangci-lint --yes
