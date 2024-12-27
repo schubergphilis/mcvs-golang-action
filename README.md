@@ -92,7 +92,8 @@ Alternatively, if you have [configured
 completions](https://taskfile.dev/installation/#setup-completions) in your
 shell, you can tab to get a list of available tasks.
 
-If you want to override one of the variables in our Taskfile, you'll have adjust the `includes` sections like this:
+If you want to override one of the variables in our Taskfile, you will have to
+adjust the `includes` sections like this:
 
 ```yml
 ---
@@ -106,6 +107,8 @@ includes:
         -s default
         -s alias
 ```
+
+Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.
 
 ### GitHub
 
@@ -150,6 +153,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 | Option                                          | Default | Required |
 | :---------------------------------------------- | :------ | -------- |
+| build-tags                                      | x       |          |
 | code-coverage-expected                          | x       |          |
 | gci                                             | x       |          |
 | github-token-for-downloading-private-go-modules |         |          |

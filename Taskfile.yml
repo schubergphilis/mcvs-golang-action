@@ -7,7 +7,7 @@ vars:
   # Variables that have to be defined first as they are used in other variables.
   OS_TYPE_MAC: Darwin
   # Variables that are sorted alphabetically and are used in the tasks.
-  BUILD_TAGS: component,e2e,integration
+  BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
   COVERPROFILE: profile.cov
   GCI: "{{.GOBIN}}/gci"
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
@@ -25,6 +25,7 @@ vars:
       fi
   GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 1.61.0
+  GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
     sh: |
       if [ "$(uname -s)" = "{{.OS_TYPE_MAC}}" ]; then
@@ -185,7 +186,7 @@ tasks:
           --build-tags {{.BUILD_TAGS}} \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
           --out-format=colored-line-number \
-          --timeout 2m30s \
+          --timeout {{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES}}m \
           --verbose
   golangci-lint:
     desc: run golangci-lint
