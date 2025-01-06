@@ -46,14 +46,24 @@ runs:
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
-    # yamllint disable rule:line-length
     - uses: actions/setup-go@v5.2.0
-      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'lint' || inputs.testing-type == 'unit'
+      if: |
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'unit'
       with:
         go-version-file: "go.mod"
         cache: false
     - name: install task
-      if: inputs.testing-type == 'component' || inputs.testing-type == 'coverage' || inputs.testing-type == 'integration' || inputs.testing-type == 'lint' || inputs.testing-type == 'unit'
+      if: |
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'unit'
       shell: bash
       run: |
         if ! task --version | grep -q "Task version: ${{ inputs.task-version }}"; then
@@ -64,7 +74,6 @@ runs:
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
-    # yamllint enable rule:line-length
     #
     # Verify downloaded dependencies.
     #
