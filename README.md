@@ -125,15 +125,18 @@ jobs:
   MCVS-golang-action:
     strategy:
       matrix:
-        testing-type:
-          - component
-          - coverage
-          - integration
-          - lint
-          - security-golang-modules
-          - security-grype
-          - security-trivy
-          - unit
+        args:
+          - { testing-type: "component" }
+          - { testing-type: "coverage" }
+          - { testing-type: "integration" }
+          - { testing-type: "lint", build-tags: "component" }
+          - { testing-type: "lint", build-tags: "e2e" }
+          - { testing-type: "lint", build-tags: "integration" }
+          - { testing-type: "mcvs-texttidy" }
+          - { testing-type: "security-golang-modules" }
+          - { testing-type: "security-grype" }
+          - { testing-type: "security-trivy" }
+          - { testing-type: "unit" }
     runs-on: ubuntu-22.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
@@ -141,9 +144,10 @@ jobs:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v0.9.0
         with:
+          build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
-          testing-type: ${{ matrix.testing-type }}
+          testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 

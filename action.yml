@@ -153,6 +153,14 @@ runs:
       run: |
         task remote:golangci-lint --yes
     #
+    # Run MCVS-texttidy.
+    #
+    - name: mcvs-texttidy
+      if: inputs.testing-type == 'mcvs-texttidy'
+      shell: bash
+      run: |
+        task remote:mcvs-texttidy --yes
+    #
     # Unit tests.
     #
     - name: unit tests
