@@ -46,7 +46,7 @@ runs:
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
-    - uses: actions/setup-go@v5.2.0
+    - uses: actions/setup-go@v5.3.0
       if: |
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
@@ -102,7 +102,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v6.0.0
+    - uses: anchore/scan-action@v6.1.0
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         only-fixed: false
