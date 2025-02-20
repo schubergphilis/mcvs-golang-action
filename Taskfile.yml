@@ -75,7 +75,7 @@ tasks:
         vars:
           TEST_EXTRA_ARGS: >-
             -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
-            -coverprofile={{.COVERPROFILE}} -timeout {{.CODE_COVERAGE_TIMEOUT}}
+            -coverprofile={{.COVERPROFILE}}
           TEST_TAGS: integration
       - |
         code_coverage_output=$(go tool cover -func {{.COVERPROFILE}})
@@ -103,7 +103,7 @@ tasks:
         vars:
           TEST_EXTRA_ARGS: >-
             -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
-            -coverprofile={{.COVERPROFILE}} -timeout {{.CODE_COVERAGE_TIMEOUT}}
+            -coverprofile={{.COVERPROFILE}}
           TEST_TAGS: integration
       - |
         go tool cover \
@@ -367,7 +367,8 @@ tasks:
           --tags={{.TEST_TAGS}} \
           -v \
           ./... \
-          {{.TEST_EXTRA_ARGS}}
+          {{.TEST_EXTRA_ARGS}} \
+          -timeout {{.TEST_TIMEOUT}}
   test-component:
     desc: run component tests
     silent: true
