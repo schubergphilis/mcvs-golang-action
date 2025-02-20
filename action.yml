@@ -43,8 +43,12 @@ inputs:
     default: "3"
     description: |
       Timeout for total work. If <= 0, the timeout is disabled (default 3m0s)
+  code-coverage-timeout:
+    default: "4m0s"
+    description: |
+      Timeout for total work.
   test-timeout:
-    default: "6m0s"
+    default: "4m0s"
     description: |
       Timeout for total work.
 runs:
@@ -208,6 +212,7 @@ runs:
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
         CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
+        CODE_COVERAGE_TIMEOUT: ${{ inputs.code-coverage-timeout }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:coverage --yes
