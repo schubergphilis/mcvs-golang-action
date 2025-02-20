@@ -44,7 +44,7 @@ inputs:
     description: |
       Timeout for total work. If <= 0, the timeout is disabled (default 3m0s)
   test-timeout:
-    default: "9m0s"
+    default: "6m0s"
     description: |
       Timeout for total work.
 runs:
