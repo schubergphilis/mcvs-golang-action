@@ -167,6 +167,9 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | token                                           |         |          |
 | trivy-action-db                                 | x       |          |
 | trivy-action-java-db                            | x       |          |
+| test-timeout                                    | x       |          |
+| code-coverage-timeout                           | x       |          |
+| golangci-timeout                                | x       |          |
 
 Note: If an **x** is registered in the Default column, refer to the
 [action.yml](action.yml) for the corresponding value.
