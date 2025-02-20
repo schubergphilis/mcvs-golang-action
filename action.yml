@@ -40,9 +40,9 @@ inputs:
     description: |
       OCI repository to retrieve trivy-java-db from.
   golangci-timeout:
-    default: "6m0s"
+    default: "3m0s"
     description: |
-      Timeout for total work. If <= 0, the timeout is disabled (default 1m0s)
+      Timeout for total work. If <= 0, the timeout is disabled (default 3m0s)
 runs:
   using: "composite"
   steps:
