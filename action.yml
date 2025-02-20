@@ -163,6 +163,7 @@ runs:
       env:
         BUILD_TAGS: ${{ inputs.build-tags }}
         GITHUB_TOKEN: ${{ inputs.token }}
+        GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: ${{ inputs.golangci-timeout }}
       run: |
         task remote:golangci-lint --yes
     #
