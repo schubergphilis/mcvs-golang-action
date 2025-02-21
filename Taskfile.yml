@@ -267,7 +267,6 @@ tasks:
         {{.MOCKERY_BIN}} \
           --dir {{.MOCK_GENERATE_DIR}} \
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
-          --output {{.MOCK_GENERATE_DIR}}/mocks \
           --tags {{.BUILD_TAGS}}
   opa-fmt:
     desc: check formatting rego files using opa
