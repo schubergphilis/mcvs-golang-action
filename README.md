@@ -159,11 +159,14 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | :---------------------------------------------- | :------ | -------- |
 | build-tags                                      | x       |          |
 | code-coverage-expected                          | x       |          |
+| code-coverage-timeout                           | x       |          |
 | gci                                             | x       |          |
 | github-token-for-downloading-private-go-modules |         |          |
+| golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
 | task-version                                    | x       |          |
 | testing-type                                    |         |          |
+| test-timeout                                    | x       |          |
 | token                                           |         |          |
 | trivy-action-db                                 | x       |          |
 | trivy-action-java-db                            | x       |          |
