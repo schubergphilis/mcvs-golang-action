@@ -35,6 +35,8 @@ vars:
       else
         nproc
       fi
+  GO_SWAGGER: "{{.GOBIN}}/swagger"
+  GO_SWAGGER_VERSION: v0.31.0
   GOVULNCHECK_VERSION: v1.1.3
   GQLGENC_VERSION: v0.25.4
   HELM_VERSION: v3.16.2
@@ -205,6 +207,13 @@ tasks:
       - task: golangci-lint-install
       - golangci-lint cache clean
       - task: golangci-lint-run
+  go-swagger-install:
+    silent: true
+    cmds:
+      - |
+        if ! {{.GO_SWAGGER}} version | grep -q "{{.GO_SWAGGER_VERSION}}"; then
+          go install github.com/go-swagger/go-swagger/cmd/swagger@{{.GO_SWAGGER_VERSION}}
+        fi
   govulncheck-install:
     silent: true
     cmds:
