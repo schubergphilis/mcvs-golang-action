@@ -245,6 +245,11 @@ tasks:
         fi
 
         if [ "${expected_task_version}" != "${current_task_version}" ]; then
+          if [ -n "${GITHUB_ACTIONS}" ]; then
+            go install github.com/go-task/task/v3/cmd/task@${expected_task_version}
+            exit 0
+          fi
+
           echo "The version of the local task binary: ${current_task_version} differs from the expected: ${expected_task_version}."
           echo "Resolve the issue by updating your local task binary to version: ${expected_task_version}."
           echo "One remediation option is to run: 'go install github.com/go-task/task/v3/cmd/task@${expected_task_version}', but the choice of installation method depends on your preferred way to install Task."
@@ -263,6 +268,11 @@ tasks:
         fi
 
         if [ "${expected_mcvs_golang_action_version}" != "${current_mcvs_golang_action_version}" ]; then
+          if [ -n "${GITHUB_ACTIONS}" ]; then
+            echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version} is different than current: version in Taskfile: ${current_mcvs_golang_action_version}, but do not let the pipeline fail otherwise Dependabot cannot update the version of the action."
+            exit 0
+          fi
+
           echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version}, but current version in Taskfile: ${current_mcvs_golang_action_version}."
           echo "Resolve the issue by updating the REMOTE_URL_REF in the Taskfile.yml variable to: ${expected_mcvs_golang_action_version}"
           exit 1
