@@ -123,6 +123,7 @@ tasks:
   gofumpt-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! gofumpt --version | grep -q "{{.GOFUMPT_VERSION}}"; then
           go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
@@ -136,6 +137,7 @@ tasks:
   helm-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! helm version | grep -q "{{.HELM_VERSION}}"; then
           curl \
@@ -145,6 +147,7 @@ tasks:
   gci-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! {{.GCI}} --version | grep -q "gci version {{.GCI_VERSION}}"; then
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
@@ -175,6 +178,7 @@ tasks:
   golangci-lint-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
           curl \
@@ -222,10 +226,29 @@ tasks:
   gqlgenc-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
+  keep-local-task-up-to-date-with-version-defined-in-action:
+    cmds:
+      - task: yq-install
+      - |
+        expected_task_version=$(curl -s {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/action.yml | yq '.inputs.task-version.default')
+        current_task_version=$(task --version | sed -E 's/Task version: (v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+        if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
+          echo "Failed to extract one or both versions. Please check the YAML files."
+          exit 1
+        fi
+
+        if [ "${expected_task_version}" != "${current_task_version}" ]; then
+          echo "The version of the local task binary: ${current_task_version} differs from the expected: ${expected_task_version}."
+          echo "Resolve the issue by updating your local task binary to version: ${expected_task_version}."
+          echo "One remediation option is to run: 'go install github.com/go-task/task/v3/cmd/task@${expected_task_version}', but the choice of installation method depends on your preferred way to install Task."
+          exit 1
+        fi
+    silent: true
   keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow:
     cmds:
       - task: yq-install
@@ -263,6 +286,7 @@ tasks:
   mcvs-texttidy-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! {{.MCVS_TEXTTIDY_BIN}} --version | grep -q {{.MCVS_TEXTTIDY_VERSION}}; then
           go install github.com/schubergphilis/mcvs-texttidy/cmd/mcvs-texttidy@{{.MCVS_TEXTTIDY_VERSION}}
@@ -355,6 +379,7 @@ tasks:
   regal-install:
     silent: true
     cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! regal version | grep -q {{.REGAL_VERSION}}; then
           # regal version installed using `go install` does not include
@@ -415,6 +440,10 @@ tasks:
   yq-install:
     silent: true
     cmds:
+      # Enabling the following task as a dependency will create an infinite
+      # loop, as the yq-install unit is already a dependency within the called
+      # unit.
+      # - task: keep-local-task-up-to-date-with-version-defined-in-action
       - |
         if ! yq --version | grep -q "version {{.YQ_VERSION}}"; then
           go install \
