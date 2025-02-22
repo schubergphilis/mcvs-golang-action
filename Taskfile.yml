@@ -226,6 +226,29 @@ tasks:
         if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
+  keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow:
+    cmds:
+      - task: yq-install
+      - |
+        expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
+        current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
+        if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
+          echo "Failed to extract one or both versions. Please check the YAML files."
+          exit 1
+        fi
+
+        if [ "${expected_mcvs_golang_action_version}" != "${current_mcvs_golang_action_version}" ]; then
+          echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version}, but current version in Taskfile: ${current_mcvs_golang_action_version}."
+          echo "Resolve the issue by updating the REMOTE_URL_REF in the Taskfile.yml variable to: ${expected_mcvs_golang_action_version}"
+          exit 1
+        fi
+    desc: |
+      Ensure that the mcvs-golang-action version in Taskfile.yml matches the
+      one in .github/workflows/golang.yml. Since Dependabot updates only the
+      workflow file, the Taskfile must be updated manually. This check ensures
+      that any version mismatch causes the pipeline to fail, prompting the user
+      to update the Taskfile to keep the pipeline running successfully.
+    silent: true
   lint:
     desc: run golangci-lint (alias for golangci-lint)
     silent: true
