@@ -8,6 +8,7 @@ vars:
   OS_TYPE_MAC: Darwin
   # Variables that are sorted alphabetically and are used in the tasks.
   BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
+  CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "5m0s"}}'
   COVERPROFILE: profile.cov
   GCI: "{{.GOBIN}}/gci"
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
@@ -57,6 +58,7 @@ vars:
       if [ "{{.OS_COMMAND}}" = "{{.OS_TYPE_MAC}}" ]; then
         echo "\"\""
       fi
+  TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
 
