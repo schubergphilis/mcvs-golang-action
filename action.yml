@@ -21,7 +21,7 @@ inputs:
     description: |
       The Golang paths that should be excluded from unit testing.
   task-version:
-    default: v3.39.2
+    default: v3.41.0
     description: |
       The Task version that has to be installed and used.
   testing-type:
