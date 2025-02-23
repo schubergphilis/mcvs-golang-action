@@ -5,13 +5,6 @@
 version: "3"
 vars:
   # Variables that have to be defined first as they are used in other variables.
-  OS_TYPE_MAC: Darwin
-  # Variables that are sorted alphabetically and are used in the tasks.
-  BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
-  COVERPROFILE: profile.cov
-  GCI: "{{.GOBIN}}/gci"
-  GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
-  GCI_VERSION: 0.13.5
   GOBIN:
     sh: |
       if [ -z "${GOBIN}" ]; then
@@ -25,6 +18,14 @@ vars:
       fi
       # Ensure that GOBIN is set in the context of this Taskfile.
       echo ${GOBIN}
+  OS_TYPE_MAC: Darwin
+  # Variables that are sorted alphabetically and are used in the tasks.
+  BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
+  CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
+  COVERPROFILE: profile.cov
+  GCI: "{{.GOBIN}}/gci"
+  GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
+  GCI_VERSION: 0.13.5
   GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 1.64.2
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
@@ -57,6 +58,7 @@ vars:
       if [ "{{.OS_COMMAND}}" = "{{.OS_TYPE_MAC}}" ]; then
         echo "\"\""
       fi
+  TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
 
@@ -123,6 +125,7 @@ tasks:
   gofumpt-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! gofumpt --version | grep -q "{{.GOFUMPT_VERSION}}"; then
           go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
@@ -136,6 +139,7 @@ tasks:
   helm-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! helm version | grep -q "{{.HELM_VERSION}}"; then
           curl \
@@ -145,6 +149,7 @@ tasks:
   gci-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.GCI}} --version | grep -q "gci version {{.GCI_VERSION}}"; then
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
@@ -175,6 +180,7 @@ tasks:
   golangci-lint-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
           curl \
@@ -222,10 +228,68 @@ tasks:
   gqlgenc-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
+  keep-local-task-up-to-date-with-version-defined-in-action:
+    cmds:
+      - task: yq-install
+      - |
+        expected_task_version=$(curl -s {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/action.yml | yq '.inputs.task-version.default')
+        expected_task_major_version=$(echo "${expected_task_version}" | sed -E 's/^v([0-9]+).*/\1/')
+        current_task_version=$(task --version | sed -E 's/Task version: (v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+        if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
+          echo "Failed to extract one or both versions. Please check the YAML files."
+          exit 1
+        fi
+
+        if [ "${expected_task_version}" != "${current_task_version}" ]; then
+          if [ -n "${GITHUB_ACTIONS}" ]; then
+            echo "The task binary: ${current_task_version} differs from the expected: ${expected_task_version}. Updating it..."
+            go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@${expected_task_version}
+            exit 0
+          fi
+
+          echo "The version of the local task binary: ${current_task_version} differs from the expected: ${expected_task_version}."
+          echo "Resolve the issue by updating your local task binary to version: ${expected_task_version}."
+          echo "One remediation option is to run: 'go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@${expected_task_version}', but the choice of installation method depends on your preferred way to install Task."
+          exit 1
+        fi
+    silent: true
+  keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow:
+    cmds:
+      - task: yq-install
+      - |
+        expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
+        current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
+        if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
+          echo "Failed to extract one or both versions. Please check the YAML files."
+          exit 1
+        fi
+
+        if [ "${expected_mcvs_golang_action_version}" != "${current_mcvs_golang_action_version}" ]; then
+          if [ -n "${GITHUB_ACTIONS}" ]; then
+            echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version} is different than current version in Taskfile: ${current_mcvs_golang_action_version}, but do not let the pipeline fail otherwise Dependabot cannot update the version of the action."
+            exit 0
+          fi
+
+          echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version}, but current version in Taskfile: ${current_mcvs_golang_action_version}."
+          echo "Resolve the issue by updating the REMOTE_URL_REF in the Taskfile.yml variable to: ${expected_mcvs_golang_action_version}"
+          exit 1
+        fi
+    desc: |
+      Ensure that the mcvs-golang-action version in Taskfile.yml matches the
+      one in .github/workflows/golang.yml. Since Dependabot updates only the
+      workflow file, the Taskfile must be updated manually. This check ensures
+      that any version mismatch causes the pipeline to fail, prompting the user
+      to update the Taskfile to keep the pipeline running successfully.
+    silent: true
+  keep-local-and-remote-versions-in-sync:
+    cmds:
+      - task: keep-local-task-up-to-date-with-version-defined-in-action
+      - task: keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow
   lint:
     desc: run golangci-lint (alias for golangci-lint)
     silent: true
@@ -240,6 +304,7 @@ tasks:
   mcvs-texttidy-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.MCVS_TEXTTIDY_BIN}} --version | grep -q {{.MCVS_TEXTTIDY_VERSION}}; then
           go install github.com/schubergphilis/mcvs-texttidy/cmd/mcvs-texttidy@{{.MCVS_TEXTTIDY_VERSION}}
@@ -332,6 +397,7 @@ tasks:
   regal-install:
     silent: true
     cmds:
+      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! regal version | grep -q {{.REGAL_VERSION}}; then
           # regal version installed using `go install` does not include
@@ -392,6 +458,10 @@ tasks:
   yq-install:
     silent: true
     cmds:
+      # Enabling the following task as a dependency will create an infinite
+      # loop, as the yq-install unit is already a dependency within the called
+      # unit.
+      # - task: keep-local-and-remote-versions-in-sync
       - |
         if ! yq --version | grep -q "version {{.YQ_VERSION}}"; then
           go install \
