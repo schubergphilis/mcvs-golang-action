@@ -147,6 +147,7 @@ jobs:
           build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          task-version: v3.41.0
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```

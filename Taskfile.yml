@@ -233,11 +233,11 @@ tasks:
         if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
-  keep-local-task-up-to-date-with-version-defined-in-action:
+  keep-local-task-up-to-date-with-version-defined-in-golang-github-workflow:
     cmds:
       - task: yq-install
       - |
-        expected_task_version=$(curl -s {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/action.yml | yq '.inputs.task-version.default')
+        expected_task_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses == "schubergphilis/mcvs-golang-action@*") | .with."task-version"' .github/workflows/golang.yml)
         expected_task_major_version=$(echo "${expected_task_version}" | sed -E 's/^v([0-9]+).*/\1/')
         current_task_version=$(task --version | sed -E 's/Task version: (v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
         if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
@@ -288,7 +288,7 @@ tasks:
     silent: true
   keep-local-and-remote-versions-in-sync:
     cmds:
-      - task: keep-local-task-up-to-date-with-version-defined-in-action
+      - task: keep-local-task-up-to-date-with-version-defined-in-golang-github-workflow
       - task: keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow
   lint:
     desc: run golangci-lint (alias for golangci-lint)
