@@ -135,7 +135,7 @@ jobs:
           - { testing-type: "mcvs-texttidy" }
           - { testing-type: "security-golang-modules" }
           - { testing-type: "security-grype" }
-          - { testing-type: "security-trivy" }
+          - { testing-type: "security-trivy", security-trivyignore: "" }
           - { testing-type: "unit" }
     runs-on: ubuntu-22.04
     env:
@@ -147,6 +147,7 @@ jobs:
           build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          security-trivyignore: ${{ matrix.args.security-trivyignore }}
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
