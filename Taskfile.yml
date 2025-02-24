@@ -250,7 +250,7 @@ tasks:
         expected_task_major_version=$(echo "${expected_task_version}" | sed -E 's/^v([0-9]+).*/\1/')
         current_task_version=$(task --version | sed -E 's/Task version: (v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
         if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
-          echo "Failed to extract one or both versions. Please check the YAML files."
+          echo "Failed to extract the expected (default) or current version or both for Task. Please check the default task-version input parameter in the .github/workflows/golang.yml."
           exit 1
         fi
 
@@ -274,7 +274,7 @@ tasks:
         expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
         current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
         if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
-          echo "Failed to extract one or both versions. Please check the YAML files."
+          echo "Failed to extract the expected and current version or both for the mcvs-golang-action. Please ensure that the mcvs-golang-action is defined in lower case in the .github/workflows/golang.yml file and the the REMOTE_URL_REF variable is present in the Taskfile.yml."
           exit 1
         fi
 
