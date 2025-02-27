@@ -66,14 +66,12 @@ vars:
 
 tasks:
   build-golang-download-modules:
-    desc: download go modules
-    silent: true
     cmds:
       - |
         go mod tidy
-  coverage:
-    desc: check code coverage
+    desc: download go modules
     silent: true
+  coverage:
     cmds:
       - task: test
         vars:
@@ -99,9 +97,9 @@ tasks:
           echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold that is defined in the .github/workflows/golang.yml workflow from '{{.CODE_COVERAGE_EXPECTED}}' to '${code_coverage_actual}'."
           exit 1
         fi
-  coverage-visual:
-    desc: show code coverage
+    desc: check code coverage
     silent: true
+  coverage-visual:
     cmds:
       - task: test
         vars:
@@ -117,29 +115,30 @@ tasks:
           -html={{.COVERPROFILE}} \
           -o coverage.html
         open ./coverage.html
-  format:
-    desc: format go files
+    desc: show code coverage
     silent: true
+  format:
     cmds:
       - task: gofumpt
       - task: gci-write
       - go mod tidy
-  gofumpt-install:
+    desc: format go files
     silent: true
+  gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! gofumpt --version | grep -q "{{.GOFUMPT_VERSION}}"; then
           go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
         fi
-  gofumpt:
-    desc: format go files with gofumpt
     silent: true
+  gofumpt:
     cmds:
       - task: gofumpt-install
       - gofumpt -w .
-  helm-install:
+    desc: format go files with gofumpt
     silent: true
+  helm-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
@@ -148,17 +147,16 @@ tasks:
             -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
         fi
-  gci-install:
     silent: true
+  gci-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.GCI}} --version | grep -q "gci version {{.GCI_VERSION}}"; then
           go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
         fi
-  gci:
-    desc: check for incorrect import order with gci
     silent: true
+  gci:
     cmds:
       - task: gci-install
       - |
@@ -168,19 +166,20 @@ tasks:
           echo " * Resolve: '{{.GCI}} write --skip-generated .'"
           exit 1
         fi
-  gci-write:
-    desc: fix incorrect import order with gci
+    desc: check for incorrect import order with gci
     silent: true
+  gci-write:
     cmds:
       - task: gci-install
       - "{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} ."
+    desc: fix incorrect import order with gci
+    silent: true
   golang-log:
     cmds:
       - |
         echo "GOBIN: {{.GOBIN}}"
         echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
   golangci-lint-install:
-    silent: true
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
@@ -189,8 +188,8 @@ tasks:
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
             sh -s -- -b $(go env GOPATH)/bin v{{.GOLANGCI_LINT_VERSION}}
         fi
-  golangci-lint-run:
     silent: true
+  golangci-lint-run:
     cmds:
       - task: golang-log
       - |
@@ -200,42 +199,41 @@ tasks:
           --out-format=colored-line-number \
           --timeout {{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES}}m \
           --verbose
-  golangci-lint:
-    desc: run golangci-lint
     silent: true
+  golangci-lint:
     cmds:
       - task: golangci-lint-install
       - task: golangci-lint-run
-  golangci-lint-run-without-cache:
-    desc: run golangci-lint without cache
+    desc: run golangci-lint
     silent: true
+  golangci-lint-run-without-cache:
     cmds:
       - task: golangci-lint-install
       - golangci-lint cache clean
       - task: golangci-lint-run
+    desc: run golangci-lint without cache
   go-swagger-install:
-    silent: true
     cmds:
       - |
         if ! {{.GO_SWAGGER}} version | grep -q "{{.GO_SWAGGER_VERSION}}"; then
           go install github.com/go-swagger/go-swagger/cmd/swagger@{{.GO_SWAGGER_VERSION}}
         fi
-  govulncheck-install:
     silent: true
+  govulncheck-install:
     cmds:
       - |
         if ! govulncheck --version | grep -q {{.GOVULNCHECK_VERSION}}; then
           go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
         fi
-  govulncheck:
-    desc: check for vulnerabilities with govulncheck
     silent: true
+  govulncheck:
     cmds:
       - task: govulncheck-install
       - |
         govulncheck -tags {{.BUILD_TAGS}} ./...
-  gqlgenc-install:
+    desc: check for vulnerabilities with govulncheck
     silent: true
+  gqlgenc-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
@@ -300,38 +298,36 @@ tasks:
       - task: keep-local-task-up-to-date-with-version-defined-in-action
       - task: keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow
   lint:
-    desc: run golangci-lint (alias for golangci-lint)
-    silent: true
     cmds:
       - task: golangci-lint
-  lint-with-gci:
-    desc: run gci and golangci-lint
+    desc: run golangci-lint (alias for golangci-lint)
     silent: true
+  lint-with-gci:
     deps:
       - task: gci
       - task: golangci-lint
-  mcvs-texttidy-install:
+    desc: run gci and golangci-lint
     silent: true
+  mcvs-texttidy-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.MCVS_TEXTTIDY_BIN}} --version | grep -q {{.MCVS_TEXTTIDY_VERSION}}; then
           go install github.com/schubergphilis/mcvs-texttidy/cmd/mcvs-texttidy@{{.MCVS_TEXTTIDY_VERSION}}
         fi
-  mcvs-texttidy-run:
     silent: true
+  mcvs-texttidy-run:
     cmds:
       - "{{.MCVS_TEXTTIDY_BIN}}"
-  mcvs-texttidy:
-    desc: |
-      Install and run mcvs-texttidy to check for forbidden words in projects.
     silent: true
+  mcvs-texttidy:
     cmds:
       - task: mcvs-texttidy-install
       - task: mcvs-texttidy-run
-  mock-generate:
-    desc: generate mocks
+    desc: |
+      Install and run mcvs-texttidy to check for forbidden words in projects.
     silent: true
+  mock-generate:
     cmds:
       - |
         if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
@@ -342,27 +338,28 @@ tasks:
           --dir {{.MOCK_GENERATE_DIR}} \
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --tags {{.BUILD_TAGS}}
-  opa-fmt:
-    desc: check formatting rego files using opa
+    desc: generate mocks
     silent: true
+  opa-fmt:
     cmds:
       - task: opa-install
       - "{{.OPA_FMT}}"
-  opa-fmt-write:
-    desc: apply formatting rego files using opa
+    desc: check formatting rego files using opa
     silent: true
+  opa-fmt-write:
     cmds:
       - task: opa-install
       - "{{.OPA_FMT}} --write"
-  opa-install:
+    desc: apply formatting rego files using opa
     silent: true
+  opa-install:
     cmds:
       - |
         if ! opa version | grep -q {{.OPA_VERSION}}; then
           go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
         fi
-  opa-run:
     silent: true
+  opa-run:
     cmds:
       - |
         opa_cmd="opa test . --ignore \"*.json\""
@@ -393,18 +390,18 @@ tasks:
             exit 1
           fi
         done
+    silent: true
     vars:
       QUERY_EXPLANATION: '{{.QUERY_EXPLANATION | default "fails"}}'
   opa:
+    cmds:
+      - task: opa-install
+      - task: opa-run
     desc: |
       Install and run OPA. Issue: 'task remote:opa QUERY_EXPLANATION=full' to
       follow the complete policy evaluation.
     silent: true
-    cmds:
-      - task: opa-install
-      - task: opa-run
   regal-install:
-    silent: true
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
@@ -414,23 +411,22 @@ tasks:
           curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
           chmod +x {{.REGAL}}
         fi
-  regal-run:
     silent: true
+  regal-run:
     cmds:
       - |
         if ! regal lint .; then
           echo "regal linting failed. Run: 'task remote:opa-fmt-write' to fix the issue"
           exit 1
         fi
-  regal:
-    desc: run regal
     silent: true
+  regal:
     cmds:
       - task: regal-install
       - task: regal-run
-  test:
-    desc: run unit tests
+    desc: run regal
     silent: true
+  test:
     cmds:
       - task: golang-log
       - |
@@ -443,29 +439,30 @@ tasks:
           ./... \
           {{.TEST_EXTRA_ARGS}} \
           -timeout {{.TEST_TIMEOUT}}
-  test-component:
-    desc: run component tests
+    desc: run unit tests
     silent: true
+  test-component:
     cmds:
       - task: test
         vars:
           TEST_TAGS: component
-  test-e2e:
-    desc: run end-to-end tests
+    desc: run component tests
     silent: true
+  test-e2e:
     cmds:
       - task: test
         vars:
           TEST_TAGS: e2e
-  test-integration:
-    desc: run integration tests
+    desc: run end-to-end tests
     silent: true
+  test-integration:
     cmds:
       - task: test
         vars:
           TEST_TAGS: integration
-  yq-install:
+    desc: run integration tests
     silent: true
+  yq-install:
     cmds:
       # Enabling the following task as a dependency will create an infinite
       # loop, as the yq-install unit is already a dependency within the called
@@ -476,3 +473,4 @@ tasks:
           go install \
             github.com/mikefarah/yq/{{.YQ_MAJOR_VERSION}}@{{.YQ_VERSION}}
         fi
+    silent: true
