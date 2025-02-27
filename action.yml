@@ -9,6 +9,9 @@ inputs:
     default: "80"
     description: |
       The minimum code coverage.
+  code-coverage-timeout:
+    description: |
+      The duration before calculating the code-coverage times out.
   gci:
     default: "true"
     description: |
@@ -16,14 +19,26 @@ inputs:
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
+  golangci-timeout:
+    description: |
+      The duration before golangci-lint times out. If <= 0, then the timeout is
+      disabled.
   golang-unit-tests-exclusions:
     default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
+  security-trivyignore:
+    default: ".trivyignore"
+    description: |
+      Whether to ignore certain Trivy vulnerabilities or not.
   task-version:
     default: v3.41.0
     description: |
       The Task version that has to be installed and used.
+  test-timeout:
+    description: |
+      The duration before a test times out. Note: this setting can be used for
+      various types of testing, such as unit, integration, etc.
   testing-type:
     description: |
       The testing type, e.g. integration, unit or some other.
@@ -39,15 +54,6 @@ inputs:
     default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
-  golangci-timeout:
-    description: |
-      Timeout for total work. If <= 0, the timeout is disabled (default 3m0s)
-  code-coverage-timeout:
-    description: |
-      Timeout for total work.
-  test-timeout:
-    description: |
-      Timeout for total work.
 runs:
   using: "composite"
   steps:
@@ -146,7 +152,7 @@ runs:
         exit-code: "1"
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
-        trivyignores: .trivyignore
+        trivyignores: ${{ inputs.security-trivyignore }}
     - uses: aquasecurity/trivy-action@0.29.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
@@ -158,7 +164,7 @@ runs:
         exit-code: "1"
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
-        trivyignores: .trivyignore
+        trivyignores: ${{ inputs.security-trivyignore }}
     #
     # Run golangci-lint.
     #
