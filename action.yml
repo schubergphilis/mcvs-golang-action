@@ -194,7 +194,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        task remote:test --yes
+        task remote:test-cicd --yes
     #
     # Integration tests.
     #
@@ -205,7 +205,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
-        task remote:test-integration --yes
+        task remote:test-integration-cicd --yes
     #
     # Coverage.
     #
@@ -228,4 +228,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        task remote:test-component --yes
+        task remote:test-component-cicd --yes

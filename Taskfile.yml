@@ -435,11 +435,18 @@ tasks:
           -race \
           -short \
           --tags={{.TEST_TAGS}} \
-          -v \
           ./... \
           {{.TEST_EXTRA_ARGS}} \
           -timeout {{.TEST_TIMEOUT}}
     desc: run unit tests
+    silent: true
+  test-cicd:
+    cmds:
+      - task: test
+        vars:
+          TEST_EXTRA_ARGS: >-
+            -v
+    desc: test within CICD should contain verbose logging to facilitate debugging
     silent: true
   test-component:
     cmds:
@@ -448,6 +455,13 @@ tasks:
           TEST_TAGS: component
     desc: run component tests
     silent: true
+  test-component-cicd:
+    cmds:
+      - task: test-cicd
+        vars:
+          TEST_TAGS: component
+    desc: run component tests in CICD
+    silent: true
   test-e2e:
     cmds:
       - task: test
@@ -455,12 +469,26 @@ tasks:
           TEST_TAGS: e2e
     desc: run end-to-end tests
     silent: true
+  test-e2e-cicd:
+    cmds:
+      - task: test-cicd
+        vars:
+          TEST_TAGS: e2e
+    desc: run end-to-end tests in CICD
+    silent: true
   test-integration:
     cmds:
       - task: test
         vars:
           TEST_TAGS: integration
     desc: run integration tests
+    silent: true
+  test-integration-cicd:
+    cmds:
+      - task: test-cicd
+        vars:
+          TEST_TAGS: integration
+    desc: run integration tests in CICD
     silent: true
   yq-install:
     cmds:
