@@ -57,7 +57,7 @@ vars:
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
-      if [ "{{.OS_COMMAND}}" = "{{.OS_TYPE_MAC}}" ]; then
+      if [ "{{.OS_COMMAND_TYPE}}" = "{{.OS_TYPE_MAC}}" ]; then
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
