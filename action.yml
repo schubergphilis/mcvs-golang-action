@@ -4,16 +4,16 @@ description: |
   The Mission Critical Vulnerability Scanner (MCVS) Golang action.
 inputs:
   build-tags:
-    description: 'What kind of code should be checked, e.g. component, e2e'
+    description: "What kind of code should be checked, e.g. component, e2e"
   code-coverage-expected:
-    default: '80'
+    default: "80"
     description: |
       The minimum code coverage.
   code-coverage-timeout:
     description: |
       The duration before calculating the code-coverage times out.
   gci:
-    default: 'true'
+    default: "true"
     description: |
       Whether to check gci. Disable if the project provides an alternative way.
   github-token-for-downloading-private-go-modules:
@@ -24,11 +24,11 @@ inputs:
       The duration before golangci-lint times out. If <= 0, then the timeout is
       disabled.
   golang-unit-tests-exclusions:
-    default: ' '
+    default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
   security-trivyignore:
-    default: '.trivyignore'
+    default: ".trivyignore"
     description: |
       Whether to ignore certain Trivy vulnerabilities or not.
   task-version:
@@ -47,11 +47,11 @@ inputs:
       A token is required to allow the mcvs-golang-action to pull the
       cached trivy DBs to prevent bump into rate limits.
   trivy-action-db:
-    default: 'public.ecr.aws/aquasecurity/trivy-db:2'
+    default: "public.ecr.aws/aquasecurity/trivy-db:2"
     description: |
       OCI repository to retrieve trivy-db from.
   trivy-action-java-db:
-    default: 'public.ecr.aws/aquasecurity/trivy-java-db:1'
+    default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
   github-release-archive:
@@ -65,7 +65,7 @@ inputs:
       Select another repository using the [HOST/]OWNER/REPO format
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     #
     # Install task and the golang version that has been defined in the go.mod
@@ -79,7 +79,7 @@ runs:
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'unit'
       with:
-        go-version-file: 'go.mod'
+        go-version-file: "go.mod"
         cache: false
     - name: install task
       if: |
@@ -132,7 +132,7 @@ runs:
       with:
         only-fixed: false
         output-format: table
-        path: '.'
+        path: "."
         severity-cutoff: high
     #
     # * Trivy
@@ -157,11 +157,11 @@ runs:
         TRIVY_PASSWORD: ${{ inputs.token }}
         TRIVY_USERNAME: ${{ github.actor }}
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        exit-code: '1'
+        scan-type: "fs"
+        scan-ref: "."
+        exit-code: "1"
         ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
+        severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
     - uses: aquasecurity/trivy-action@0.29.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
@@ -169,11 +169,11 @@ runs:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
         TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        exit-code: '1'
+        scan-type: "fs"
+        scan-ref: "."
+        exit-code: "1"
         ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
+        severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
     #
     # Run golangci-lint.
