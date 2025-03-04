@@ -2,7 +2,7 @@
 # - cmd: steps that will be run sequentially.
 # - deps: tasks that will be run in parallel.
 ---
-version: "3"
+version: '3'
 vars:
   # Variables that have to be defined first as they are used in other variables.
   GOBIN:
@@ -23,12 +23,12 @@ vars:
   BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
-  GCI: "{{.GOBIN}}/gci"
+  GCI: '{{.GOBIN}}/gci'
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
   GCI_VERSION: 0.13.5
   GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 1.64.2
-  GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
+  GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: '{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}'
   GOLANG_PARALLEL_TESTS:
     sh: |
       if [ "$(uname -s)" = "{{.OS_TYPE_MAC}}" ]; then
@@ -36,24 +36,24 @@ vars:
       else
         nproc
       fi
-  GO_SWAGGER: "{{.GOBIN}}/swagger"
+  GO_SWAGGER: '{{.GOBIN}}/swagger'
   GO_SWAGGER_VERSION: v0.31.0
   GOVULNCHECK_VERSION: v1.1.3
   GQLGENC_VERSION: v0.25.4
   HELM_VERSION: v3.16.2
-  MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
+  MCVS_TEXTTIDY_BIN: '{{.GOBIN}}/mcvs-texttidy'
   MCVS_TEXTTIDY_VERSION: 0.1.0
-  MOCKERY_BIN: "{{.GOBIN}}/mockery"
+  MOCKERY_BIN: '{{.GOBIN}}/mockery'
   MOCKERY_MAJOR_VERSION: v2
-  MOCKERY_VERSION: "{{.MOCKERY_MAJOR_VERSION}}.52.2"
-  OPA_FMT: "{{.GOBIN}}/opa fmt ."
+  MOCKERY_VERSION: '{{.MOCKERY_MAJOR_VERSION}}.52.2'
+  OPA_FMT: '{{.GOBIN}}/opa fmt .'
   OPA_VERSION: v0.70.0
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
-    sh: "{{.OS_COMMAND}} -s"
+    sh: '{{.OS_COMMAND}} -s'
   OS_COMMAND_TYPE_ARCHITECTURE:
-    sh: "{{.OS_COMMAND}} -m"
-  REGAL: "{{.GOBIN}}/regal"
+    sh: '{{.OS_COMMAND}} -m'
+  REGAL: '{{.GOBIN}}/regal'
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
@@ -62,7 +62,11 @@ vars:
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
-  YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
+  YQ_VERSION: '{{.YQ_MAJOR_VERSION}}.44.3'
+  GITHUB_RELEASE_REPO: schubergphilis/mcvs-scanner
+  GITHUB_RELEASE_PATTERN: "*"
+  GITHUB_RELEASE_ARCHIVE: "zip"
+  GITHUB_RELEASE_OUTPUT: "mcvs-scanner.zip"
 
 tasks:
   build-golang-download-modules:
@@ -124,6 +128,21 @@ tasks:
       - go mod tidy
     desc: format go files
     silent: true
+  github-release-download:
+    cmds:
+      # since --pattern and --archive cannot both be used, we check which one is defined by the user
+      - |
+        if [ -n {{.GITHUB_RELEASE_PATTERN}} ]; then
+          gh release download \
+            --repo {{.GITHUB_RELEASE_REPO}} \
+            --pattern {{.GITHUB_RELEASE_PATTERN}}
+            -O {{.GITHUB_RELEASE_OUTPUT}}  
+        else
+          gh release download \
+            --repo {{.GITHUB_RELEASE_REPO}} \
+            --archive {{.GITHUB_RELEASE_ARCHIVE}} \
+            -O {{.GITHUB_RELEASE_OUTPUT}}  
+        fi
   gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
@@ -171,7 +190,7 @@ tasks:
   gci-write:
     cmds:
       - task: gci-install
-      - "{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} ."
+      - '{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} .'
     desc: fix incorrect import order with gci
     silent: true
   golang-log:
@@ -318,7 +337,7 @@ tasks:
     silent: true
   mcvs-texttidy-run:
     cmds:
-      - "{{.MCVS_TEXTTIDY_BIN}}"
+      - '{{.MCVS_TEXTTIDY_BIN}}'
     silent: true
   mcvs-texttidy:
     cmds:
@@ -343,13 +362,13 @@ tasks:
   opa-fmt:
     cmds:
       - task: opa-install
-      - "{{.OPA_FMT}}"
+      - '{{.OPA_FMT}}'
     desc: check formatting rego files using opa
     silent: true
   opa-fmt-write:
     cmds:
       - task: opa-install
-      - "{{.OPA_FMT}} --write"
+      - '{{.OPA_FMT}} --write'
     desc: apply formatting rego files using opa
     silent: true
   opa-install:

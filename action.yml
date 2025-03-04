@@ -229,3 +229,15 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         task remote:test-component-cicd --yes
+    #
+    # Github release download.
+    #
+    - name: download github release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_RELEASE_ARCHIVE: ${{github_release_archive}}
+        GITHUB_RELEASE_PATTERN: ${{github_release_pattern}}
+        GITHUB_RELEASE_REPO: ${{github_release_repo}}
+      run: |
+        task remote:download-github-release 
