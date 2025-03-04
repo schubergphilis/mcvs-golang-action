@@ -54,6 +54,16 @@ inputs:
     default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
+  github-release-archive:
+    description: |
+      Download the source code archive in the specified format (zip or tar.gz)
+  github-release-pattern:
+    description: |
+      Download only assets that match a glob pattern
+  github-release-repo:
+    description: |
+      Select another repository using the [HOST/]OWNER/REPO format
+
 runs:
   using: "composite"
   steps:
@@ -229,3 +239,16 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         task remote:test-component-cicd --yes
+    #
+    # Github release download.
+    #
+    - name: download github release
+      if: github_release_repo != ''
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_RELEASE_ARCHIVE: ${{github_release_archive}}
+        GITHUB_RELEASE_PATTERN: ${{github_release_pattern}}
+        GITHUB_RELEASE_REPO: ${{github_release_repo}}
+      run: |
+        task remote:github-release-download
