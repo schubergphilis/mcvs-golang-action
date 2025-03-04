@@ -250,4 +250,4 @@ runs:
         GITHUB_RELEASE_PATTERN: ${{github_release_pattern}}
         GITHUB_RELEASE_REPO: ${{github_release_repo}}
       run: |
-        task remote:download-github-release
+        task remote:github-release-download
