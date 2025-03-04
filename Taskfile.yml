@@ -129,6 +129,7 @@ tasks:
     desc: format go files
     silent: true
   github-release-download:
+    desc: download a release from a GitHub repository
     cmds:
       # since --pattern and --archive cannot both be used, we check which one is defined by the user
       - |
