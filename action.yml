@@ -81,9 +81,9 @@ runs:
         inputs.testing-type == 'unit'
       shell: bash
       run: |
-        if ! task --version | grep -q "Task version: ${{ inputs.task-version }}"; then
-          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^v([0-9]+).*/\1/')
-          go install github.com/go-task/task/v${major_version}/cmd/task@${{ inputs.task-version }}
+        if ! task --version | grep -q "Task version: v${{ inputs.task-version }}"; then
+          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
+          go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
         fi
     - run: |
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
