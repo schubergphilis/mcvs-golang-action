@@ -63,10 +63,6 @@ vars:
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: '{{.YQ_MAJOR_VERSION}}.44.3'
-  GITHUB_RELEASE_REPO: schubergphilis/mcvs-scanner
-  GITHUB_RELEASE_PATTERN: "*"
-  GITHUB_RELEASE_ARCHIVE: "zip"
-  GITHUB_RELEASE_OUTPUT: "mcvs-scanner.zip"
 
 tasks:
   build-golang-download-modules:
@@ -129,7 +125,6 @@ tasks:
     desc: format go files
     silent: true
   github-release-download:
-    desc: download a release from a GitHub repository
     cmds:
       # since --pattern and --archive cannot both be used, we check which one is defined by the user
       - |
@@ -144,6 +139,7 @@ tasks:
             --archive {{.GITHUB_RELEASE_ARCHIVE}} \
             -O {{.GITHUB_RELEASE_OUTPUT}}  
         fi
+    desc: download a release from a GitHub repository
   gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
