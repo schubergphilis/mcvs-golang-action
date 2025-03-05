@@ -16,6 +16,15 @@ inputs:
     default: "true"
     description: |
       Whether to check gci. Disable if the project provides an alternative way.
+  github_release_repo:
+    description: |
+      Select another repository using the [HOST/]OWNER/REPO format
+  github_release_archive:
+    description: |
+      Download the source code archive in the specified format (zip or tar.gz)
+  github_release_pattern:
+    description: |
+      Download only assets that match a glob pattern
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
