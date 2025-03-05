@@ -243,12 +243,12 @@ runs:
     # Github release download.
     #
     - name: download github release
-      if: github_release_repo != ''
+      if: inputs.github_release_repo != ''
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
-        GITHUB_RELEASE_ARCHIVE: ${{github_release_archive}}
-        GITHUB_RELEASE_PATTERN: ${{github_release_pattern}}
-        GITHUB_RELEASE_REPO: ${{github_release_repo}}
+        GITHUB_RELEASE_ARCHIVE: ${{inputs.github_release_archive}}
+        GITHUB_RELEASE_PATTERN: ${{inputs.github_release_pattern}}
+        GITHUB_RELEASE_REPO: ${{inputs.github_release_repo}}
       run: |
         task remote:github-release-download
