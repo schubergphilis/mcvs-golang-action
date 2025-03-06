@@ -284,17 +284,17 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        mkdir -p build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
-        GOOS=linux GOARCH=${{ inputs.release-architecture }} go build -tags lambda.norpc -o build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main ${{  inputs.release-dir }}/main.go
-        gh release create lambda-${{ inputs.release-architecture }}-v${{ github.run_number }} build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main --target ${{ github.ref_name }}
+        mkdir -p \
+          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
+          go build -tags lambda.norpc -o \
+          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          ${{ inputs.release-dir }}/main.go
     #
-    # Release application.
+    # Upload the compiled code to the artifacts.
     #
-    - name: release application
-      if: inputs.release-dir != ''
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-      run: |
-        go build -o ${{ inputs.release-dir }}/main ${{ inputs.release-dir }}/main.go
-        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main --target ${{github.ref_name}}
+    - uses: actions/upload-artifact@v4.6.1
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+      with:
+        name: lambda-${{ inputs.release-architecture }}
+        path: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
