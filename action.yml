@@ -288,4 +288,4 @@ runs:
         RELEASE_TYPE: ${{ inputs.release-type }}
       run: |
         go build -o ${{ inputs.release-dir }}/main ${{ inputs.release-dir }}/main.go
-        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main --target add-release-application-feature -d
+        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main -d
