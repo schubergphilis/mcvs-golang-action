@@ -128,15 +128,15 @@ tasks:
     cmds:
       # either --pattern or --archive can be used, we check which one is defined by the user and use that one
       - |
-        if [ -n {{.GITHUB_RELEASE_PATTERN}} ]; then
+        if [ -n {{.GITHUB_RELEASE_ARCHIVE}} ]; then
           gh release download \
             --repo {{.GITHUB_RELEASE_REPO}} \
-            --pattern {{.GITHUB_RELEASE_PATTERN}}
+            --archive {{.GITHUB_RELEASE_ARCHIVE}}
             -O {{.GITHUB_RELEASE_OUTPUT}}  
         else
           gh release download \
             --repo {{.GITHUB_RELEASE_REPO}} \
-            --archive {{.GITHUB_RELEASE_ARCHIVE}} \
+            --pattern {{.GITHUB_RELEASE_PATTERN}} \
             -O {{.GITHUB_RELEASE_OUTPUT}}  
         fi
     desc: download a release from a GitHub repository
