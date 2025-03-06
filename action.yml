@@ -285,4 +285,4 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         go build -o ${{ inputs.release-dir }}/main ${{ inputs.release-dir }}/main.go
-        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main --target ${{github.ref_name}} -d
+        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main --target ${{github.ref_name}}
