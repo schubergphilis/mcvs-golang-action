@@ -134,7 +134,7 @@ jobs:
           - {
               release-architecture: 'arm64',
               release-dir: './cmd/path-to-app',
-              release-type: 'binary',
+              release-type: 'lambda-binary',
             }
           - { testing-type: 'component' }
           - { testing-type: 'coverage' }
