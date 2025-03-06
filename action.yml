@@ -276,6 +276,17 @@ runs:
     #   run: |
     #     task remote:github-release-download --yes
     #
+    # Release application for AWS Lambda. AWS uses a slightly different way to compile
+    #
+    - name: release application for AWS Lambda
+      if: inputs.release-type == 'lambda-binary'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        GOOS=linux GOARCH=${{ inputs.release_architecture }} go build -tags lambda.norpc -o build/${{ inputs.release_dir }}/${{ inputs.release_architecture }}/main cmd/${{  inputs.release_dir }}/main.go
+        gh release create ${{ inputs.release_architecture }}-v${{ github.run_number }} build/${{ inputs.release_dir }}/${{ inputs.release_architecture }}/main --target ${{ github.ref_name }}
+    #
     # Release application.
     #
     - name: release application
