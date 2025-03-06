@@ -25,6 +25,9 @@ inputs:
   github_release_pattern:
     description: |
       Download only assets that match a glob pattern
+  github_release_output:
+    description: |
+      The output directory for the downloaded assets
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
