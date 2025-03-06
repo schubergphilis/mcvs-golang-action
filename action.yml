@@ -259,5 +259,6 @@ runs:
         GITHUB_RELEASE_ARCHIVE: ${{inputs.github_release_archive}}
         GITHUB_RELEASE_PATTERN: ${{inputs.github_release_pattern}}
         GITHUB_RELEASE_REPO: ${{inputs.github_release_repo}}
+        GITHUB_RELEASE_OUTPUT: ${{inputs.github_release_output}}
       run: |
         task remote:github-release-download --yes
