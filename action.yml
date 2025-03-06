@@ -298,3 +298,14 @@ runs:
       with:
         name: lambda-${{ inputs.release-architecture }}
         path: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
+    #
+    # Upload the compiled code to the artifacts.
+    #
+    - name: Upload binaries to release
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+      uses: svenstaro/upload-release-action@2.9.0
+      with:
+        repo_token: ${{ inputs.token }}
+        file: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
+        asset_name: lambda-${{ inputs.release-architecture }}
+        tag: ${{ github.ref }}
