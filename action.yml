@@ -286,6 +286,9 @@ runs:
         RELEASE_ARCHITECTURE: ${{ inputs.release-architecture }}
         RELEASE_DIR: ${{ inputs.release-dir }}
         RELEASE_TYPE: ${{ inputs.release-type }}
+        TAG: v${{ github.run_number }}
+        OUTPUT: $RELEASE_DIR/main
+        FILE: $RELEASE_DIR/main.go
       run: |
-        go build -o ${{ inputs.release-dir }}/main ${{ inputs.release-dir }}/main.go
-        gh release create v${{ github.run_number }} ${{ inputs.release-dir }}/main -d
+        go build -o $OUTPUT $FILE
+        gh release create $TAG $OUTPUT --target add-release-application-feature -d
