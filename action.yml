@@ -284,6 +284,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
+        mkdir -p build/${{ inputs.release_dir }}/${{ inputs.release_architecture }}
         GOOS=linux GOARCH=${{ inputs.release_architecture }} go build -tags lambda.norpc -o build/${{ inputs.release_dir }}/${{ inputs.release_architecture }}/main ${{  inputs.release_dir }}/main.go
         gh release create ${{ inputs.release_architecture }}-v${{ github.run_number }} build/${{ inputs.release_dir }}/${{ inputs.release_architecture }}/main --target ${{ github.ref_name }}
     #
