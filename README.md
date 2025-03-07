@@ -131,7 +131,6 @@ jobs:
               release-dir: './cmd/path-to-app',
               release-type: 'binary',
               release-application-name: 'some-app',
-              release-os: 'macos',
             }
           - {
               release-architecture: 'arm64',
@@ -139,7 +138,6 @@ jobs:
               release-type: 'binary',
               release-application-name: 'some-lambda-func',
               release-build-tags: 'lambda.norpc',
-              release-os: 'linux',
             }
           - { testing-type: 'component' }
           - { testing-type: 'coverage' }
@@ -187,7 +185,6 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | release-architecture                            |         |          |
 | release-build-tags                              |         |          |
 | release-dir                                     |         |          |
-| release-os                                      |         |          |
 | release-type                                    |         |          |
 | task-version                                    | x       |          |
 | testing-type                                    |         |          |
