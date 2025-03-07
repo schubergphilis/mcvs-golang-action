@@ -40,9 +40,6 @@ inputs:
   release-dir:
     description: |
       The directory of the main.go file to be compiled and released.
-  release-os:
-    description: |
-      The operating system of the release, e.g. linux, macos, etc.
   release-type:
     description: |
       The type of the release, e.g. binary, zip, etc.
