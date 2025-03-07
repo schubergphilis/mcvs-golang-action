@@ -27,6 +27,9 @@ inputs:
     default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
+  release-application-name:
+    description: |
+      The name of the application that has to be released.
   release-architecture:
     description: |
       The architecture of the release, e.g. amd64, arm64, etc.
@@ -37,15 +40,12 @@ inputs:
   release-dir:
     description: |
       The directory of the main.go file to be compiled and released.
-  release-type:
-    description: |
-      The type of the release, e.g. binary, zip, etc.
-  release-application-name:
-    description: |
-      The name of the application that has to be released.
   release-os:
     description: |
       The operating system of the release, e.g. linux, macos, etc.
+  release-type:
+    description: |
+      The type of the release, e.g. binary, zip, etc.
   security-trivyignore:
     default: ".trivyignore"
     description: |
@@ -259,10 +259,12 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name \
+           }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -tags ${{ inputs.release-build-tags }} -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name \
+           }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
     # Release application
@@ -274,10 +276,12 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name \
+           }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name \
+           }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
     # Upload the compiled code to the artifacts.
@@ -287,6 +291,8 @@ runs:
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ inputs.token }}
-        file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
+        file: |
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name \
+           }}/${{ inputs.release-architecture }}/main
         asset_name: ${{ inputs.release-application-name }}-${{ inputs.release-architecture }}
         tag: ${{ github.ref }}
