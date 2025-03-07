@@ -16,18 +16,6 @@ inputs:
     default: "true"
     description: |
       Whether to check gci. Disable if the project provides an alternative way.
-  github_release_repo:
-    description: |
-      Select another repository using the [HOST/]OWNER/REPO format
-  github_release_archive:
-    description: |
-      Download the source code archive in the specified format (zip or tar.gz)
-  github_release_pattern:
-    description: |
-      Download only assets that match a glob pattern
-  github_release_output:
-    description: |
-      The output directory for the downloaded assets
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
@@ -42,12 +30,19 @@ inputs:
   release-architecture:
     description: |
       The architecture of the release, e.g. amd64, arm64, etc.
+  release-build-tags:
+    description: |
+      The build tags that have to be used when building the release. eg for \
+      AWS Lambda, the tag lambda.norpc is used.
   release-dir:
     description: |
       The directory of the main.go file to be compiled and released.
   release-type:
     description: |
-      The type of the release, e.g. binary.
+      The type of the release, e.g. binary, zip, etc.
+  release-application-name:
+    description: |
+      The name of the application that has to be released.
   security-trivyignore:
     default: ".trivyignore"
     description: |
@@ -75,16 +70,6 @@ inputs:
     default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
-  github-release-archive:
-    description: |
-      Download the source code archive in the specified format (zip or tar.gz)
-  github-release-pattern:
-    description: |
-      Download only assets that match a glob pattern
-  github-release-repo:
-    description: |
-      Select another repository using the [HOST/]OWNER/REPO format
-
 runs:
   using: "composite"
   steps:
@@ -261,40 +246,26 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         task remote:test-component-cicd --yes
-    # #
-    # # Github release download.
-    # #
-    # - name: download github release
-    #   if: inputs.github_release_repo != ''
-    #   shell: bash
-    #   env:
-    #     GITHUB_TOKEN: ${{ inputs.token }}
-    #     GITHUB_RELEASE_ARCHIVE: ${{inputs.github_release_archive}}
-    #     GITHUB_RELEASE_PATTERN: ${{inputs.github_release_pattern}}
-    #     GITHUB_RELEASE_REPO: ${{inputs.github_release_repo}}
-    #     GITHUB_RELEASE_OUTPUT: ${{inputs.github_release_output}}
-    #   run: |
-    #     task remote:github-release-download --yes
     #
-    # Release application for AWS Lambda. AWS uses a slightly different way to compile
+    # Release application for tagged builds.
     #
-    - name: release application for AWS Lambda
-      if: inputs.release-type == 'lambda-binary'
+    - name: release application for tagged builds
+      if: inputs.release-build-tag != ''
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
-          go build -tags lambda.norpc -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          go build -tags ${{ inputs.release-build-tag }} -o \
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
     # Release application
     #
     - name: release application
-      if: inputs.release-type == 'binary'
+      if: inputs.release-type == 'binary' && inputs.release-build-tag == ''
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -305,14 +276,6 @@ runs:
           go build -o \
           build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
-      #
-      # Upload the compiled code to the artifacts.
-      #
-      # - uses: actions/upload-artifact@v4.6.1
-      #   if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-      #   with:
-      #     name: lambda-${{ inputs.release-architecture }}
-      #     path: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
     #
     # Upload the compiled code to the artifacts.
     #
@@ -321,6 +284,6 @@ runs:
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ inputs.token }}
-        file: build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
-        asset_name: ${{ inputs.release-type }}-${{ inputs.release-architecture }}
+        file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
+        asset_name: ${{ inputs.release-application-name }}-${{ inputs.release-architecture }}-${{ github.ref }}
         tag: ${{ github.ref }}

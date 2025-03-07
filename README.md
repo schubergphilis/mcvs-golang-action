@@ -130,11 +130,14 @@ jobs:
               release-architecture: 'amd64',
               release-dir: './cmd/path-to-app',
               release-type: 'binary',
+              release-application-name: 'some-app',
             }
           - {
               release-architecture: 'arm64',
               release-dir: './cmd/path-to-app',
-              release-type: 'lambda-binary',
+              release-type: 'binary',
+              release-application-name: 'some-app',
+              release-build-tags: 'lambda.norpc',
             }
           - { testing-type: 'component' }
           - { testing-type: 'coverage' }
@@ -178,7 +181,9 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
-| release-architecture                            | x       |          |
+| release-application-name                        |         |          |
+| release-architecture                            |         |          |
+| release-build-tags                              |         |          |
 | release-dir                                     |         |          |
 | release-type                                    |         |          |
 | task-version                                    | x       |          |
