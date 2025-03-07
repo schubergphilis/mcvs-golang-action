@@ -1,0 +1,54 @@
+---
+name: taskfile-without-empty-lines
+"on":
+  push:
+permissions:
+  contents: read
+jobs:
+  taskfile-without-empty-lines:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - run: |
+          yaml_file="Taskfile.yml"
+          empty_lines=$(grep -n -e '^$' "$yaml_file")
+
+          awk '
+            BEGIN {
+              in_block = 0;
+              empty_line_found = 0;
+              impacted_lines = "";
+            }
+            /^[[:space:]]*- *\|[[:space:]]*$/ {
+              in_block = 1;
+              next;
+            }
+            /^$/ {
+              if (in_block == 0) {
+                empty_line_found = 1;
+                impacted_lines = impacted_lines NR ", ";
+              }
+            }
+            {
+              # Exit the block if a non-indented line is encountered
+              if (in_block == 1 && match($0, /^[^[:space:]]/)) {
+                in_block = 0;
+              }
+            }
+            END {
+              if (empty_line_found == 1) {
+                # Remove the last comma and space from the string
+                sub(/, $/, "", impacted_lines);
+                print "Empty lines found at lines: " impacted_lines;
+                exit 1;
+              }
+            }
+          ' "$yaml_file"
+          exit_status=$?
+
+          if [[ $exit_status -ne 0 ]]; then
+            echo "❌ Empty lines outside of '- |' blocks, found in $yaml_file:"
+            exit 1
+          fi
+
+          echo "✅ $yaml_file is without empty lines!"

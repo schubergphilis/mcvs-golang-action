@@ -12,7 +12,6 @@ vars:
           echo /home/runner/go/bin
           exit 0
         fi
-
         echo "GOBIN has not been not set. Ensure that it has been set on the system."
         exit 1
       fi
@@ -63,7 +62,6 @@ vars:
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
-
 tasks:
   build-golang-download-modules:
     cmds:
