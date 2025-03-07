@@ -124,22 +124,6 @@ tasks:
       - go mod tidy
     desc: format go files
     silent: true
-  github-release-download:
-    cmds:
-      # either --pattern or --archive can be used, we check which one is defined by the user and use that one
-      - |
-        if [ -n {{.GITHUB_RELEASE_ARCHIVE}} ]; then
-          gh release download \
-            --repo {{.GITHUB_RELEASE_REPO}} \
-            --archive {{.GITHUB_RELEASE_ARCHIVE}}
-            --output {{.GITHUB_RELEASE_OUTPUT}}  
-        else
-          gh release download \
-            --repo {{.GITHUB_RELEASE_REPO}} \
-            --pattern {{.GITHUB_RELEASE_PATTERN}} \
-            --output {{.GITHUB_RELEASE_OUTPUT}}  
-        fi
-    desc: download a release from a GitHub repository
   gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
