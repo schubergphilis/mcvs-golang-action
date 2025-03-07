@@ -271,7 +271,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -o \
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
