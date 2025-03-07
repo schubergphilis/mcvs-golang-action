@@ -43,6 +43,9 @@ inputs:
   release-application-name:
     description: |
       The name of the application that has to be released.
+  release-os:
+    description: |
+      The operating system of the release, e.g. linux, macos, etc.
   security-trivyignore:
     default: ".trivyignore"
     description: |
@@ -257,7 +260,7 @@ runs:
       run: |
         mkdir -p \
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
-        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
+        GOOS=${{ inputs.release-os }} GOARCH=${{ inputs.release-architecture }} \
           go build -tags ${{ inputs.release-build-tags }} -o \
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
@@ -272,7 +275,7 @@ runs:
       run: |
         mkdir -p \
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
-        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
+        GOOS=${{ inputs.release-os }} GOARCH=${{ inputs.release-architecture }} \
           go build -o \
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
