@@ -247,9 +247,9 @@ runs:
       run: |
         task remote:test-component-cicd --yes
     #
-    # Release application for tagged builds.
+    # Build tagged binary
     #
-    - name: release application for tagged builds
+    - name: build tagged binary
       if: inputs.release-build-tags != ''
       shell: bash
       env:
@@ -262,9 +262,9 @@ runs:
           build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
-    # Release application
+    # Build binary
     #
-    - name: release application
+    - name: build binary
       if: inputs.release-type == 'binary' && inputs.release-build-tags == ''
       shell: bash
       env:
