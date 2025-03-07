@@ -288,16 +288,31 @@ runs:
           build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -tags lambda.norpc -o \
-          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
-    # Upload the compiled code to the artifacts.
+    # Release application
     #
-    - uses: actions/upload-artifact@v4.6.1
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-      with:
-        name: lambda-${{ inputs.release-architecture }}
-        path: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
+    - name: release application
+      if: inputs.release-type == 'binary'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        mkdir -p \
+          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
+          go build -o \
+          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          ${{ inputs.release-dir }}/main.go
+      #
+      # Upload the compiled code to the artifacts.
+      #
+      # - uses: actions/upload-artifact@v4.6.1
+      #   if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+      #   with:
+      #     name: lambda-${{ inputs.release-architecture }}
+      #     path: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
     #
     # Upload the compiled code to the artifacts.
     #
@@ -306,6 +321,6 @@ runs:
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ inputs.token }}
-        file: build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main
-        asset_name: lambda-${{ inputs.release-architecture }}
+        file: build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+        asset_name: ${{ inputs.release-type }}-${{ inputs.release-architecture }}
         tag: ${{ github.ref }}
