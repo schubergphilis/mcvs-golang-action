@@ -19,10 +19,12 @@ jobs:
               empty_line_found = 0;
               impacted_lines = "";
             }
-            /^[[:space:]]*- *\|[[:space:]]*$/ {
+            # Start of block patterns: "- |" and "sh: |"
+            /^[[:space:]]*- *\|/ || /^[[:space:]]*sh: *\|/ {
               in_block = 1;
               next;
             }
+            # Detect empty line
             /^$/ {
               if (in_block == 0) {
                 empty_line_found = 1;
@@ -30,17 +32,18 @@ jobs:
               }
             }
             {
-              # Exit the block if a non-indented line is encountered
-              if (in_block == 1 && match($0, /^[^[:space:]]/)) {
+              # Exit block strategy: Detecting a YAML line that is not nested or indented
+              if (in_block == 1 && !match($0, /^[[:space:]]/)) {
                 in_block = 0;
               }
             }
             END {
               if (empty_line_found == 1) {
-                # Remove the last comma and space from the string
-                sub(/, $/, "", impacted_lines);
+                sub(/, $/, "", impacted_lines); # Clean trailing comma
                 print "Empty lines found at lines: " impacted_lines;
                 exit 1;
+              } else {
+                print "No empty lines outside specified blocks found in $yaml_file.";
               }
             }
           ' "$yaml_file"
