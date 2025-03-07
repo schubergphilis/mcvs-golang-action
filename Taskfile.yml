@@ -12,7 +12,6 @@ vars:
           echo /home/runner/go/bin
           exit 0
         fi
-
         echo "GOBIN has not been not set. Ensure that it has been set on the system."
         exit 1
       fi
@@ -63,7 +62,6 @@ vars:
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   YQ_MAJOR_VERSION: v4
   YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
-
 tasks:
   build-golang-download-modules:
     cmds:
@@ -259,10 +257,25 @@ tasks:
             exit 0
           fi
 
-          echo "The version of the local task binary: ${current_task_version} differs from the expected: ${expected_task_version}."
-          echo "Resolve the issue by updating your local task binary to version: ${expected_task_version}."
-          echo "A remediation option is to run: 'go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}', but the choice of installation method depends on your preferred way to install Task."
-          exit 1
+          echo
+          echo "###############################################################"
+          echo "#"
+          echo "# WARNING"
+          echo "#"
+          echo "###############################################################"
+          echo "#"
+          echo "# The version of the local task binary: ${current_task_version}"
+          echo "# differs from the expected: ${expected_task_version}."
+          echo "# Resolve the issue by updating the local task binary to"
+          echo "# version: ${expected_task_version}."
+          echo "# A remediation option is to run:"
+          echo "# 'go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}',"
+          echo "# but the choice of installation method depends on the"
+          echo "# preferred way to install Task."
+          echo "#"
+          echo "###############################################################"
+          echo
+          sleep 3 # to ensure that user will see the message
         fi
     silent: true
   keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow:
