@@ -136,7 +136,7 @@ jobs:
               release-architecture: 'arm64',
               release-dir: './cmd/path-to-app',
               release-type: 'binary',
-              release-application-name: 'some-app',
+              release-application-name: 'some-lambda-func',
               release-build-tags: 'lambda.norpc',
             }
           - { testing-type: 'component' }
