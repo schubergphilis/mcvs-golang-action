@@ -274,7 +274,7 @@ runs:
           build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
     # Upload the compiled code to the artifacts.
