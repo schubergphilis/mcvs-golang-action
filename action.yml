@@ -285,10 +285,10 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -tags lambda.norpc -o \
-          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
     #
     # Release application
@@ -300,10 +300,10 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -o \
-          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+          build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
           ${{ inputs.release-dir }}/main.go
       #
       # Upload the compiled code to the artifacts.
@@ -321,6 +321,6 @@ runs:
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ inputs.token }}
-        file: build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
+        file: build/${{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
         asset_name: ${{ inputs.release-type }}-${{ inputs.release-architecture }}
         tag: ${{ github.ref }}
