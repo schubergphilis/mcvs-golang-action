@@ -285,7 +285,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -tags lambda.norpc -o \
           build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
@@ -300,7 +300,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         mkdir -p \
-          build/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
+          build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}
         GOOS=linux GOARCH=${{ inputs.release-architecture }} \
           go build -o \
           build/{{ inputs.release-type }}/${{ inputs.release-dir }}/${{ inputs.release-architecture }}/main \
