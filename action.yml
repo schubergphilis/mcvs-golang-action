@@ -216,7 +216,7 @@ runs:
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
         CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
-        CODE_COVERAGE_TIMEOUT: ${{ inputs.test-timeout }}
+        CODE_COVERAGE_TIMEOUT: ${{ inputs.code-coverage-timeout }}
       run: |
         task remote:coverage --yes
     #
