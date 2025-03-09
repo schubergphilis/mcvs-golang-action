@@ -140,6 +140,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
+      test-timeout: 10m0s
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v0.9.0
@@ -150,6 +151,8 @@ jobs:
           security-trivyignore: ${{ matrix.args.security-trivyignore }}
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          test-timeout:  ${{ env.test-timeout }}
+          code-coverage-timeout: ${{ env.test-timeout }}
 ```
 
 and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
@@ -160,14 +163,14 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | :---------------------------------------------- | :------ | -------- |
 | build-tags                                      | x       |          |
 | code-coverage-expected                          | x       |          |
-| code-coverage-timeout                           | x       |          |
+| code-coverage-timeout                           |         |          |
 | gci                                             | x       |          |
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
 | task-version                                    | x       |          |
 | testing-type                                    |         |          |
-| test-timeout                                    | x       |          |
+| test-timeout                                    |         |          |
 | token                                           |         |          |
 | trivy-action-db                                 | x       |          |
 | trivy-action-java-db                            | x       |          |
