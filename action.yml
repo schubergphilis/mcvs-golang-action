@@ -247,37 +247,41 @@ runs:
       run: |
         task remote:test-component-cicd --yes
     #
-    # Build tagged binary
+    # Build binary (with optional tags)
     #
-    - name: build tagged binary
-      if: inputs.release-build-tags != ''
+    - name: Build binary
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
+        BUILD_DIR: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
+        GOOS: linux
+        GOARCH: ${{ inputs.release-architecture }}
+        SOURCE_FILE: ${{ inputs.release-dir }}/main.go
       run: |
-        mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
-        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
-          go build -tags ${{ inputs.release-build-tags }} -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
-          ${{ inputs.release-dir }}/main.go
+        mkdir -p "$BUILD_DIR"
+        if [ -n "${{ inputs.release-build-tags }}" ]; then
+          go build -tags "${{ inputs.release-build-tags }}" -o "$BUILD_DIR/main" "$SOURCE_FILE"
+        else
+          go build -o "$BUILD_DIR/main" "$SOURCE_FILE"
+        fi
+
     #
-    # Build binary
+    # Compute asset name
     #
-    - name: build binary
-      if: inputs.release-type == 'binary' && inputs.release-build-tags == ''
+    - name: Compute asset name
+      id: compute_asset_name
       shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        mkdir -p \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
-        GOOS=linux GOARCH=${{ inputs.release-architecture }} \
-          go build -o \
-          build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main \
-          ${{ inputs.release-dir }}/main.go
+        ASSET_NAME_BASE="${{ inputs.release-application-name }}-${{ github.ref_name }}-linux-${{ inputs.release-architecture }}"
+        if [ -n "${{ inputs.release-build-tags }}" ]; then
+          ASSET_NAME="${ASSET_NAME_BASE}-${{ inputs.release-build-tags }}"
+        else
+          ASSET_NAME="$ASSET_NAME_BASE"
+        fi
+        echo "asset_name=$ASSET_NAME" >> $GITHUB_OUTPUT
+
     #
-    # Upload the compiled code to the artifacts.
+    # Upload binaries to release
     #
     - name: Upload binaries to release
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
@@ -285,5 +289,5 @@ runs:
       with:
         repo_token: ${{ inputs.token }}
         file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
-        asset_name: ${{ inputs.release-application-name }}-${{ github.ref_name }}-linux-${{ inputs.release-architecture }}
+        asset_name: ${{ steps.compute_asset_name.outputs.asset_name }}
         tag: ${{ github.ref }}
