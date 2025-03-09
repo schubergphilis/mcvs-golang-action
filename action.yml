@@ -285,5 +285,5 @@ runs:
       with:
         repo_token: ${{ inputs.token }}
         file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
-        asset_name: ${{ inputs.release-application-name }}-${{ github.ref }}-linux-${{ inputs.release-architecture }}
+        asset_name: ${{ inputs.release-application-name }}-${{ github.ref_names }}-linux-${{ inputs.release-architecture }}
         tag: ${{ github.ref }}
