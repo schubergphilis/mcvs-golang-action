@@ -264,7 +264,6 @@ runs:
         else
           go build -o "$BUILD_DIR/main" "$SOURCE_FILE"
         fi
-
     #
     # Compute asset name
     #
@@ -279,7 +278,6 @@ runs:
           ASSET_NAME="$ASSET_NAME_BASE"
         fi
         echo "asset_name=$ASSET_NAME" >> $GITHUB_OUTPUT
-
     #
     # Upload binaries to release
     #
