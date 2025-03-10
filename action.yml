@@ -250,6 +250,7 @@ runs:
     # Build binary (with optional tags)
     #
     - name: Build binary
+      if: inputs.release-dir != ''
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -268,6 +269,7 @@ runs:
     # Compute asset name
     #
     - name: Compute asset name
+      if: inputs.release-dir != ''
       id: compute_asset_name
       shell: bash
       run: |
