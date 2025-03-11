@@ -126,17 +126,30 @@ jobs:
     strategy:
       matrix:
         args:
-          - { testing-type: "component" }
-          - { testing-type: "coverage" }
-          - { testing-type: "integration" }
-          - { testing-type: "lint", build-tags: "component" }
-          - { testing-type: "lint", build-tags: "e2e" }
-          - { testing-type: "lint", build-tags: "integration" }
-          - { testing-type: "mcvs-texttidy" }
-          - { testing-type: "security-golang-modules" }
-          - { testing-type: "security-grype" }
-          - { testing-type: "security-trivy", security-trivyignore: "" }
-          - { testing-type: "unit" }
+          - {
+              release-architecture: 'amd64',
+              release-dir: './cmd/path-to-app',
+              release-type: 'binary',
+              release-application-name: 'some-app',
+            }
+          - {
+              release-architecture: 'arm64',
+              release-dir: './cmd/path-to-app',
+              release-type: 'binary',
+              release-application-name: 'some-lambda-func',
+              release-build-tags: 'lambda.norpc',
+            }
+          - { testing-type: 'component' }
+          - { testing-type: 'coverage' }
+          - { testing-type: 'integration' }
+          - { testing-type: 'lint', build-tags: 'component' }
+          - { testing-type: 'lint', build-tags: 'e2e' }
+          - { testing-type: 'lint', build-tags: 'integration' }
+          - { testing-type: 'mcvs-texttidy' }
+          - { testing-type: 'security-golang-modules' }
+          - { testing-type: 'security-grype' }
+          - { testing-type: 'security-trivy', security-trivyignore: '' }
+          - { testing-type: 'unit' }
     runs-on: ubuntu-22.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
@@ -148,6 +161,9 @@ jobs:
           build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          release-architecture: ${{ matrix.args.release-architecture }}
+          release-dir: ${{ matrix.args.release-dir }}
+          release-type: ${{ matrix.args.release-type }}
           security-trivyignore: ${{ matrix.args.security-trivyignore }}
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -168,6 +184,11 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
+| release-application-name                        |         |          |
+| release-architecture                            |         |          |
+| release-build-tags                              |         |          |
+| release-dir                                     |         |          |
+| release-type                                    |         |          |
 | task-version                                    | x       |          |
 | testing-type                                    |         |          |
 | test-timeout                                    |         |          |

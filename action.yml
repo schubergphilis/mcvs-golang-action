@@ -27,6 +27,22 @@ inputs:
     default: " "
     description: |
       The Golang paths that should be excluded from unit testing.
+  release-application-name:
+    description: |
+      The name of the application that has to be released.
+  release-architecture:
+    description: |
+      The architecture of the release, e.g. amd64, arm64, etc.
+  release-build-tags:
+    description: |
+      The build tags that have to be used when building the release. eg for \
+      AWS Lambda, the tag lambda.norpc is used.
+  release-dir:
+    description: |
+      The directory of the main.go file to be compiled and released.
+  release-type:
+    description: |
+      The type of the release, e.g. binary, zip, etc.
   security-trivyignore:
     default: ".trivyignore"
     description: |
@@ -63,6 +79,7 @@ runs:
     #
     - uses: actions/setup-go@v5.3.0
       if: |
+        inputs.release-dir != '' || 
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -229,3 +246,50 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         task remote:test-component-cicd --yes
+    #
+    # Build binary (with optional tags)
+    #
+    - name: Build binary
+      if: inputs.release-dir != ''
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        BUILD_DIR: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
+        GOOS: linux
+        GOARCH: ${{ inputs.release-architecture }}
+        SOURCE_FILE: ${{ inputs.release-dir }}/main.go
+      run: |
+        mkdir -p "$BUILD_DIR"
+        if [ -n "${{ inputs.release-build-tags }}" ]; then
+          go build -tags "${{ inputs.release-build-tags }}" -o "$BUILD_DIR/main" "$SOURCE_FILE"
+        else
+          go build -o "$BUILD_DIR/main" "$SOURCE_FILE"
+        fi
+    #
+    # Compute asset name
+    #
+    - name: Compute asset name
+      if: inputs.release-dir != ''
+      id: compute_asset_name
+      shell: bash
+      run: |
+        ASSET_NAME_BASE="${{ inputs.release-application-name }}-${{ github.ref_name }}-linux-${{ inputs.release-architecture }}"
+        if [ -n "${{ inputs.release-build-tags }}" ]; then
+          ASSET_NAME="${ASSET_NAME_BASE}-${{ inputs.release-build-tags }}"
+        else
+          ASSET_NAME="$ASSET_NAME_BASE"
+        fi
+        echo "asset_name=$ASSET_NAME" >> $GITHUB_OUTPUT
+    #
+    # Upload binaries to release
+    #
+    - name: Upload binaries to release
+      if: |
+        github.event_name == 'push' && contains(github.ref, 'refs/tags/') && \
+        inputs.release-dir != ''
+      uses: svenstaro/upload-release-action@2.9.0
+      with:
+        repo_token: ${{ inputs.token }}
+        file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
+        asset_name: ${{ steps.compute_asset_name.outputs.asset_name }}
+        tag: ${{ github.ref }}
