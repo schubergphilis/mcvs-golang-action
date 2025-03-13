@@ -219,3 +219,52 @@ tests. If `task remote:test --yes` is executed, only unit tests will be run.
 
 See the integration paragraph for the steps and replace `integration` with
 `component` to run them.
+
+### Downloading released assets from another repo
+
+You will need a personal access token (PAT) with the `repo` scope. To download
+releases from a private repository. You can simply use the gh command or curl
+to download the release assets. Please read the
+[GitHub documentation](https://docs.github.com/en/rest/releases/assets)
+for more information.
+
+Example:
+
+```bash
+# Fetch release information for the specified tag
+RELEASE_RESPONSE=$(gh api \
+  -H "Accept: application/vnd.github+json" \
+  "/repos/$OWNER/$REPO/releases/tags/$TAG_NAME")
+
+# Extract the release ID
+RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id')
+
+echo "Release ID: $RELEASE_ID"
+```
+
+Step 3: Get the Asset ID
+
+```bash
+# Fetch the list of assets for the release
+ASSETS_RESPONSE=$(gh api \
+  -H "Accept: application/vnd.github+json" \
+  "/repos/$OWNER/$REPO/releases/$RELEASE_ID/assets")
+
+# Extract the asset ID for the specified asset name
+ASSET_ID=$(echo "$ASSETS_RESPONSE" | jq -r \
+  --arg NAME "$ASSET_NAME" \
+  '.[] | select(.name == $NAME) | .id')
+
+echo "Asset ID: $ASSET_ID"
+```
+
+Step 4: Download the Asset
+
+```bash
+# Download the asset using the asset ID
+gh api \
+  -H "Accept: application/octet-stream" \
+  "/repos/$OWNER/$REPO/releases/assets/$ASSET_ID" > "$ASSET_NAME"
+
+echo "Downloaded asset: $ASSET_NAME"
+```
