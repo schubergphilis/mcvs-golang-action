@@ -220,7 +220,7 @@ tests. If `task remote:test --yes` is executed, only unit tests will be run.
 See the integration paragraph for the steps and replace `integration` with
 `component` to run them.
 
-### Downloading released assets from another repo
+### Downloading released assets from another private repository
 
 You will need a personal access token (PAT) with the `repo` scope. To download
 releases from a private repository. You can simply use the gh command or curl
