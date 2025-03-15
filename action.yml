@@ -90,6 +90,7 @@ runs:
         cache: false
     - name: install task
       if: |
+        inputs.release-dir != '' || 
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -206,7 +207,9 @@ runs:
     # Unit tests.
     #
     - name: unit tests
-      if: inputs.testing-type == 'unit'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'unit'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -216,7 +219,9 @@ runs:
     # Integration tests.
     #
     - name: integration tests
-      if: inputs.testing-type == 'integration'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'integration'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -227,7 +232,9 @@ runs:
     # Coverage.
     #
     - name: code coverage
-      if: inputs.testing-type == 'coverage'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'coverage'
       shell: bash
       env:
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
@@ -240,7 +247,9 @@ runs:
     # Component tests.
     #
     - name: component tests
-      if: inputs.testing-type == 'component'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'component'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
