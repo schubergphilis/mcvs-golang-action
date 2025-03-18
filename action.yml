@@ -156,7 +156,7 @@ runs:
     # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -170,7 +170,7 @@ runs:
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
