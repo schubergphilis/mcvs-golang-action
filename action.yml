@@ -48,7 +48,7 @@ inputs:
     description: |
       Whether to ignore certain Trivy vulnerabilities or not.
   task-version:
-    default: 3.41.0
+    default: 3.42.1
     description: |
       The Task version that has to be installed and used.
   test-timeout:
@@ -157,7 +157,7 @@ runs:
     # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -171,7 +171,7 @@ runs:
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
