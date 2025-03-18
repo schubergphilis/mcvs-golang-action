@@ -48,7 +48,7 @@ inputs:
     description: |
       Whether to ignore certain Trivy vulnerabilities or not.
   task-version:
-    default: 3.41.0
+    default: 3.42.1
     description: |
       The Task version that has to be installed and used.
   test-timeout:
@@ -90,6 +90,7 @@ runs:
         cache: false
     - name: install task
       if: |
+        inputs.release-dir != '' || 
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -156,7 +157,7 @@ runs:
     # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -170,7 +171,7 @@ runs:
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
-    - uses: aquasecurity/trivy-action@0.29.0
+    - uses: aquasecurity/trivy-action@0.30.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -206,7 +207,9 @@ runs:
     # Unit tests.
     #
     - name: unit tests
-      if: inputs.testing-type == 'unit'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'unit'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -216,7 +219,9 @@ runs:
     # Integration tests.
     #
     - name: integration tests
-      if: inputs.testing-type == 'integration'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'integration'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -227,7 +232,9 @@ runs:
     # Coverage.
     #
     - name: code coverage
-      if: inputs.testing-type == 'coverage'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'coverage'
       shell: bash
       env:
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
@@ -240,7 +247,9 @@ runs:
     # Component tests.
     #
     - name: component tests
-      if: inputs.testing-type == 'component'
+      if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'component'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -261,7 +270,8 @@ runs:
       run: |
         mkdir -p "$BUILD_DIR"
         if [ -n "${{ inputs.release-build-tags }}" ]; then
-          go build -tags "${{ inputs.release-build-tags }}" -o "$BUILD_DIR/main" "$SOURCE_FILE"
+          go build -tags "${{ inputs.release-build-tags }}" -o \
+            "$BUILD_DIR/main" "$SOURCE_FILE"
         else
           go build -o "$BUILD_DIR/main" "$SOURCE_FILE"
         fi
@@ -284,7 +294,10 @@ runs:
     # Upload binaries to release
     #
     - name: Upload binaries to release
-      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/') && inputs.release-dir != ''
+      if: |
+        github.event_name == 'push' && 
+        contains(github.ref, 'refs/tags/') && 
+        inputs.release-dir != ''
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ inputs.token }}
