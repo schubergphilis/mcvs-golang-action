@@ -43,8 +43,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_MAJOR_VERSION: v2
-  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "{{.MOCKERY_MAJOR_VERSION}}.52.2"}}'
+  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v2.52.2"}}'
   OPA_FMT: "{{.GOBIN}}/opa fmt ."
   OPA_VERSION: v0.70.0
   OS_COMMAND: uname
@@ -60,8 +59,7 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_MAJOR_VERSION: v4
-  YQ_VERSION: "{{.YQ_MAJOR_VERSION}}.44.3"
+  YQ_VERSION: v4.44.3
 tasks:
   build-golang-download-modules:
     cmds:
@@ -343,8 +341,9 @@ tasks:
   mock-generate:
     cmds:
       - |
+        mockery_major_version=$(echo "{{.MOCKERY_VERSION}}" | cut -d '.' -f 1)
         if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
-          go install github.com/vektra/mockery/{{.MOCKERY_MAJOR_VERSION}}@{{.MOCKERY_VERSION}}
+          go install github.com/vektra/mockery/${mockery_major_version}@{{.MOCKERY_VERSION}}
         fi
         echo "{{.MOCK_GENERATE_DIR}} {{.MOCK_GENERATE_INTERFACE_NAME}}"
         {{.MOCKERY_BIN}} \
@@ -510,8 +509,9 @@ tasks:
       # unit.
       # - task: keep-local-and-remote-versions-in-sync
       - |
+        yq_major_version=$(echo "{{.YQ_VERSION}}" | cut -d '.' -f 1)
         if ! yq --version | grep -q "version {{.YQ_VERSION}}"; then
           go install \
-            github.com/mikefarah/yq/{{.YQ_MAJOR_VERSION}}@{{.YQ_VERSION}}
+            github.com/mikefarah/yq/${yq_major_version}@{{.YQ_VERSION}}
         fi
     silent: true
