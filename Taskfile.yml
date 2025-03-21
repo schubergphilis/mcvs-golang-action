@@ -239,75 +239,83 @@ tasks:
     cmds:
       - task: yq-install
       - |
-        expected_task_version=$(curl -s {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/action.yml | yq '.inputs.task-version.default')
-        expected_task_major_version=$(echo "${expected_task_version}" | sed -E 's/^([0-9]+).*/\1/')
-        current_task_version=$(task --version | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-        if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
-          echo "Failed to extract the expected (default) or current version or both for Task. Please check the default task-version input parameter in the .github/workflows/golang.yml."
-          exit 1
-        fi
+        if [ -f Taskfile.yml ]; then
+          expected_task_version=$(curl -s {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/action.yml | yq '.inputs.task-version.default')
+          expected_task_major_version=$(echo "${expected_task_version}" | sed -E 's/^([0-9]+).*/\1/')
 
-        if [ "${expected_task_version}" != "${current_task_version}" ]; then
-          if [ -n "${GITHUB_ACTIONS}" ]; then
-            echo "The task binary: ${current_task_version} differs from the expected: ${expected_task_version}. Updating it..."
-            go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}
-            exit 0
+          current_task_version=$(task --version | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          if [ -z "${expected_task_version}" ] || [ -z "${current_task_version}" ]; then
+            echo "Failed to extract the expected (default) or current version or both for Task. Please check the default task-version input parameter in the .github/workflows/golang.yml."
+            exit 1
           fi
 
-          echo
-          echo "###############################################################"
-          echo "#"
-          echo "# WARNING"
-          echo "#"
-          echo "###############################################################"
-          echo "#"
-          echo "# The version of the local task binary: ${current_task_version}"
-          echo "# differs from the expected: ${expected_task_version}."
-          echo "# Resolve the issue by updating the local task binary to"
-          echo "# version: ${expected_task_version}."
-          echo "# A remediation option is to run:"
-          echo "# 'go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}',"
-          echo "# but the choice of installation method depends on the"
-          echo "# preferred way to install Task."
-          echo "#"
-          echo "###############################################################"
-          echo
-          sleep 3 # to ensure that user will see the message
+          if [ "${expected_task_version}" != "${current_task_version}" ]; then
+            if [ -n "${GITHUB_ACTIONS}" ]; then
+              echo "The task binary: ${current_task_version} differs from the expected: ${expected_task_version}. Updating it..."
+              go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}
+              exit 0
+            fi
+
+            echo
+            echo "###############################################################"
+            echo "#"
+            echo "# WARNING"
+            echo "#"
+            echo "###############################################################"
+            echo "#"
+            echo "# The version of the local task binary: ${current_task_version}"
+            echo "# differs from the expected: ${expected_task_version}."
+            echo "# Resolve the issue by updating the local task binary to"
+            echo "# version: ${expected_task_version}."
+            echo "# A remediation option is to run:"
+            echo "# 'go install github.com/go-task/task/v${expected_task_major_version}/cmd/task@v${expected_task_version}',"
+            echo "# but the choice of installation method depends on the"
+            echo "# preferred way to install Task."
+            echo "#"
+            echo "###############################################################"
+            echo
+
+            sleep 3 # to ensure that user will see the message
+          fi
         fi
     silent: true
   keep-mcvs-golang-action-version-local-taskfile-in-sync-with-github-workflow:
     cmds:
       - task: yq-install
       - |
-        expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
-        current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
-        if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
-          echo "Failed to extract the expected and current version or both for the mcvs-golang-action. Please ensure that the mcvs-golang-action is defined in lower case in the .github/workflows/golang.yml file and the the REMOTE_URL_REF variable is present in the Taskfile.yml."
-          exit 1
-        fi
+        if [ -f .github/workflows/golang.yml ]; then
+          expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
+          current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
 
-        if [ "${expected_mcvs_golang_action_version}" != "${current_mcvs_golang_action_version}" ]; then
-          if [ -n "${GITHUB_ACTIONS}" ]; then
-            echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version} is different than current version in Taskfile: ${current_mcvs_golang_action_version}, but do not let the pipeline fail otherwise Dependabot cannot update the version of the action."
-            exit 0
+          if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
+            echo "Failed to extract the expected and current version or both for the mcvs-golang-action. Please ensure that the mcvs-golang-action is defined in lower case in the .github/workflows/golang.yml file and the the REMOTE_URL_REF variable is present in the Taskfile.yml."
+            exit 1
           fi
-          
-          echo
-          echo "###############################################################"
-          echo "#"
-          echo "# WARNING"
-          echo "#"
-          echo "###############################################################"
-          echo "#"
-          echo "# Expected mcvs-golang-action: ${expected_mcvs_golang_action_version},"
-          echo "# but current version in Taskfile: ${current_mcvs_golang_action_version}."
-          echo "#"
-          echo "# Resolve the issue by updating the REMOTE_URL_REF in the"
-          echo "# Taskfile.yml variable to: ${expected_mcvs_golang_action_version}."
-          echo "#"
-          echo "###############################################################"
-          echo
-          sleep 3 # to ensure that user will see the message
+
+          if [ "${expected_mcvs_golang_action_version}" != "${current_mcvs_golang_action_version}" ]; then
+            if [ -n "${GITHUB_ACTIONS}" ]; then
+              echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version} is different than current version in Taskfile: ${current_mcvs_golang_action_version}, but do not let the pipeline fail otherwise Dependabot cannot update the version of the action."
+              exit 0
+            fi
+
+            echo
+            echo "###############################################################"
+            echo "#"
+            echo "# WARNING"
+            echo "#"
+            echo "###############################################################"
+            echo "#"
+            echo "# Expected mcvs-golang-action: ${expected_mcvs_golang_action_version},"
+            echo "# but current version in Taskfile: ${current_mcvs_golang_action_version}."
+            echo "#"
+            echo "# Resolve the issue by updating the REMOTE_URL_REF in the"
+            echo "# Taskfile.yml variable to: ${expected_mcvs_golang_action_version}."
+            echo "#"
+            echo "###############################################################"
+            echo
+
+            sleep 3 # to ensure that user will see the message
+          fi
         fi
     desc: |
       Ensure that the mcvs-golang-action version in Taskfile.yml matches the
