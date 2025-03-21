@@ -23,7 +23,7 @@ vars:
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
   GCI: "{{.GOBIN}}/gci"
-  GCI_SECTIONS: '{{.GCI_SECTIONS | default "-s standard -s default"}}'
+  GCI_SECTIONS: '{{.GCI_SECTIONS | default "--skip-generated -s standard -s default"}}'
   GCI_VERSION: 0.13.5
   GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 1.64.2
@@ -119,7 +119,6 @@ tasks:
       - task: gci-write
       - go mod tidy
     desc: format go files
-    silent: true
   gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
@@ -156,10 +155,10 @@ tasks:
     cmds:
       - task: gci-install
       - |
-        if {{.GCI}} list --skip-generated {{.GCI_SECTIONS}} . | grep "\.go$"; then
+        if {{.GCI}} list {{.GCI_SECTIONS}} . | grep "\.go$"; then
           echo "One or more golang files detected with: 'incorrect import order':"
-          echo " * Observe: '{{.GCI}} diff --skip-generated .'"
-          echo " * Resolve: '{{.GCI}} write --skip-generated .'"
+          echo " * Observe: '{{.GCI}} diff .'"
+          echo " * Resolve: '{{.GCI}} write .'"
           exit 1
         fi
     desc: check for incorrect import order with gci
@@ -167,7 +166,7 @@ tasks:
   gci-write:
     cmds:
       - task: gci-install
-      - "{{.GCI}} write --skip-generated {{.GCI_SECTIONS}} ."
+      - "{{.GCI}} write {{.GCI_SECTIONS}} ."
     desc: fix incorrect import order with gci
     silent: true
   golang-log:
