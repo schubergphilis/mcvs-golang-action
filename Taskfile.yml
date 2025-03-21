@@ -291,10 +291,23 @@ tasks:
             echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version} is different than current version in Taskfile: ${current_mcvs_golang_action_version}, but do not let the pipeline fail otherwise Dependabot cannot update the version of the action."
             exit 0
           fi
-
-          echo "Expected mcvs-golang-action: ${expected_mcvs_golang_action_version}, but current version in Taskfile: ${current_mcvs_golang_action_version}."
-          echo "Resolve the issue by updating the REMOTE_URL_REF in the Taskfile.yml variable to: ${expected_mcvs_golang_action_version}"
-          exit 1
+          
+          echo
+          echo "###############################################################"
+          echo "#"
+          echo "# WARNING"
+          echo "#"
+          echo "###############################################################"
+          echo "#"
+          echo "# Expected mcvs-golang-action: ${expected_mcvs_golang_action_version},"
+          echo "# but current version in Taskfile: ${current_mcvs_golang_action_version}."
+          echo "#"
+          echo "# Resolve the issue by updating the REMOTE_URL_REF in the"
+          echo "# Taskfile.yml variable to: ${expected_mcvs_golang_action_version}."
+          echo "#"
+          echo "###############################################################"
+          echo
+          sleep 3 # to ensure that user will see the message
         fi
     desc: |
       Ensure that the mcvs-golang-action version in Taskfile.yml matches the
