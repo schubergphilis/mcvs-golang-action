@@ -373,6 +373,7 @@ tasks:
       - |
         This unit is unsupported from Mockery v3.
         Please run `task remote:mocks` instead.
+        Are you still sure you want to run `mock-generate`?
     silent: true
   mockery-install:
     cmds:
