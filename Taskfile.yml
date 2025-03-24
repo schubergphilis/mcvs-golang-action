@@ -119,6 +119,7 @@ tasks:
       - task: gci-write
       - go mod tidy
     desc: format go files
+    silent: true
   gofumpt-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
@@ -360,17 +361,34 @@ tasks:
     silent: true
   mock-generate:
     cmds:
+      - task: mockery-install
       - |
-        mockery_major_version=$(echo "{{.MOCKERY_VERSION}}" | cut -d '.' -f 1)
-        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
-          go install github.com/vektra/mockery/${mockery_major_version}@{{.MOCKERY_VERSION}}
-        fi
         echo "{{.MOCK_GENERATE_DIR}} {{.MOCK_GENERATE_INTERFACE_NAME}}"
         {{.MOCKERY_BIN}} \
           --dir {{.MOCK_GENERATE_DIR}} \
           --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
           --tags {{.BUILD_TAGS}}
     desc: generate mocks
+    prompt:
+      - |
+        This unit is unsupported from Mockery v3.
+        Please run `task remote:mocks` instead.
+    silent: true
+  mockery-install:
+    cmds:
+      - |
+        mockery_major_version=$(echo "{{.MOCKERY_VERSION}}" | cut -d '.' -f 1)
+        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
+          go install github.com/vektra/mockery/${mockery_major_version}@{{.MOCKERY_VERSION}}
+        fi
+    internal: true
+    silent: true
+  mocks:
+    cmds:
+      - task: mockery-install
+      - |
+        {{.MOCKERY_BIN}}
+      - task: format
     silent: true
   opa-fmt:
     cmds:
