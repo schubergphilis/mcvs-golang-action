@@ -127,29 +127,29 @@ jobs:
       matrix:
         args:
           - {
-              release-architecture: 'amd64',
-              release-dir: './cmd/path-to-app',
-              release-type: 'binary',
-              release-application-name: 'some-app',
+              release-architecture: "amd64",
+              release-dir: "./cmd/path-to-app",
+              release-type: "binary",
+              release-application-name: "some-app",
             }
           - {
-              release-architecture: 'arm64',
-              release-dir: './cmd/path-to-app',
-              release-type: 'binary',
-              release-application-name: 'some-lambda-func',
-              release-build-tags: 'lambda.norpc',
+              release-architecture: "arm64",
+              release-dir: "./cmd/path-to-app",
+              release-type: "binary",
+              release-application-name: "some-lambda-func",
+              release-build-tags: "lambda.norpc",
             }
-          - { testing-type: 'component' }
-          - { testing-type: 'coverage' }
-          - { testing-type: 'integration' }
-          - { testing-type: 'lint', build-tags: 'component' }
-          - { testing-type: 'lint', build-tags: 'e2e' }
-          - { testing-type: 'lint', build-tags: 'integration' }
-          - { testing-type: 'mcvs-texttidy' }
-          - { testing-type: 'security-golang-modules' }
-          - { testing-type: 'security-grype' }
-          - { testing-type: 'security-trivy', security-trivyignore: '' }
-          - { testing-type: 'unit' }
+          - { testing-type: "component" }
+          - { testing-type: "coverage" }
+          - { testing-type: "integration" }
+          - { testing-type: "lint", build-tags: "component" }
+          - { testing-type: "lint", build-tags: "e2e" }
+          - { testing-type: "lint", build-tags: "integration" }
+          - { testing-type: "mcvs-texttidy" }
+          - { testing-type: "security-golang-modules" }
+          - { testing-type: "security-grype" }
+          - { testing-type: "security-trivy", security-trivyignore: "" }
+          - { testing-type: "unit" }
     runs-on: ubuntu-22.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
@@ -167,7 +167,7 @@ jobs:
           security-trivyignore: ${{ matrix.args.security-trivyignore }}
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          test-timeout:  ${{ env.test-timeout }}
+          test-timeout: ${{ env.test-timeout }}
           code-coverage-timeout: ${{ env.test-timeout }}
 ```
 
@@ -184,6 +184,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
+| grype-version                                   | x       |          |
 | release-application-name                        |         |          |
 | release-architecture                            |         |          |
 | release-build-tags                              |         |          |
