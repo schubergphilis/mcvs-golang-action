@@ -43,7 +43,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v2.52.2"}}'
+  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v2.53.3"}}'
   OPA_FMT: "{{.GOBIN}}/opa fmt ."
   OPA_VERSION: v0.70.0
   OS_COMMAND: uname
