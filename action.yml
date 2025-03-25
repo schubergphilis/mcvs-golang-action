@@ -215,9 +215,7 @@ runs:
     # Unit tests.
     #
     - name: unit tests
-      if: |
-        inputs.release-dir != '' || 
-        inputs.testing-type == 'unit'
+      if: inputs.testing-type == 'unit'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -227,9 +225,7 @@ runs:
     # Integration tests.
     #
     - name: integration tests
-      if: |
-        inputs.release-dir != '' || 
-        inputs.testing-type == 'integration'
+      if: inputs.testing-type == 'integration'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -240,9 +236,7 @@ runs:
     # Coverage.
     #
     - name: code coverage
-      if: |
-        inputs.release-dir != '' || 
-        inputs.testing-type == 'coverage'
+      if: inputs.testing-type == 'coverage'
       shell: bash
       env:
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
@@ -255,9 +249,7 @@ runs:
     # Component tests.
     #
     - name: component tests
-      if: |
-        inputs.release-dir != '' || 
-        inputs.testing-type == 'component'
+      if: inputs.testing-type == 'component'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
