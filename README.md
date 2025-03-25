@@ -48,13 +48,13 @@ If you are new to Task, you may want to check out the following resources:
 
 The `Taskfile.yml` in this project defines a number of variables. Some of these
 can be overridden when including this Taskfile in your project. See the example
-below, where the `GCI_SECTIONS` variable is overridden, for how to do this.
+below, where the `MOCKERY_VERSION` variable is overridden, for how to do this.
 
 The following variables can be overridden:
 
-| Variable      | Description                                                                                                                     |
-| :------------ | :------------------------------------------------------------------------------------------------------------------------------ |
-| `GCI_SECTION` | Define how `gci` processes inputs (see the [gci README](https://github.com/daixiang0/gci?tab=readme-ov-file#usage) for details) |
+| Variable          | Description                |
+| :---------------- | :------------------------- |
+| `MOCKERY_VERSION` | Define the Mockery version |
 
 ## Usage
 
@@ -180,7 +180,6 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | build-tags                                      | x       |          |
 | code-coverage-expected                          | x       |          |
 | code-coverage-timeout                           |         |          |
-| gci                                             | x       |          |
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
