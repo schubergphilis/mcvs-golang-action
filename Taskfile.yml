@@ -22,10 +22,6 @@ vars:
   BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
-  GCI: "{{.GOBIN}}/gci"
-  GCI_SECTIONS: '{{.GCI_SECTIONS | default "--skip-generated -s standard -s default"}}'
-  GCI_VERSION: 0.13.5
-  GOFUMPT_VERSION: v0.7.0
   GOLANGCI_LINT_VERSION: 2.0.1
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
@@ -115,24 +111,10 @@ tasks:
     silent: true
   format:
     cmds:
-      - task: gofumpt
-      - task: gci-write
+      - task: golangci-lint-install
+      - task: golangci-lint-fmt
       - go mod tidy
     desc: format go files
-    silent: true
-  gofumpt-install:
-    cmds:
-      - task: keep-local-and-remote-versions-in-sync
-      - |
-        if ! gofumpt --version | grep -q "{{.GOFUMPT_VERSION}}"; then
-          go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
-        fi
-    silent: true
-  gofumpt:
-    cmds:
-      - task: gofumpt-install
-      - gofumpt -w .
-    desc: format go files with gofumpt
     silent: true
   helm-install:
     cmds:
@@ -143,32 +125,6 @@ tasks:
             -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
         fi
-    silent: true
-  gci-install:
-    cmds:
-      - task: keep-local-and-remote-versions-in-sync
-      - |
-        if ! {{.GCI}} --version | grep -q "gci version {{.GCI_VERSION}}"; then
-          go install github.com/daixiang0/gci@v{{.GCI_VERSION}}
-        fi
-    silent: true
-  gci:
-    cmds:
-      - task: gci-install
-      - |
-        if {{.GCI}} list {{.GCI_SECTIONS}} . | grep "\.go$"; then
-          echo "One or more golang files detected with: 'incorrect import order':"
-          echo " * Observe: '{{.GCI}} diff .'"
-          echo " * Resolve: '{{.GCI}} write .'"
-          exit 1
-        fi
-    desc: check for incorrect import order with gci
-    silent: true
-  gci-write:
-    cmds:
-      - task: gci-install
-      - "{{.GCI}} write {{.GCI_SECTIONS}} ."
-    desc: fix incorrect import order with gci
     silent: true
   golang-log:
     cmds:
@@ -338,12 +294,6 @@ tasks:
     cmds:
       - task: golangci-lint
     desc: run golangci-lint (alias for golangci-lint)
-    silent: true
-  lint-with-gci:
-    deps:
-      - task: gci
-      - task: golangci-lint
-    desc: run gci and golangci-lint
     silent: true
   mcvs-texttidy-install:
     cmds:
