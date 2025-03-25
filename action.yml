@@ -12,10 +12,6 @@ inputs:
   code-coverage-timeout:
     description: |
       The duration before calculating the code-coverage times out.
-  gci:
-    default: "true"
-    description: |
-      Whether to check gci. Disable if the project provides an alternative way.
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
@@ -127,16 +123,6 @@ runs:
       with:
         go-version-file: ${{ inputs.go-version-file }}
         go-package: ./...
-    #
-    # Check for 'incorrect import order', let pipeline fail if true and provide
-    # instruction to remediate it. Note: check is included in golangci-lint,
-    # but it does not provide clarity how to resolve it when positive.
-    #
-    - name: gci
-      if: inputs.gci == 'true' && inputs.testing-type == 'lint'
-      shell: bash
-      run: |
-        task remote:gci --yes
     #
     # Code security scanning.
     #
