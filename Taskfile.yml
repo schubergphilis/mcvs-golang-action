@@ -26,7 +26,7 @@ vars:
   GCI_SECTIONS: '{{.GCI_SECTIONS | default "--skip-generated -s standard -s default"}}'
   GCI_VERSION: 0.13.5
   GOFUMPT_VERSION: v0.7.0
-  GOLANGCI_LINT_VERSION: 1.64.2
+  GOLANGCI_LINT_VERSION: 2.0.1
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
     sh: |
@@ -185,6 +185,11 @@ tasks:
             sh -s -- -b $(go env GOPATH)/bin v{{.GOLANGCI_LINT_VERSION}}
         fi
     silent: true
+  golangci-lint-fmt:
+    cmds:
+      - |
+        golangci-lint fmt \
+          --verbose
   golangci-lint-run:
     cmds:
       - task: golang-log
@@ -192,13 +197,13 @@ tasks:
         golangci-lint run \
           --build-tags {{.BUILD_TAGS}} \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
-          --out-format=colored-line-number \
           --timeout {{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES}}m \
           --verbose
     silent: true
   golangci-lint:
     cmds:
       - task: golangci-lint-install
+      - task: golangci-lint-fmt
       - task: golangci-lint-run
     desc: run golangci-lint
     silent: true
