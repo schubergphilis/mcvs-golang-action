@@ -63,6 +63,9 @@ type Group struct {
 }
 
 func createGolangWorkflow(filePath string) error {
+	golangUnitTestsExclusions := `
+\(cmd\/some-app\|internal\/app\/some-app\)`
+
 	workflow := Workflow{
 		Name: "Golang",
 		On:   "push",
@@ -111,9 +114,9 @@ func createGolangWorkflow(filePath string) error {
 					{Uses: "actions/checkout@v4.1.1"},
 					{
 						Uses: "schubergphilis/mcvs-golang-action@v0.9.0",
-						With: map[string]interface{}{
+						With: map[string]any{
 							"build-tags":                   "${{ matrix.args.build-tags }}",
-							"golang-unit-tests-exclusions": `\(cmd\/some-app\|internal\/app\/some-app\)`,
+							"golang-unit-tests-exclusions": golangUnitTestsExclusions,
 							"release-architecture":         "${{ matrix.args.release-architecture }}",
 							"release-dir":                  "${{ matrix.args.release-dir }}",
 							"release-type":                 "${{ matrix.args.release-type }}",

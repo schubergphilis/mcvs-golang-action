@@ -43,7 +43,8 @@ jobs:
         with:
           build-tags: ${{ matrix.args.build-tags }}
           code-coverage-timeout: ${{ env.test-timeout }}
-          golang-unit-tests-exclusions: \(cmd\/some-app\|internal\/app\/some-app\)
+          golang-unit-tests-exclusions: |2-
+            \(cmd\/some-app\|internal\/app\/some-app\)
           release-architecture: ${{ matrix.args.release-architecture }}
           release-dir: ${{ matrix.args.release-dir }}
           release-type: ${{ matrix.args.release-type }}
