@@ -1,0 +1,53 @@
+---
+name: Golang
+"on": push
+permissions:
+  contents: read
+  packages: read
+jobs:
+  MCVS-golang-action:
+    strategy:
+      matrix:
+        args:
+          - release-application-name: some-app
+            release-architecture: amd64
+            release-dir: ./cmd/path-to-app
+            release-type: binary
+          - release-application-name: some-lambda-func
+            release-architecture: arm64
+            release-build-tags: lambda.norpc
+            release-dir: ./cmd/path-to-app
+            release-type: binary
+          - testing-type: component
+          - testing-type: coverage
+          - testing-type: integration
+          - build-tags: component
+            testing-type: lint
+          - build-tags: e2e
+            testing-type: lint
+          - build-tags: integration
+            testing-type: lint
+          - testing-type: mcvs-texttidy
+          - testing-type: security-golang-modules
+          - testing-type: security-grype
+          - security-trivyignore: ""
+            testing-type: security-trivy
+          - testing-type: unit
+    runs-on: ubuntu-22.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
+      test-timeout: 10m0s
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: schubergphilis/mcvs-golang-action@v0.9.0
+        with:
+          build-tags: ${{ matrix.args.build-tags }}
+          code-coverage-timeout: ${{ env.test-timeout }}
+          golang-unit-tests-exclusions: \(cmd\/some-app\|internal\/app\/some-app\)
+          release-architecture: ${{ matrix.args.release-architecture }}
+          release-dir: ${{ matrix.args.release-dir }}
+          release-type: ${{ matrix.args.release-type }}
+          security-trivyignore: ${{ matrix.args.security-trivyignore }}
+          test-timeout: ${{ env.test-timeout }}
+          testing-type: ${{ matrix.args.testing-type }}
+          token: ${{ secrets.GITHUB_TOKEN }}
