@@ -110,6 +110,14 @@ runs:
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
+    - run: |
+        go mod tidy
+
+        if [[ -n $(git diff --exit-code) ]]; then
+          echo "A discrepancy has been detected. Has 'go mod tidy' been issued?"
+          exit 1
+        fi
+      shell: bash
     #
     # Verify downloaded dependencies.
     #
