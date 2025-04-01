@@ -1,3 +1,4 @@
+# yamllint disable rule:line-length
 ---
 name: mcvs-golang-action
 description: |
@@ -82,7 +83,7 @@ runs:
     #
     - uses: actions/setup-go@v5.4.0
       if: |
-        inputs.release-dir != '' || 
+        inputs.release-dir != '' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -93,7 +94,7 @@ runs:
         cache: false
     - name: install task
       if: |
-        inputs.release-dir != '' || 
+        inputs.release-dir != '' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -289,8 +290,8 @@ runs:
     #
     - name: Upload binaries to release
       if: |
-        github.event_name == 'push' && 
-        contains(github.ref, 'refs/tags/') && 
+        github.event_name == 'push' &&
+        contains(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
       uses: svenstaro/upload-release-action@2.9.0
       with:

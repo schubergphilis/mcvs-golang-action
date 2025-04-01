@@ -1,0 +1,42 @@
+---
+name: Golang
+"on": push
+permissions:
+  contents: read
+  packages: read
+jobs:
+  mcvs-golang-action:
+    strategy:
+      matrix:
+        args:
+          - release-application-name: mcvs-golang-action-bootstrap
+            release-architecture: arm64
+            release-dir: ./cmd/mcvs-golang-action
+            release-type: binary
+          - build-tags: ""
+            testing-type: lint
+          - testing-type: security-golang-modules
+          - testing-type: security-grype
+          - security-trivyignore: ""
+            testing-type: security-trivy
+          - testing-type: unit
+    runs-on: ubuntu-22.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
+      test-timeout: 10m0s
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: schubergphilis/mcvs-golang-action@v1.0.1
+        with:
+          build-tags: ${{ matrix.args.build-tags }}
+          code-coverage-expected: 0
+          code-coverage-timeout: ${{ env.test-timeout }}
+          golang-unit-tests-exclusions: |2-
+            \(cmd\/some-app\|internal\/app\/some-app\)
+          release-architecture: ${{ matrix.args.release-architecture }}
+          release-dir: ${{ matrix.args.release-dir }}
+          release-type: ${{ matrix.args.release-type }}
+          security-trivyignore: ${{ matrix.args.security-trivyignore }}
+          test-timeout: ${{ env.test-timeout }}
+          testing-type: ${{ matrix.args.testing-type }}
+          token: ${{ secrets.GITHUB_TOKEN }}
