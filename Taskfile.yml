@@ -22,6 +22,7 @@ vars:
   BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
+  COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_VERSION: 2.0.1
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
@@ -69,20 +70,19 @@ tasks:
         vars:
           TEST_EXTRA_ARGS: >-
             -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
-            -coverprofile={{.COVERPROFILE}} -timeout {{.CODE_COVERAGE_TIMEOUT}}
+            -coverprofile={{.COVERPROFILE}}
           TEST_TAGS: integration
+          TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
-        code_coverage_output=$(go tool cover -func {{.COVERPROFILE}})
-        code_coverage_actual=$(echo "${code_coverage_output}" |\
-          grep total: |\
-          awk '{print $3}' |\
-          sed 's/%//')
+        awk '!seen[$0]++' {{.COVERPROFILE}} > {{.COVERPROFILE_UNIQUE}}
+        code_coverage_output=$(go tool cover -func {{.COVERPROFILE_UNIQUE}})
+        code_coverage_actual=$(echo "${code_coverage_output}" | awk '/total:/ {print $3}' | sed 's/%//')
 
         echo "CODE_COVERAGE_FILE_EXCLUSIONS: {{.CODE_COVERAGE_FILE_EXCLUSIONS}}"
         echo "Code coverage overview:"
         echo "${code_coverage_output}"
 
-        if (( $(echo "{{.CODE_COVERAGE_EXPECTED}} > ${code_coverage_actual}" | bc -l) )); then
+        if (( $(echo "${code_coverage_actual} < {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'. Resolve the issue by writing more unit and/or integration tests."
           exit 1
         elif (( $(echo "${code_coverage_actual} > {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
@@ -93,18 +93,10 @@ tasks:
     silent: true
   coverage-visual:
     cmds:
-      - task: test
-        vars:
-          TEST_EXTRA_ARGS: >-
-            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
-            -coverprofile={{.COVERPROFILE}} -timeout {{.CODE_COVERAGE_TIMEOUT}}
-          TEST_TAGS: integration
+      - task: coverage
       - |
         go tool cover \
-          -func={{.COVERPROFILE}} > \
-          functioncoverage.out
-        go tool cover \
-          -html={{.COVERPROFILE}} \
+          -html={{.COVERPROFILE_UNIQUE}} \
           -o coverage.html
         open ./coverage.html
     desc: show code coverage
@@ -436,6 +428,8 @@ tasks:
     cmds:
       - task: golang-log
       - |
+        # when "if testing.Short() { t.Skip() }" is in the go code then such
+        # tests will be skipped if -short is used.
         go test \
           -p {{.GOLANG_PARALLEL_TESTS}} \
           -race \
@@ -444,7 +438,7 @@ tasks:
           ./... \
           {{.TEST_EXTRA_ARGS}} \
           -timeout {{.TEST_TIMEOUT}}
-    desc: run unit tests
+    desc: run test
     silent: true
   test-cicd:
     cmds:
