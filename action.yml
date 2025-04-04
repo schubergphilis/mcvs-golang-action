@@ -77,6 +77,10 @@ runs:
   using: "composite"
   steps:
     #
+    # Commit lint
+    #
+    - uses: wagoid/commitlint-github-action@v6.2.1
+    #
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
