@@ -76,10 +76,29 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - if: |
+        github.event_name == 'pull_request' &&
+        inputs.testing-type == 'lint-commit'
+      uses: actions/checkout@v4.2.2
+      with:
+        fetch-depth: 0
     #
     # Commit lint
     #
-    - uses: wagoid/commitlint-github-action@v6.2.1
+    - if: |
+        github.event_name == 'pull_request' &&
+        inputs.testing-type == 'lint-commit'
+      run: |
+        npm install --save-dev \
+          commitlint-plugin-function-rules \
+          @commitlint/{cli,config-conventional,ensure}
+        cat ${GITHUB_ACTION_PATH}/commitlint.config.mjs > commitlint.config.mjs
+
+        npx commitlint \
+          --from ${{ github.event.pull_request.base.sha }} \
+          --to ${{ github.event.pull_request.head.sha }} \
+          --verbose
+      shell: bash
     #
     # Install task and the golang version that has been defined in the go.mod
     # file.
@@ -114,7 +133,15 @@ runs:
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
-    - run: |
+    - if: |
+        inputs.release-dir != '' || 
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'unit'
+      run: |
         go mod tidy
 
         if [[ -n $(git diff --exit-code) ]]; then
