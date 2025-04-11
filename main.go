@@ -1,0 +1,64 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
+)
+
+func main() {
+	s := server.NewMCPServer(
+		"MCVS Golang Action MCP Server",
+		"1.0.0",
+		server.WithResourceCapabilities(true, true),
+		server.WithLogging(),
+	)
+
+	toolHandler := NewToolHandler()
+
+	s.AddTool(
+		mcp.NewTool(
+			"static-analysis",
+			mcp.WithDescription("Tool to lint the project (runs static analysis on the codebase) leveraging golangci-lint"),
+
+			mcp.WithString("directory",
+				mcp.Description("The directory to run the static analysis in"),
+			),
+		),
+		toolHandler.handleLintTool,
+	)
+	s.AddTool(
+		mcp.NewTool("test",
+			mcp.WithDescription("Tool to run tests on the project"),
+
+			// We want to ensure the directory is always set since
+			// copilot will not execute mcp server in the project root.
+			mcp.WithString("directory",
+				mcp.Description("The directory to run the tests in"),
+				mcp.Required(),
+			),
+			mcp.WithBoolean("verbose",
+				mcp.Description("Enable verbose output"),
+				mcp.DefaultBool(false),
+			),
+			mcp.WithString("test-case",
+				mcp.Description("The test case to run"),
+			),
+			mcp.WithBoolean("coverage",
+				mcp.Description("Enable coverage report"),
+				mcp.DefaultBool(false),
+			),
+			mcp.WithString("build-tags",
+				mcp.Description("Build tags to use when running tests"),
+				mcp.Enum("none", "integration", "component", "e2e"),
+				mcp.DefaultString("none"),
+			),
+		),
+		toolHandler.handleUnitTestTool,
+	)
+
+	if err := server.ServeStdio(s); err != nil {
+		fmt.Printf("Server error: %v\n", err)
+	}
+}
