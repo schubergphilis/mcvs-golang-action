@@ -5,6 +5,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/schubergphilis/mcvs-golang-action/internal/app/mcp-golang/tools"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 		server.WithLogging(),
 	)
 
-	toolHandler := NewToolHandler()
+	toolHandler := tools.NewHandler()
 
 	s.AddTool(
 		mcp.NewTool(
@@ -26,7 +27,7 @@ func main() {
 				mcp.Description("The directory to run the static analysis in"),
 			),
 		),
-		toolHandler.handleLintTool,
+		toolHandler.HandleLint,
 	)
 	s.AddTool(
 		mcp.NewTool("test",
@@ -55,7 +56,7 @@ func main() {
 				mcp.DefaultString("none"),
 			),
 		),
-		toolHandler.handleUnitTestTool,
+		toolHandler.HandleUnitTest,
 	)
 
 	if err := server.ServeStdio(s); err != nil {
