@@ -1,11 +1,11 @@
-# MCP MCVS Golang Action
+# MCP Golang
 
 Model Context Protocol (MCP).
 
 ## Installation
 
 ```zsh
-go install
+go install ./cmd/mcp-golang
 ```
 
 ## Configuration
@@ -16,7 +16,7 @@ Modify the settings.json of Visual Studio Code:
 "mcp": {
   "servers": {
     "golang-actions": {
-      "command": "mcvs-golang-action",
+      "command": "mcp-golang",
       "args": []
     }
   }
