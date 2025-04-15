@@ -9,16 +9,15 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-// ToolHanlder is a struct that handles tool requests.
-type ToolHanlder struct {
-}
+// ToolHandler is a struct that handles tool requests.
+type ToolHandler struct{}
 
 // NewToolHandler creates a new ToolHandler instance.
-func NewToolHandler() *ToolHanlder {
-	return &ToolHanlder{}
+func NewToolHandler() *ToolHandler {
+	return &ToolHandler{}
 }
 
-func (t *ToolHanlder) handleLintTool(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (t *ToolHandler) handleLintTool(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	arguments := []string{
 		"remote:lint",
 		"-y",
@@ -31,7 +30,7 @@ func (t *ToolHanlder) handleLintTool(_ context.Context, request mcp.CallToolRequ
 	return t.executeTask(arguments)
 }
 
-func (t *ToolHanlder) handleUnitTestTool(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (t *ToolHandler) handleUnitTestTool(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	arguments := []string{
 		"remote:test",
 		"-y",
@@ -77,7 +76,7 @@ func (m *memWriter) String() string {
 	return string(m.bytes)
 }
 
-func (t *ToolHanlder) executeTask(arguments []string) (*mcp.CallToolResult, error) {
+func (t *ToolHandler) executeTask(arguments []string) (*mcp.CallToolResult, error) {
 	cmd := exec.Command("task", arguments...)
 	stdErr := &memWriter{}
 	stdOut := &memWriter{}
