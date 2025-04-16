@@ -29,14 +29,14 @@ fail if an issue arises.
 ## Taskfile
 
 Another tool is configuration for [Task](https://taskfile.dev/). This repository
-offers a `Taskfile.yml` which contains standard tasks, like installing and
+offers a `./build/task.yml` which contains standard tasks, like installing and
 running a linter.
 
-This `Taskfile.yml` can then be used by other projects. This has the advantage
-that you do not need to copy and paste Makefile snippets from one project to
-another. As a consequence each project using this `Taskfile.yml` immediately
-benefits from improvements made here (e.g. new tasks or improvements in the
-tasks).
+This `./build/task.yml` can then be used by other projects. This has the
+advantage that you do not need to copy and paste Makefile snippets from one
+project to another. As a consequence each project using this `./build/task.yml`
+immediately benefits from improvements made here (e.g. new tasks or
+improvements in the tasks).
 
 If you are new to Task, you may want to check out the following resources:
 
@@ -46,9 +46,10 @@ If you are new to Task, you may want to check out the following resources:
 
 ### Configuration
 
-The `Taskfile.yml` in this project defines a number of variables. Some of these
-can be overridden when including this Taskfile in your project. See the example
-below, where the `MOCKERY_VERSION` variable is overridden, for how to do this.
+The `./build/task.yml` in this project defines a number of variables. Some of
+these can be overridden when including this Taskfile in your project. See the
+example below, where the `MOCKERY_VERSION` variable is overridden, for how to
+do this.
 
 The following variables can be overridden:
 
@@ -73,7 +74,7 @@ vars:
 
 includes:
   remote: >-
-    {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+    {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
 ```
 
 and run:
@@ -100,12 +101,9 @@ adjust the `includes` sections like this:
 includes:
   remote:
     taskfile: >-
-      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
     vars:
-      GCI_SECTIONS: >-
-        -s standard
-        -s default
-        -s alias
+      MOCKERY_VERSION: v3.2.1
 ```
 
 Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.

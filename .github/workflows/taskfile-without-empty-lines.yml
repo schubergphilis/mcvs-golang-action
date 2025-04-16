@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
       - run: |
-          yaml_file="Taskfile.yml"
+          yaml_file="./build/task.yml"
           empty_lines=$(grep -n -e '^$' "$yaml_file")
 
           awk '
