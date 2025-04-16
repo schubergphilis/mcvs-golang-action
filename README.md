@@ -73,7 +73,7 @@ vars:
 
 includes:
   remote: >-
-    {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+    {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
 ```
 
 and run:
@@ -100,12 +100,9 @@ adjust the `includes` sections like this:
 includes:
   remote:
     taskfile: >-
-      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/Taskfile.yml
+      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
     vars:
-      GCI_SECTIONS: >-
-        -s standard
-        -s default
-        -s alias
+      MOCKERY_VERSION: v3.2.1
 ```
 
 Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.
