@@ -23,6 +23,7 @@ vars:
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
+  GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
   GOLANGCI_LINT_VERSION: 2.0.1
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
@@ -123,6 +124,11 @@ tasks:
       - |
         echo "GOBIN: {{.GOBIN}}"
         echo "GOLANG_PARALLEL_TESTS: {{.GOLANG_PARALLEL_TESTS}}"
+  golangci-lint-config-verify:
+    cmds:
+      - golangci-lint config path
+      - golangci-lint config verify
+    silent: true
   golangci-lint-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
@@ -145,14 +151,30 @@ tasks:
         golangci-lint run \
           --build-tags {{.BUILD_TAGS}} \
           --concurrency {{.GOLANG_PARALLEL_TESTS}} \
+          --config {{.GOLANGCI_LINT_CONFIG_PATH}} \
           --timeout {{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES}}m \
-          --verbose
+          --verbose \
+          {{.EXTRA_ARGS}}
+    silent: true
+  golangci-lint-run-output-json:
+    cmds:
+      - task: golangci-lint-run
+        vars:
+          EXTRA_ARGS: >-
+            --output.json.path stdout
     silent: true
   golangci-lint:
     cmds:
       - task: golangci-lint-install
       - task: golangci-lint-fmt
       - task: golangci-lint-run
+    desc: run golangci-lint
+    silent: true
+  golangci-lint-output-json:
+    cmds:
+      - task: golangci-lint-install
+      - task: golangci-lint-fmt
+      - task: golangci-lint-run-output-json
     desc: run golangci-lint
     silent: true
   golangci-lint-run-without-cache:
