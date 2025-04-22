@@ -175,7 +175,7 @@ tasks:
       - task: golangci-lint-install
       - task: golangci-lint-fmt
       - task: golangci-lint-run-output-json
-    desc: run golangci-lint
+    desc: run golangci-lint with JSON output
     silent: true
   golangci-lint-run-without-cache:
     cmds:
