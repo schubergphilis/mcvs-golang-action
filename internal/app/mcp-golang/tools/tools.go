@@ -30,6 +30,19 @@ func (t *Handler) HandleLint(_ context.Context, request mcp.CallToolRequest) (*m
 	return t.executeTask(arguments)
 }
 
+func (t *Handler) HandleLintWithJSONOutput(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	arguments := []string{
+		"remote:golangci-lint-run-output-json",
+		"-y",
+	}
+
+	dir, ok := request.Params.Arguments["directory"].(string)
+	if ok {
+		arguments = append(arguments, "-d", dir)
+	}
+	return t.executeTask(arguments)
+}
+
 func (t *Handler) HandleUnitTest(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	arguments := []string{
 		"remote:test",

@@ -30,6 +30,17 @@ func main() {
 		toolHandler.HandleLint,
 	)
 	s.AddTool(
+		mcp.NewTool(
+			"static-analysis-with-json-output",
+			mcp.WithDescription("Tool to lint the project (runs static analysis on the codebase) leveraging golangci-lint, but with JSON output"),
+
+			mcp.WithString("directory",
+				mcp.Description("The directory to run the static analysis in"),
+			),
+		),
+		toolHandler.HandleLintWithJSONOutput,
+	)
+	s.AddTool(
 		mcp.NewTool("test",
 			mcp.WithDescription("Tool to run tests on the project"),
 
