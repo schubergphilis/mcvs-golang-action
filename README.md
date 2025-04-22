@@ -53,9 +53,10 @@ do this.
 
 The following variables can be overridden:
 
-| Variable          | Description                |
-| :---------------- | :------------------------- |
-| `MOCKERY_VERSION` | Define the Mockery version |
+| Variable                    | Description                                    |
+| :-------------------------- | :--------------------------------------------- |
+| `GOLANGCI_LINT_CONFIG_PATH` | The path to the configuration of golangci-lint |
+| `MOCKERY_VERSION`           | Define the Mockery version                     |
 
 ## Usage
 
