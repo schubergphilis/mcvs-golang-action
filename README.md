@@ -70,7 +70,7 @@ version: 3
 
 vars:
   REMOTE_URL: https://raw.githubusercontent.com
-  REMOTE_URL_REF: v0.10.2
+  REMOTE_URL_REF: v2.1.0
   REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
 
 includes:

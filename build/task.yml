@@ -330,19 +330,8 @@ tasks:
     silent: true
   mock-generate:
     cmds:
-      - task: mockery-install
-      - |
-        echo "{{.MOCK_GENERATE_DIR}} {{.MOCK_GENERATE_INTERFACE_NAME}}"
-        {{.MOCKERY_BIN}} \
-          --dir {{.MOCK_GENERATE_DIR}} \
-          --name {{.MOCK_GENERATE_INTERFACE_NAME}} \
-          --tags {{.BUILD_TAGS}}
-    desc: generate mocks
-    prompt:
-      - |
-        This unit is unsupported from Mockery v3.
-        Please run `task remote:mocks` instead.
-        Are you still sure you want to run `mock-generate`?
+      - task: mocks
+    desc: Alias for `task remote:mocks`
     silent: true
   mockery-install:
     cmds:
