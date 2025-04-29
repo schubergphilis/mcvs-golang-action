@@ -331,10 +331,7 @@ tasks:
   mock-generate:
     cmds:
       - task: mocks
-    desc: generate mocks
-    prompt:
-      - |
-        This is an alias for `task remote:mocks` please use that command instead
+    desc: Alias for `task remote:mocks`
     silent: true
   mockery-install:
     cmds:
