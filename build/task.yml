@@ -457,6 +457,7 @@ tasks:
         vars:
           TEST_EXTRA_ARGS: >-
             -v
+          TEST_TAGS: "{{.TEST_TAGS}}"
     desc: test within CICD should contain verbose logging to facilitate debugging
     silent: true
   test-component:
