@@ -9,3 +9,11 @@ updates:
       github-actions-all:
         patterns:
           - "*"
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      gomod-all:
+        patterns:
+          - "*"
