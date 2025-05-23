@@ -103,7 +103,7 @@ runs:
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
-    - uses: actions/setup-go@v5.4.0
+    - uses: actions/setup-go@v5.5.0
       if: |
         inputs.release-dir != '' || 
         inputs.testing-type == 'component' ||
