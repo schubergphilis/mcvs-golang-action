@@ -145,6 +145,7 @@ jobs:
           - { testing-type: "lint", build-tags: "e2e" }
           - { testing-type: "lint", build-tags: "integration" }
           - { testing-type: "mcvs-texttidy" }
+          - { testing-type: "mocks-tidy" }
           - { testing-type: "security-golang-modules" }
           - { testing-type: "security-grype" }
           - { testing-type: "security-trivy", security-trivyignore: "" }

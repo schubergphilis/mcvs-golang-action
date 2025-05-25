@@ -41,7 +41,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v2.53.3"}}'
+  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v3.2.5"}}'
   OPA_FMT: "{{.GOBIN}}/opa fmt ."
   OPA_VERSION: v0.70.0
   OS_COMMAND: uname
@@ -337,7 +337,7 @@ tasks:
     cmds:
       - |
         mockery_major_version=$(echo "{{.MOCKERY_VERSION}}" | cut -d '.' -f 1)
-        if ! {{.MOCKERY_BIN}} --version | grep "{{.MOCKERY_VERSION}}"; then
+        if ! {{.MOCKERY_BIN}} version | grep "{{.MOCKERY_VERSION}}"; then
           go install github.com/vektra/mockery/${mockery_major_version}@{{.MOCKERY_VERSION}}
         fi
     internal: true
@@ -348,6 +348,17 @@ tasks:
       - |
         {{.MOCKERY_BIN}}
       - task: format
+    silent: true
+  mocks-tidy:
+    cmds:
+      - |
+        find . -type d -name 'mocks' -exec rm -r {} +
+      - task: mocks
+      - |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "Uncommitted changes detected. Aborting."
+          exit 1
+        fi
     silent: true
   opa-fmt:
     cmds:
