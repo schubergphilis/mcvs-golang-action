@@ -260,7 +260,7 @@ tasks:
       - task: yq-install
       - |
         if [ -f .github/workflows/golang.yml ]; then
-          expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test("schubergphilis/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
+          expected_mcvs_golang_action_version=$(yq '.jobs."mcvs-golang-action".steps[] | select(.uses | test(".*/mcvs-golang-action@.*")) | .uses' .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
           current_mcvs_golang_action_version=$(yq '.vars.REMOTE_URL_REF' Taskfile.yml)
 
           if [ -z "${expected_mcvs_golang_action_version}" ] || [ -z "${current_mcvs_golang_action_version}" ]; then
