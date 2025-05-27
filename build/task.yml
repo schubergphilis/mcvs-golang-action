@@ -356,7 +356,7 @@ tasks:
       - task: mocks
       - |
         if [[ -n "$(git status --porcelain)" ]]; then
-          echo "Uncommitted changes detected. Aborting."
+          echo "Uncommitted changes detected. Did you forget to run: 'task remote:mocks'?"
           exit 1
         fi
     silent: true
