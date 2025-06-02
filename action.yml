@@ -122,6 +122,7 @@ runs:
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'mocks-tidy' ||
         inputs.testing-type == 'unit'
       shell: bash
       run: |
@@ -140,6 +141,7 @@ runs:
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'mocks-tidy' ||
         inputs.testing-type == 'unit'
       run: |
         go mod tidy
@@ -236,6 +238,14 @@ runs:
       shell: bash
       run: |
         task remote:mcvs-texttidy --yes
+    #
+    # Run mocks-tidy.
+    #
+    - name: mocks-tidy
+      if: inputs.testing-type == 'mocks-tidy'
+      shell: bash
+      run: |
+        task remote:mocks-tidy --yes
     #
     # Unit tests.
     #
