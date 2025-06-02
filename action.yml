@@ -110,6 +110,7 @@ runs:
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mocks-tidy' ||
         inputs.testing-type == 'unit'
       with:
         go-version-file: ${{ inputs.go-version-file }}
@@ -130,6 +131,9 @@ runs:
           major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
           go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
         fi
+
+        echo "verifying that task can be found and run..."
+        task --version
     - run: |
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
