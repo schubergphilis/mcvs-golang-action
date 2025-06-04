@@ -5,6 +5,20 @@
 version: "3"
 vars:
   # Variables that have to be defined first as they are used in other variables.
+  CODE_COVERAGE_EXPECTED:
+    sh: |
+      if [ -z "${CODE_COVERAGE_EXPECTED}" ]; then
+        yq '.jobs.mcvs-golang-action.steps[] | select(.uses | test(".*mcvs-golang-action.*")) | .with.code-coverage-expected' .github/workflows/golang.yml
+        exit 0
+      fi
+      echo ${CODE_COVERAGE_EXPECTED}
+  CODE_COVERAGE_FILE_EXCLUSIONS:
+    sh: |
+      if [ -z "${CODE_COVERAGE_FILE_EXCLUSIONS}" ]; then
+        yq '.jobs.mcvs-golang-action.steps[] | select(.uses | test(".*mcvs-golang-action.*")) | .with.golang-unit-tests-exclusions' .github/workflows/golang.yml
+        exit 0
+      fi
+      echo ${CODE_COVERAGE_FILE_EXCLUSIONS}
   GOBIN:
     sh: |
       if [ -z "${GOBIN}" ]; then
