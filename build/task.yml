@@ -89,13 +89,15 @@ tasks:
           TEST_TAGS: integration
           TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
+        local_dir_name="$(basename "$PWD")"
+
         awk '!seen[$0]++' {{.COVERPROFILE}} > {{.COVERPROFILE_UNIQUE}}
         code_coverage_output=$(go tool cover -func {{.COVERPROFILE_UNIQUE}})
         code_coverage_actual=$(echo "${code_coverage_output}" | awk '/total:/ {print $3}' | sed 's/%//')
 
         echo "CODE_COVERAGE_FILE_EXCLUSIONS: {{.CODE_COVERAGE_FILE_EXCLUSIONS}}"
         echo "Code coverage overview:"
-        echo "${code_coverage_output}"
+        echo "${code_coverage_output}" | sed "s|^.*${local_dir_name}/||"
 
         if (( $(echo "${code_coverage_actual} < {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'. Resolve the issue by writing more unit and/or integration tests."
