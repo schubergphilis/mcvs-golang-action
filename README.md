@@ -125,31 +125,29 @@ jobs:
     strategy:
       matrix:
         args:
-          - {
-              release-architecture: "amd64",
-              release-dir: "./cmd/path-to-app",
-              release-type: "binary",
-              release-application-name: "some-app",
-            }
-          - {
-              release-architecture: "arm64",
-              release-dir: "./cmd/path-to-app",
-              release-type: "binary",
-              release-application-name: "some-lambda-func",
-              release-build-tags: "lambda.norpc",
-            }
-          - { testing-type: "component" }
-          - { testing-type: "coverage" }
-          - { testing-type: "integration" }
-          - { testing-type: "lint", build-tags: "component" }
-          - { testing-type: "lint", build-tags: "e2e" }
-          - { testing-type: "lint", build-tags: "integration" }
-          - { testing-type: "mcvs-texttidy" }
-          - { testing-type: "mocks-tidy" }
-          - { testing-type: "security-golang-modules" }
-          - { testing-type: "security-grype" }
-          - { testing-type: "security-trivy", security-trivyignore: "" }
-          - { testing-type: "unit" }
+          - release-architecture: "amd64",
+            release-dir: "./cmd/path-to-app",
+            release-type: "binary",
+            release-application-name: "some-app",
+          - release-architecture: "arm64",
+            release-dir: "./cmd/path-to-app",
+            release-type: "binary",
+            release-application-name: "some-lambda-func",
+            release-build-tags: "lambda.norpc",
+          - testing-type: "component"
+          - testing-type: "coverage"
+          - testing-type: "integration"
+          - testing-type: "lint-commit"
+          - testing-type: "lint-git"
+          - testing-type: "lint", build-tags: "component"
+          - testing-type: "lint", build-tags: "e2e"
+          - testing-type: "lint", build-tags: "integration"
+          - testing-type: "mcvs-texttidy"
+          - testing-type: "mocks-tidy"
+          - testing-type: "security-golang-modules"
+          - testing-type: "security-grype"
+          - testing-type: "security-trivy", security-trivyignore: ""
+          - testing-type: "unit"
     runs-on: ubuntu-22.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
