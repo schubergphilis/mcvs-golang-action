@@ -50,6 +50,10 @@ inputs:
     default: ".trivyignore"
     description: |
       Whether to ignore certain Trivy vulnerabilities or not.
+  task-install:
+    default: no
+    description: |
+      Whether Task should be installed.
   task-version:
     default: 3.43.3
     description: |
@@ -115,6 +119,7 @@ runs:
     - uses: actions/setup-go@v5.5.0
       if: |
         inputs.release-dir != '' || 
+        inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -128,6 +133,7 @@ runs:
     - name: install task
       if: |
         inputs.release-dir != '' || 
+        inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
