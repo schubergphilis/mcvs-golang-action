@@ -135,6 +135,54 @@ tasks:
             bash -s -- --version {{.HELM_VERSION}}
         fi
     silent: true
+  lint-git:
+    - task: lint-git-commits-behind-main
+    - task: lint-git-main-merged-instead-of-rebased
+  lint-git-commits-behind-main:
+    cmds:
+      - |
+        commits_behind=$(git rev-list --count HEAD..origin/main)
+        if (( commits_behind > 0 )); then
+          echo "❗ Branch is behind main by $commits_behind commits"
+          exit 1
+        fi
+        echo "✅ Branch is up to date with main"
+    silent: true
+  lint-git-main-merged-instead-of-rebased:
+    cmds:
+      - |
+        MAIN_BRANCH="main"
+        REMOTE="origin"
+
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+        if [[ "$current_branch" == "$MAIN_BRANCH" ]]; then
+          echo "Already on $MAIN_BRANCH, nothing to check."
+          exit 0
+        fi
+
+        commits=$(git rev-list $MAIN_BRANCH..HEAD --merges)
+
+        for sha in $commits; do
+          p1=$(git rev-parse "$sha^1")
+          p2=$(git rev-parse "$sha^2")
+
+          if git merge-base --is-ancestor "$p1" "$REMOTE/$MAIN_BRANCH" && ! git merge-base --is-ancestor "$p2" "$REMOTE/$MAIN_BRANCH"; then
+            merged_from="$p1"
+          elif git merge-base --is-ancestor "$p2" "$REMOTE/$MAIN_BRANCH" && ! git merge-base --is-ancestor "$p1" "$REMOTE/$MAIN_BRANCH"; then
+            merged_from="$p2"
+          else
+            continue
+          fi
+
+          echo "❗ Detected a merge of $MAIN_BRANCH into $current_branch at commit $sha"
+          echo "  Commit message: $(git log --format=%s -n 1 $sha)"
+          exit 1
+        done
+
+        echo "✅ No merges of $MAIN_BRANCH detected in $current_branch! (Likely rebased)"
+        exit 0
+    silent: true
   golang-log:
     cmds:
       - |

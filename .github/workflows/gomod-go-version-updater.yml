@@ -1,0 +1,14 @@
+---
+name: gomod-go-version-updater-action
+"on":
+  schedule:
+    - cron: "42 6 * * *"
+permissions:
+  contents: write
+  pull-requests: write
+  repository-projects: write
+jobs:
+  gomod-go-version-updater-action:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: schubergphilis/gomod-go-version-updater-action@v0.3.1

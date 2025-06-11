@@ -1,0 +1,21 @@
+---
+name: golang
+"on": pull_request
+permissions:
+  contents: read
+  packages: read
+jobs:
+  mcvs-golang-action:
+    strategy:
+      matrix:
+        args:
+          - testing-type: lint-commit
+          - testing-type: lint-git
+    runs-on: ubuntu-24.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: schubergphilis/mcvs-golang-action@lint-git
+        with:
+          testing-type: ${{ matrix.args.testing-type }}

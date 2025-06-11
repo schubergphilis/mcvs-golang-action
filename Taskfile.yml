@@ -1,0 +1,12 @@
+---
+version: 3
+
+vars:
+  REMOTE_URL: https://raw.githubusercontent.com
+  REMOTE_URL_REF: lint-git
+  REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
+
+includes:
+  remote:
+    taskfile: >-
+      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
