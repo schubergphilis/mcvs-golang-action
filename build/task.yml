@@ -180,7 +180,7 @@ tasks:
           exit 1
         done
 
-        echo "✅ No merges of $MAIN_BRANCH detected in $current_branch! (Likely rebased)"
+        echo "✅ No merges of $MAIN_BRANCH detected in $current_branch"
         exit 0
     silent: true
   golang-log:
