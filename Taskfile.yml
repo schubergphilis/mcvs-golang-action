@@ -3,7 +3,7 @@ version: 3
 
 vars:
   REMOTE_URL: https://raw.githubusercontent.com
-  REMOTE_URL_REF: lint-git
+  REMOTE_URL_REF: v3.1.0
   REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
 
 includes:
