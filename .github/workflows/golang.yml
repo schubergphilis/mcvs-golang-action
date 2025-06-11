@@ -16,6 +16,6 @@ jobs:
       TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: schubergphilis/mcvs-golang-action@lint-git
+      - uses: schubergphilis/mcvs-golang-action@v3.1.0
         with:
           testing-type: ${{ matrix.args.testing-type }}
