@@ -163,6 +163,7 @@ jobs:
           release-dir: ${{ matrix.args.release-dir }}
           release-type: ${{ matrix.args.release-type }}
           security-trivyignore: ${{ matrix.args.security-trivyignore }}
+          task-install: yes
           testing-type: ${{ matrix.args.testing-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
           test-timeout: ${{ env.test-timeout }}
@@ -187,6 +188,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | release-build-tags                              |         |          |
 | release-dir                                     |         |          |
 | release-type                                    |         |          |
+| task-install                                    | x       |          |
 | task-version                                    | x       |          |
 | testing-type                                    |         |          |
 | test-timeout                                    |         |          |
