@@ -28,7 +28,6 @@ inputs:
     description: |
       The Path to the go.mod or go.work file.
   grype-version:
-    default: v0.90.0
     description: The grype version to be used by the anchore/scan-action.
   release-application-name:
     description: |

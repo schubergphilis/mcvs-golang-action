@@ -182,7 +182,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
-| grype-version                                   | x       |          |
+| grype-version                                   |         |          |
 | release-application-name                        |         |          |
 | release-architecture                            |         |          |
 | release-build-tags                              |         |          |
