@@ -28,7 +28,6 @@ inputs:
     description: |
       The Path to the go.mod or go.work file.
   grype-version:
-    default: v0.90.0
     description: The grype version to be used by the anchore/scan-action.
   release-application-name:
     description: |
@@ -195,7 +194,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v6.2.0
+    - uses: anchore/scan-action@v6.3.0
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         grype-version: ${{ inputs.grype-version }}
