@@ -148,9 +148,10 @@ jobs:
           - testing-type: "mocks-tidy"
           - testing-type: "security-golang-modules"
           - testing-type: "security-grype"
-          - testing-type: "security-trivy", security-trivyignore: ""
+          - testing-type: "security-trivy"
+            security-trivyignore: ""
           - testing-type: "unit"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
       test-timeout: 10m0s

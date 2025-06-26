@@ -11,11 +11,17 @@ jobs:
         args:
           - testing-type: lint-commit
           - testing-type: lint-git
+          - testing-type: security-golang-modules
+          - testing-type: security-grype
+          - testing-type: security-trivy
+            security-trivyignore: ""
     runs-on: ubuntu-24.04
     env:
       TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: schubergphilis/mcvs-golang-action@v3.2.1
+      - uses: ./
         with:
+          security-trivyignore: ${{ matrix.args.security-trivyignore }}
+          task-install: yes
           testing-type: ${{ matrix.args.testing-type }}

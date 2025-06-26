@@ -80,6 +80,76 @@ tasks:
         go mod tidy
     desc: download go modules
     silent: true
+  check-docker-networks:
+    cmds:
+      - |
+        get_docker_network_count() {
+          docker network ls --format "table {{.ID}}\t{{.Name}}\t{{.Driver}}\t{{.Scope}}" | tail -n +2 | wc -l
+        }
+
+        if [ "{{.CHECK_TYPE}}" = "before" ]; then
+          echo "Checking Docker networks before test..."
+          networks_count=$(get_docker_network_count)
+          echo "Docker networks before: ${networks_count}"
+          echo "${networks_count}" > /tmp/docker_networks_before
+        fi
+
+        if [ "{{.CHECK_TYPE}}" = "after" ]; then
+          echo "Checking Docker networks after test..."
+          networks_after=$(get_docker_network_count)
+          networks_before=$(cat /tmp/docker_networks_before 2>/dev/null || echo "0")
+          echo "Docker networks after: ${networks_after}"
+
+          # Check for both high network count and orphaned networks
+          show_warning=false
+          warning_messages=""
+
+          if [ "${networks_after}" -gt "4" ]; then
+            show_warning=true
+            warning_messages="${warning_messages}# Found ${networks_after} Docker networks, which exceeds the"$'\n'
+            warning_messages="${warning_messages}# default of three networks: bridge, host and none."$'\n'
+            warning_messages="${warning_messages}#"$'\n'
+          fi
+
+          if [ "${networks_after}" -gt "${networks_before}" ]; then
+            show_warning=true
+            if [ -n "${warning_messages}" ]; then
+              warning_messages="${warning_messages}# Additionally, found $((networks_after - networks_before)) orphaned Docker"$'\n'
+            else
+              warning_messages="${warning_messages}# Found $((networks_after - networks_before)) orphaned Docker"$'\n'
+            fi
+            warning_messages="${warning_messages}# networks."$'\n'
+            warning_messages="${warning_messages}#"$'\n'
+            warning_messages="${warning_messages}# Note: Orphaned networks were not removed automatically."$'\n'
+            warning_messages="${warning_messages}# Please check whether they are cleaned by the component"$'\n'
+            warning_messages="${warning_messages}# and/or integration tests."$'\n'
+            warning_messages="${warning_messages}#"$'\n'
+          fi
+
+          if [ "${show_warning}" = "true" ]; then
+            echo
+            echo "###############################################################"
+            echo "#"
+            echo "# WARNING"
+            echo "#"
+            echo "###############################################################"
+            echo "#"
+            echo -e "${warning_messages}"
+            echo "# Current Docker networks:"
+            echo "# $(docker network ls)"
+            echo "#"
+            if [ "${networks_after}" -gt "4" ] && [ "${networks_after}" -le "${networks_before}" ]; then
+              echo "# Please check whether the component and/or integration"
+              echo "# tests clean up unused Docker networks."
+              echo "#"
+            fi
+            echo "###############################################################"
+
+            sleep 5 # to ensure that user will see the message
+          fi
+        fi
+    internal: true
+    silent: true
   coverage:
     cmds:
       - task: test
@@ -540,9 +610,15 @@ tasks:
     silent: true
   test-component:
     cmds:
+      - task: check-docker-networks
+        vars:
+          CHECK_TYPE: before
       - task: test
         vars:
           TEST_TAGS: component
+      - task: check-docker-networks
+        vars:
+          CHECK_TYPE: after
     desc: run component tests
     silent: true
   test-component-cicd:
@@ -568,9 +644,15 @@ tasks:
     silent: true
   test-integration:
     cmds:
+      - task: check-docker-networks
+        vars:
+          CHECK_TYPE: before
       - task: test
         vars:
           TEST_TAGS: integration
+      - task: check-docker-networks
+        vars:
+          CHECK_TYPE: after
     desc: run integration tests
     silent: true
   test-integration-cicd:

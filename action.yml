@@ -104,7 +104,9 @@ runs:
         npm install --save-dev \
           commitlint-plugin-function-rules \
           @commitlint/{cli,config-conventional,ensure}
-        cat ${GITHUB_ACTION_PATH}/commitlint.config.mjs > commitlint.config.mjs
+
+        cat ${GITHUB_ACTION_PATH}/configs/commitlint.config.mjs > \
+          commitlint.config.mjs
 
         npx commitlint \
           --from ${{ github.event.pull_request.base.sha }} \
