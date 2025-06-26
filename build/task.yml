@@ -34,6 +34,7 @@ vars:
   OS_TYPE_MAC: Darwin
   # Variables that are sorted alphabetically and are used in the tasks.
   BUILD_TAGS: '{{ .BUILD_TAGS | default "component,e2e,integration" }}'
+  CODE_COVERAGE_STRICT: '{{.CODE_COVERAGE_STRICT | default "true"}}'
   CODE_COVERAGE_TIMEOUT: '{{.CODE_COVERAGE_TIMEOUT | default "4m0s"}}'
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
@@ -99,10 +100,12 @@ tasks:
         echo "Code coverage overview:"
         echo "${code_coverage_output}" | sed "s|^[a-z0-9.\.\/]\+\/${local_dir_name}/||"
 
+        echo "CODE_COVERAGE_STRICT: {{.CODE_COVERAGE_STRICT}}"
+
         if (( $(echo "${code_coverage_actual} < {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' is too low. Expected: '{{.CODE_COVERAGE_EXPECTED}}'. Resolve the issue by writing more unit and/or integration tests."
           exit 1
-        elif (( $(echo "${code_coverage_actual} > {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
+        elif [ "{{.CODE_COVERAGE_STRICT}}" = "true" ] && (( $(echo "${code_coverage_actual} > {{.CODE_COVERAGE_EXPECTED}}" | bc -l) )); then
           echo "The actual code coverage: '${code_coverage_actual}' exceeds the expected coverage. Please adjust the threshold that is defined in the .github/workflows/golang.yml workflow from '{{.CODE_COVERAGE_EXPECTED}}' to '${code_coverage_actual}'."
           exit 1
         fi

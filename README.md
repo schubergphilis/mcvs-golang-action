@@ -53,10 +53,11 @@ do this.
 
 The following variables can be overridden:
 
-| Variable                    | Description                                    |
-| :-------------------------- | :--------------------------------------------- |
-| `GOLANGCI_LINT_CONFIG_PATH` | The path to the configuration of golangci-lint |
-| `MOCKERY_VERSION`           | Define the Mockery version                     |
+| Variable                    | Description                                                                                              |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------- |
+| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage. |
+| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                |
+| `MOCKERY_VERSION`           | Specifies the Mockery version to use.                                                                    |
 
 ## Usage
 
@@ -104,6 +105,7 @@ includes:
     taskfile: >-
       {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
     vars:
+      CODE_COVERAGE_STRICT: "false"
       MOCKERY_VERSION: v3.2.1
 ```
 
