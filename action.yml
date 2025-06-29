@@ -79,6 +79,15 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # - uses: anchore/sbom-action@v0.20.1
+    #   with:
+    #     file: ./action.yml
+    #     format: cyclonedx-json
+    - uses: anchore/sbom-action/publish-sbom@v0.20.1
+      with:
+        file: ./action.yml
+        format: cyclonedx-json
+        sbom-artifact-match: ".*\\.cyclonedx.json$"
     - if: |
         github.event_name == 'pull_request' &&
         inputs.testing-type == 'lint-commit' ||

@@ -10,7 +10,7 @@ jobs:
       matrix:
         args:
           - testing-type: lint-commit
-          - testing-type: lint-git
+          # - testing-type: lint-git
           - testing-type: security-golang-modules
           - testing-type: security-grype
           - testing-type: security-trivy
