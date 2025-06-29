@@ -1,0 +1,37 @@
+---
+name: action-inputs-sorted-check
+on:
+  push:
+    paths:
+      - action.yml
+permissions:
+  contents: read
+jobs:
+  check-action-inputs-sorted:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Validate input key order in action.yml
+        run: |
+          inputs_file="action.yml"
+
+          current=$(yq e '.inputs | keys' "${inputs_file}" | sed 's/^- //')
+          sorted=$(echo "${current}" | sort)
+
+          if [[ "${current}" != "${sorted}" ]]; then
+            echo "❌ Inputs in ${inputs_file} are not sorted alphabetically."
+            echo
+            echo "🔍 Current order:"
+            echo "${current}"
+            echo
+            echo "✅ Expected order:"
+            echo "${sorted}"
+            echo
+            echo "🧩 Suggested changes (move lines):"
+
+            paste <(echo "${current}") <(echo "${sorted}") | awk '$1 != $2 { printf "  Move \"%s\" to where \"%s\" is.\n", $1, $2 }'
+
+            exit 1
+          else
+            echo "✅ Inputs in ${inputs_file} are sorted alphabetically!"
+          fi

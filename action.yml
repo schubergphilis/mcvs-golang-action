@@ -15,18 +15,18 @@ inputs:
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
-  golangci-timeout:
-    description: |
-      The duration before golangci-lint times out. If <= 0, then the timeout is
-      disabled.
-  golang-unit-tests-exclusions:
-    default: " "
-    description: |
-      The Golang paths that should be excluded from unit testing.
   go-version-file:
     default: "go.mod"
     description: |
       The Path to the go.mod or go.work file.
+  golang-unit-tests-exclusions:
+    default: " "
+    description: |
+      The Golang paths that should be excluded from unit testing.
+  golangci-timeout:
+    description: |
+      The duration before golangci-lint times out. If <= 0, then the timeout is
+      disabled.
   grype-version:
     description: The grype version to be used by the anchore/scan-action.
   release-application-name:
@@ -81,18 +81,20 @@ runs:
   steps:
     - if: |
         github.event_name == 'pull_request' &&
-        inputs.testing-type == 'lint-commit' ||
-        inputs.testing-type == 'lint-git'
+        (inputs.testing-type == 'lint-commit' ||
+          inputs.testing-type == 'lint-git')
       uses: actions/checkout@v4.2.2
       with:
         fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
     - if: |
         github.event_name == 'pull_request' &&
         inputs.testing-type == 'lint-git'
       run: |
         git fetch origin main
         git checkout main
-        git checkout ${{ github.head_ref || github.ref_name }}
+        git checkout ${{ github.event.pull_request.head.ref }}
       shell: bash
     #
     # Commit lint
