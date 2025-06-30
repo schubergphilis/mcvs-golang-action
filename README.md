@@ -205,6 +205,46 @@ Note: If an **x** is registered in the Default column, refer to the
 
 <!-- markdownlint-enable MD013 -->
 
+### Releases
+
+Create a `.github/workflows/golang-releases.yml` file with the following
+content:
+
+```yml
+---
+name: golang-releases
+"on": push
+permissions:
+  contents: write
+  packages: read
+jobs:
+  mcvs-golang-action:
+    strategy:
+      matrix:
+        args:
+          - release-application-name: mcvs-image-downloader
+            release-architecture: amd64
+            release-dir: cmd/mcvs-image-downloader
+            release-type: binary
+          - release-application-name: mcvs-image-downloader
+            release-architecture: arm64
+            release-dir: cmd/mcvs-image-downloader
+            release-type: binary
+    runs-on: ubuntu-24.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: schubergphilis/mcvs-golang-action@v3.2.2
+        with:
+          release-application-name: ${{ matrix.args.release-application-name }}
+          release-architecture: ${{ matrix.args.release-architecture }}
+          release-build-tags: ${{ matrix.args.release-build-tags }}
+          release-dir: ${{ matrix.args.release-dir }}
+          release-type: ${{ matrix.args.release-type }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ### Integration
 
 To execute integration tests, make sure that the code is located in a file with
