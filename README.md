@@ -53,11 +53,12 @@ do this.
 
 The following variables can be overridden:
 
-| Variable                    | Description                                                                                              |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------- |
-| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage. |
-| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                |
-| `MOCKERY_VERSION`           | Specifies the Mockery version to use.                                                                    |
+| Variable                    | Description                                                                                                                           |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage.                              |
+| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                                             |
+| `MOCKERY_VERSION`           | Specifies the Mockery version to use.                                                                                                 |
+| `PRESENT_VERSION`           | Indicates the version of [present](https://pkg.go.dev/golang.org/x/tools/present), a tool for both creating and giving presentations. |
 
 ## Usage
 
