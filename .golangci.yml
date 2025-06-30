@@ -1,0 +1,89 @@
+# yamllint disable rule:line-length
+---
+version: "2"
+linters:
+  default: all
+  disable:
+    # err113 is disabled as it does not make any sense to use wrapped static
+    # errors as it contains superfluous escaped double quotes.
+    - err113
+    # exhaustruct is disabled as there are scenarios in this code base where a
+    # some keys of a struct should be empty while testing.
+    - exhaustruct
+    # gochecknoglobals is disabled as there are global errors and component
+    # test variables.
+    - gochecknoglobals
+    # testpackage is disabled as it is a bad practice to make methods public to
+    # be able to test them.
+    - testpackage
+  settings:
+    depguard:
+      rules:
+        main:
+          files:
+            - "!**/*_a _file.go"
+          allow:
+            - $gostd
+            - github.com/go-openapi/runtime
+            - github.com/go-openapi/runtime/client
+            - github.com/go-openapi/strfmt
+            - github.com/go-playground/validator/v10
+            - github.com/golang-jwt/jwt/v5
+            - github.com/google/uuid
+            - github.com/hashicorp/go-getter
+            - github.com/hashicorp/go-retryablehttp
+            - github.com/jackc/pgx/v5
+            - github.com/labstack/echo/v4
+            - github.com/labstack/echo/v4/middleware
+            - github.com/lib/pq
+            - github.com/mholt/archives
+            - github.com/mitchellh/go-homedir
+            - github.com/ory/dockertest/v3
+            - github.com/ory/dockertest/v3/docker
+            - github.com/signintech/gopdf
+            - github.com/sirupsen/logrus
+            - github.com/stretchr/testify/assert
+            - github.com/stretchr/testify/mock
+            - github.com/stretchr/testify/require
+            - github.com/stretchr/testify/suite
+            - github.com/swaggo/echo-swagger
+            - github.com/swaggo/swag
+            - golang.org/x/sys/unix
+            - golang.org/x/time/rate
+            - gopkg.in/yaml.v2
+          deny:
+            - pkg: log
+              desc: Use 'log "github.com/sirupsen/logrus"' instead
+            - pkg: github.com/pkg/errors
+              desc: Should be replaced by standard lib errors package
+            - pkg: github.com/anchore/go-homedir
+              desc: Must be replaced by 'github.com/mitchellh/go-homedir'
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - internal/app/mcvs-scanner-cli/application/swagger
+      - third_party$
+      - builtin$
+      - examples$
+    rules:
+      - linters:
+          - funlen
+        path: _test\.go
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - internal/app/mcvs-scanner-cli/application/swagger
+      - third_party$
+      - builtin$
+      - examples$
