@@ -570,6 +570,7 @@ tasks:
       # TODO: there is an open issue for the flag version that is not included
       # in present, see: https://github.com/golang/go/issues/74427
       - go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
+    silent: true
   present-config:
     cmds:
       - |
@@ -580,9 +581,11 @@ tasks:
         chmod 744 {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl
         awk '/Thank you/{for(i=NR-1;i<=NR+8;i++) delete a[i]; next} {a[NR]=$0} END {for(i=1;i<=NR;i++) if(i in a) print a[i]}' {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl > {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmp
         mv {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmp {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl
+    silent: true
   present-run:
     cmds:
       - present -base {{.PRESENT_PRESENTATIONS_HOME}} -content {{.PRESENT_PRESENTATIONS_HOME}}
+    silent: true
   regal-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
