@@ -119,7 +119,7 @@ Create a `.github/workflows/golang.yml` file with the following content:
 ```yml
 ---
 name: Golang
-"on": push
+"on": pull_request
 permissions:
   contents: read
   packages: read
