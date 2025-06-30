@@ -64,6 +64,7 @@ vars:
     sh: "{{.OS_COMMAND}} -s"
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
+  PRESENT: "{{.GOBIN}}/present"
   PRESENT_VERSION: v0.34.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL: "{{.GOBIN}}/regal"
@@ -519,9 +520,10 @@ tasks:
       - task: present-run
   present-install:
     cmds:
-      # TODO: there is an open issue for the flag version that is not included
-      # in present, see: https://github.com/golang/go/issues/74427
-      - go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
+      - |
+        if ! go version -m {{.PRESENT}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
+          go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
+        fi
     silent: true
   present-config:
     cmds:
