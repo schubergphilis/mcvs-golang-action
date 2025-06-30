@@ -1,3 +1,5 @@
 .DS_Store
 .task
 .vscode
+docs/presentations/static
+docs/presentations/templates

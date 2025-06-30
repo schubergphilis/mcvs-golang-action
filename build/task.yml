@@ -64,6 +64,8 @@ vars:
     sh: "{{.OS_COMMAND}} -s"
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
+  PRESENT_VERSION: v0.34.0
+  PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
@@ -558,6 +560,29 @@ tasks:
       Install and run OPA. Issue: 'task remote:opa QUERY_EXPLANATION=full' to
       follow the complete policy evaluation.
     silent: true
+  present:
+    cmds:
+      - task: present-install
+      - task: present-config
+      - task: present-run
+  present-install:
+    cmds:
+      # TODO: there is an open issue for the flag version that is not included
+      # in present, see: https://github.com/golang/go/issues/74427
+      - go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
+  present-config:
+    cmds:
+      - |
+        for dir in static templates; do
+          cp -R ~/go/pkg/mod/golang.org/x/tools@{{.PRESENT_VERSION}}/cmd/present//"$dir" {{.PRESENT_PRESENTATIONS_HOME}};
+          chmod -R 744 {{.PRESENT_PRESENTATIONS_HOME}}/${dir};
+        done
+        chmod 744 {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl
+        awk '/Thank you/{for(i=NR-1;i<=NR+8;i++) delete a[i]; next} {a[NR]=$0} END {for(i=1;i<=NR;i++) if(i in a) print a[i]}' {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl > {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmp
+        mv {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmp {{.PRESENT_PRESENTATIONS_HOME}}/templates/slides.tmpl
+  present-run:
+    cmds:
+      - present -base {{.PRESENT_PRESENTATIONS_HOME}} -content {{.PRESENT_PRESENTATIONS_HOME}}
   regal-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
