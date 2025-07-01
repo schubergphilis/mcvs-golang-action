@@ -1,6 +1,6 @@
 ---
 name: General
-"on": push
+"on": pull_request
 permissions:
   contents: read
   packages: read
@@ -9,10 +9,10 @@ jobs:
     strategy:
       matrix:
         args:
-          - testing-type: "lint-git"
+          - testing-type: lint-git
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: schubergphilis/mcvs-general-action@v0.1.0-rc.1
+      - uses: schubergphilis/mcvs-general-action@v0.1.0
         with:
           testing-type: ${{ matrix.args.testing-type }}
