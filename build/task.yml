@@ -51,23 +51,26 @@ vars:
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.31.0
   GOVULNCHECK_VERSION: v1.1.3
+  GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GQLGENC_VERSION: v0.25.4
+  GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   HELM_VERSION: v3.16.2
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
   MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v3.2.5"}}'
-  OPA_FMT: "{{.GOBIN}}/opa fmt ."
+  OPA_BIN: "{{.GOBIN}}/opa"
+  OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v0.70.0
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
-  PRESENT: "{{.GOBIN}}/present"
+  PRESENT_BIN: "{{.GOBIN}}/present"
   PRESENT_VERSION: v0.34.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
-  REGAL: "{{.GOBIN}}/regal"
+  REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
   SED_INSERT_ADDITION:
     sh: |
@@ -228,7 +231,7 @@ tasks:
         if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
           curl \
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
-            sh -s -- -b $(go env GOPATH)/bin v{{.GOLANGCI_LINT_VERSION}}
+            sh -s -- -b {{.GOBIN}} v{{.GOLANGCI_LINT_VERSION}}
         fi
     silent: true
   golangci-lint-fmt:
@@ -285,7 +288,7 @@ tasks:
   govulncheck-install:
     cmds:
       - |
-        if ! govulncheck --version | grep -q {{.GOVULNCHECK_VERSION}}; then
+        if ! {{.GOVULNCHECK_BIN}} --version | grep -q {{.GOVULNCHECK_VERSION}}; then
           go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
         fi
     silent: true
@@ -293,14 +296,14 @@ tasks:
     cmds:
       - task: govulncheck-install
       - |
-        govulncheck -tags {{.BUILD_TAGS}} ./...
+        {{.GOVULNCHECK_BIN}} -tags {{.BUILD_TAGS}} ./...
     desc: check for vulnerabilities with govulncheck
     silent: true
   gqlgenc-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! gqlgenc version | grep -q {{.GQLGENC_VERSION}}; then
+        if ! {{.GQLGENC_BIN}} version | grep -q {{.GQLGENC_VERSION}}; then
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
   keep-local-task-up-to-date-with-version-defined-in-action:
@@ -467,7 +470,7 @@ tasks:
   opa-install:
     cmds:
       - |
-        if ! opa version | grep -q {{.OPA_VERSION}}; then
+        if ! {{.OPA_BIN}} version | grep -q {{.OPA_VERSION}}; then
           go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
         fi
     silent: true
@@ -538,23 +541,23 @@ tasks:
     silent: true
   present-run:
     cmds:
-      - present -base {{.PRESENT_PRESENTATIONS_HOME}} -content {{.PRESENT_PRESENTATIONS_HOME}}
+      - "{{.PRESENT_BIN}} -base {{.PRESENT_PRESENTATIONS_HOME}} -content {{.PRESENT_PRESENTATIONS_HOME}}"
     silent: true
   regal-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! regal version | grep -q {{.REGAL_VERSION}}; then
+        if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/StyraInc/regal/issues/1275
-          curl -L -o {{.REGAL}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
-          chmod +x {{.REGAL}}
+          curl -L -o {{.REGAL_BIN}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
+          chmod +x {{.REGAL_BIN}}
         fi
     silent: true
   regal-run:
     cmds:
       - |
-        if ! regal lint .; then
+        if ! {{.REGAL_BIN}} lint .; then
           echo "regal linting failed. Run: 'task remote:opa-fmt-write' to fix the issue"
           exit 1
         fi
