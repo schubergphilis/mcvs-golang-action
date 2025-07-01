@@ -362,7 +362,7 @@ runs:
         github.event_name == 'push' && 
         contains(github.ref, 'refs/tags/') && 
         inputs.release-dir != ''
-      uses: svenstaro/upload-release-action@2.10.0
+      uses: svenstaro/upload-release-action@2.11.0
       with:
         repo_token: ${{ inputs.token }}
         file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
