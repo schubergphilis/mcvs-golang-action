@@ -81,21 +81,12 @@ runs:
   steps:
     - if: |
         github.event_name == 'pull_request' &&
-        (inputs.testing-type == 'lint-commit' ||
-          inputs.testing-type == 'lint-git')
+        inputs.testing-type == 'lint-commit'
       uses: actions/checkout@v4.2.2
       with:
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.ref }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
-    - if: |
-        github.event_name == 'pull_request' &&
-        inputs.testing-type == 'lint-git'
-      run: |
-        git fetch origin main
-        git checkout main
-        git checkout ${{ github.event.pull_request.head.ref }}
-      shell: bash
     #
     # Commit lint
     #
@@ -127,7 +118,6 @@ runs:
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
-        inputs.testing-type == 'lint-git' ||
         inputs.testing-type == 'mocks-tidy' ||
         inputs.testing-type == 'unit'
       with:
@@ -141,7 +131,6 @@ runs:
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
-        inputs.testing-type == 'lint-git' ||
         inputs.testing-type == 'mcvs-texttidy' ||
         inputs.testing-type == 'mocks-tidy' ||
         inputs.testing-type == 'unit'
@@ -175,11 +164,6 @@ runs:
           exit 1
         fi
       shell: bash
-    - name: lint-git
-      if: inputs.testing-type == 'lint-git'
-      shell: bash
-      run: |
-        task remote:lint-git --yes
     #
     # Verify downloaded dependencies.
     #
