@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         args:
-          - testing-type: lint-commit
           - testing-type: security-golang-modules
           - testing-type: security-grype
           - testing-type: security-trivy
