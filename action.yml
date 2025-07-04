@@ -79,33 +79,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - if: |
-        github.event_name == 'pull_request' &&
-        inputs.testing-type == 'lint-commit'
-      uses: actions/checkout@v4.2.2
-      with:
-        fetch-depth: 0
-        ref: ${{ github.event.pull_request.head.ref }}
-        repository: ${{ github.event.pull_request.head.repo.full_name }}
-    #
-    # Commit lint
-    #
-    - if: |
-        github.event_name == 'pull_request' &&
-        inputs.testing-type == 'lint-commit'
-      run: |
-        npm install --save-dev \
-          commitlint-plugin-function-rules \
-          @commitlint/{cli,config-conventional,ensure}
-
-        cat ${GITHUB_ACTION_PATH}/configs/commitlint.config.mjs > \
-          commitlint.config.mjs
-
-        npx commitlint \
-          --from ${{ github.event.pull_request.base.sha }} \
-          --to ${{ github.event.pull_request.head.sha }} \
-          --verbose
-      shell: bash
     #
     # Install task and the golang version that has been defined in the go.mod
     # file.

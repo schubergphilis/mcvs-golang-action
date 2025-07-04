@@ -140,7 +140,6 @@ jobs:
           - testing-type: "component"
           - testing-type: "coverage"
           - testing-type: "integration"
-          - testing-type: "lint-commit"
           - testing-type: "lint", build-tags: "component"
           - testing-type: "lint", build-tags: "e2e"
           - testing-type: "lint", build-tags: "integration"
