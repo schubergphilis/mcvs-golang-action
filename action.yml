@@ -54,7 +54,7 @@ inputs:
     description: |
       Whether Task should be installed.
   task-version:
-    default: 3.43.3
+    default: 3.44.0
     description: |
       The Task version that has to be installed and used.
   test-timeout:
@@ -85,7 +85,7 @@ runs:
     #
     - uses: actions/setup-go@v5.5.0
       if: |
-        inputs.release-dir != '' || 
+        inputs.release-dir != '' ||
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
@@ -98,7 +98,7 @@ runs:
         cache: false
     - name: install task
       if: |
-        inputs.release-dir != '' || 
+        inputs.release-dir != '' ||
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
@@ -121,7 +121,7 @@ runs:
       shell: bash
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
     - if: |
-        inputs.release-dir != '' || 
+        inputs.release-dir != '' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
         inputs.testing-type == 'integration' ||
@@ -316,8 +316,8 @@ runs:
     #
     - name: Upload binaries to release
       if: |
-        github.event_name == 'push' && 
-        contains(github.ref, 'refs/tags/') && 
+        github.event_name == 'push' &&
+        contains(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
       uses: svenstaro/upload-release-action@2.11.0
       with:
