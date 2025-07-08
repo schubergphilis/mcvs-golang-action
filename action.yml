@@ -155,7 +155,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v6.3.0
+    - uses: anchore/scan-action@v6.4.0
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         grype-version: ${{ inputs.grype-version }}
@@ -178,7 +178,7 @@ runs:
     # Duplicated trivy-action parameters as GitHub actions do NOT support
     # anchors: https://github.com/actions/runner/issues/1182
     #
-    - uses: aquasecurity/trivy-action@0.31.0
+    - uses: aquasecurity/trivy-action@0.32.0
       if: inputs.token != '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -192,7 +192,7 @@ runs:
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
         trivyignores: ${{ inputs.security-trivyignore }}
-    - uses: aquasecurity/trivy-action@0.31.0
+    - uses: aquasecurity/trivy-action@0.32.0
       if: inputs.token == '' && inputs.testing-type == 'security-trivy'
       env:
         TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
@@ -319,7 +319,7 @@ runs:
         github.event_name == 'push' &&
         contains(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
-      uses: svenstaro/upload-release-action@2.11.0
+      uses: svenstaro/upload-release-action@2.11.2
       with:
         repo_token: ${{ inputs.token }}
         file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
