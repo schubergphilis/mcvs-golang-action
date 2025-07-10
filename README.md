@@ -205,6 +205,9 @@ Note: If an **x** is registered in the Default column, refer to the
 
 ### Releases
 
+In some cases, you may want the executable binary to be built and released
+automatically. This action will build the binary which could then be used
+as a release asset.
 Create a `.github/workflows/golang-releases.yml` file with the following
 content:
 
