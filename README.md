@@ -205,6 +205,10 @@ Note: If an **x** is registered in the Default column, refer to the
 
 ### Releases
 
+In some cases, you may want the executable binary to be built and released
+automatically. This action will build the binary which could then be used
+as a release asset.
+
 Create a `.github/workflows/golang-releases.yml` file with the following
 content:
 
@@ -233,7 +237,7 @@ jobs:
       TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: schubergphilis/mcvs-golang-action@v3.2.2
+      - uses: schubergphilis/mcvs-golang-action@v3.4.2
         with:
           release-application-name: ${{ matrix.args.release-application-name }}
           release-architecture: ${{ matrix.args.release-architecture }}
