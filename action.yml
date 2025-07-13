@@ -37,11 +37,15 @@ inputs:
       The architecture of the release, e.g. amd64, arm64, etc.
   release-build-tags:
     description: |
-      The build tags that have to be used when building the release. eg for \
+      The build tags that have to be used when building the release. e.g. for \
       AWS Lambda, the tag lambda.norpc is used.
   release-dir:
     description: |
       The directory of the main.go file to be compiled and released.
+  release-os:
+    default: linux
+    description: |
+      The OS of the main.go file to be compiled and released.
   release-type:
     description: |
       The type of the release, e.g. binary, zip, etc.
@@ -285,16 +289,19 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         BUILD_DIR: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}
-        GOOS: linux
         GOARCH: ${{ inputs.release-architecture }}
+        GOOS: ${{ inputs.release-os }}
         SOURCE_FILE: ${{ inputs.release-dir }}/main.go
       run: |
-        mkdir -p "$BUILD_DIR"
+        mkdir -p "${BUILD_DIR}"
         if [ -n "${{ inputs.release-build-tags }}" ]; then
-          go build -tags "${{ inputs.release-build-tags }}" -o \
-            "$BUILD_DIR/main" "$SOURCE_FILE"
+          go build \
+            -tags "${{ inputs.release-build-tags }}" \
+            -o "${BUILD_DIR}/main" "${SOURCE_FILE}"
         else
-          go build -o "$BUILD_DIR/main" "$SOURCE_FILE"
+          go build \
+            -ldflags="-X 'main.Version=${{ github.ref_name }}'" \
+            -o "${BUILD_DIR}/main" "${SOURCE_FILE}"
         fi
     #
     # Compute asset name
@@ -304,13 +311,13 @@ runs:
       id: compute_asset_name
       shell: bash
       run: |
-        ASSET_NAME_BASE="${{ inputs.release-application-name }}-${{ github.ref_name }}-linux-${{ inputs.release-architecture }}"
+        ASSET_NAME_BASE="${{ inputs.release-application-name }}-${{ github.ref_name }}-${{ inputs.release-os }}-${{ inputs.release-architecture }}"
         if [ -n "${{ inputs.release-build-tags }}" ]; then
           ASSET_NAME="${ASSET_NAME_BASE}-${{ inputs.release-build-tags }}"
         else
-          ASSET_NAME="$ASSET_NAME_BASE"
+          ASSET_NAME="${ASSET_NAME_BASE}"
         fi
-        echo "asset_name=$ASSET_NAME" >> $GITHUB_OUTPUT
+        echo "asset_name=${ASSET_NAME}" >> $GITHUB_OUTPUT
     #
     # Upload binaries to release
     #

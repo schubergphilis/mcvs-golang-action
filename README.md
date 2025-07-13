@@ -189,6 +189,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | release-architecture                            |         |          |
 | release-build-tags                              |         |          |
 | release-dir                                     |         |          |
+| release-os                                      | x       |          |
 | release-type                                    |         |          |
 | task-install                                    | x       |          |
 | task-version                                    | x       |          |
@@ -231,6 +232,7 @@ jobs:
           - release-application-name: mcvs-image-downloader
             release-architecture: arm64
             release-dir: cmd/mcvs-image-downloader
+            release-os: darwin
             release-type: binary
     runs-on: ubuntu-24.04
     env:
@@ -243,6 +245,7 @@ jobs:
           release-architecture: ${{ matrix.args.release-architecture }}
           release-build-tags: ${{ matrix.args.release-build-tags }}
           release-dir: ${{ matrix.args.release-dir }}
+          release-os: ${{ matrix.args.release-os }}
           release-type: ${{ matrix.args.release-type }}
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
