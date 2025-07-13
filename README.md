@@ -139,6 +139,7 @@ jobs:
             release-build-tags: "lambda.norpc",
           - testing-type: "component"
           - testing-type: "coverage"
+          - testing-type: "graphql-linter"
           - testing-type: "integration"
           - testing-type: "lint", build-tags: "component"
           - testing-type: "lint", build-tags: "e2e"
