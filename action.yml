@@ -93,6 +93,7 @@ runs:
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'graphql-linter' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mocks-tidy' ||
@@ -106,6 +107,7 @@ runs:
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'graphql-linter' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mcvs-texttidy' ||
@@ -220,6 +222,14 @@ runs:
         GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: ${{ inputs.golangci-timeout }}
       run: |
         task remote:golangci-lint --yes
+    #
+    # Run graphql-linter.
+    #
+    - name: graphql-linter
+      if: inputs.testing-type == 'graphql-linter'
+      shell: bash
+      run: |
+        task remote:graphql-linter --yes
     #
     # Run MCVS-texttidy.
     #
