@@ -16,6 +16,9 @@ linters:
     # testpackage is disabled as it is a bad practice to make methods public to
     # be able to test them.
     - testpackage
+    # The linter 'wsl' is deprecated (since v2.2.0) due to: new major version.
+    # Replaced by wsl_v5.
+    - wsl
   settings:
     depguard:
       rules:
