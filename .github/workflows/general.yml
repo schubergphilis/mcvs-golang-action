@@ -14,6 +14,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: schubergphilis/mcvs-general-action@v0.2.0
+      - uses: schubergphilis/mcvs-general-action@v0.5.1
         with:
           testing-type: ${{ matrix.args.testing-type }}
