@@ -93,7 +93,7 @@ runs:
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
-        inputs.testing-type == 'graphql-linter' ||
+        inputs.testing-type == 'graphql-lint' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mocks-tidy' ||
@@ -107,7 +107,7 @@ runs:
         inputs.task-install == 'yes' ||
         inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
-        inputs.testing-type == 'graphql-linter' ||
+        inputs.testing-type == 'graphql-lint' ||
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mcvs-texttidy' ||
@@ -225,11 +225,11 @@ runs:
     #
     # Run graphql-linter.
     #
-    - name: graphql-linter
-      if: inputs.testing-type == 'graphql-linter'
+    - name: graphql-lint
+      if: inputs.testing-type == 'graphql-lint'
       shell: bash
       run: |
-        task remote:graphql-linter --yes
+        task remote:graphql-lint
     #
     # Run MCVS-texttidy.
     #

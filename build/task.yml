@@ -315,7 +315,7 @@ tasks:
           go install github.com/schubergphilis/graphql-linter/cmd/graphql-linter@{{.GRAPHQL_LINTER_VERSION}}
         fi
     silent: true
-  graphql-linter:
+  graphql-lint:
     cmds:
       - task: graphql-linter-install
       - |
