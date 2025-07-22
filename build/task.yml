@@ -2,7 +2,7 @@
 # - cmd: steps that will be run sequentially.
 # - deps: tasks that will be run in parallel.
 ---
-version: "3"
+version: 3
 vars:
   # Variables that have to be defined first as they are used in other variables.
   CODE_COVERAGE_EXPECTED:
@@ -39,7 +39,7 @@ vars:
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
-  GOLANGCI_LINT_VERSION: 2.1.6
+  GOLANGCI_LINT_VERSION: 2.2.2
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
     sh: |
