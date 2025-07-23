@@ -229,7 +229,7 @@ runs:
       if: inputs.testing-type == 'graphql-lint'
       shell: bash
       run: |
-        task remote:graphql-lint
+        task remote:graphql-lint --yes
     #
     # Run MCVS-texttidy.
     #
