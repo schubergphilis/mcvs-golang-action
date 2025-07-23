@@ -52,6 +52,8 @@ vars:
   GO_SWAGGER_VERSION: v0.31.0
   GOVULNCHECK_VERSION: v1.1.3
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
+  GQLGEN_VERSION: v0.17.76
+  GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.25.4
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
@@ -300,6 +302,20 @@ tasks:
       - |
         {{.GOVULNCHECK_BIN}} -tags {{.BUILD_TAGS}} ./...
     desc: check for vulnerabilities with govulncheck
+    silent: true
+  gqlgen-install:
+    cmds:
+      - |
+        if ! {{.GQLGEN_BIN}} version | grep -q {{.GQLGEN_VERSION}}; then
+          echo "Installing gqlgen version {{.GQLGEN_VERSION}}..."
+          go install github.com/99designs/gqlgen@{{.GQLGEN_VERSION}}
+        fi
+    silent: true
+  gqlgen:
+    cmds:
+      - task: gqlgen-install
+      - find {{.GQLGEN_DIR | default "."}} -name gqlgen.yml -exec echo {} ';' -execdir {{.GQLGEN_BIN}} ';'
+    desc: find gqlgen.yml files and generate graphql servers based on these schemas
     silent: true
   gqlgenc-install:
     cmds:
