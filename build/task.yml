@@ -52,6 +52,8 @@ vars:
   GO_SWAGGER_VERSION: v0.31.0
   GOVULNCHECK_VERSION: v1.1.3
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
+  GQLGEN_VERSION: v0.17.76
+  GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.25.4
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
@@ -211,6 +213,7 @@ tasks:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! helm version | grep -q "{{.HELM_VERSION}}"; then
+          echo "Installing Helm version {{.HELM_VERSION}}..."
           curl \
             -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
@@ -231,6 +234,7 @@ tasks:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
+          echo "Installing golangci-lint version {{.GOLANGCI_LINT_VERSION}}..."
           curl \
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
             sh -s -- -b {{.GOBIN}} v{{.GOLANGCI_LINT_VERSION}}
@@ -284,6 +288,7 @@ tasks:
     cmds:
       - |
         if ! {{.GO_SWAGGER}} version | grep -q "{{.GO_SWAGGER_VERSION}}"; then
+          echo "Installing go-swagger version {{.GO_SWAGGER_VERSION}}..."
           go install github.com/go-swagger/go-swagger/cmd/swagger@{{.GO_SWAGGER_VERSION}}
         fi
     silent: true
@@ -291,6 +296,7 @@ tasks:
     cmds:
       - |
         if ! {{.GOVULNCHECK_BIN}} --version | grep -q {{.GOVULNCHECK_VERSION}}; then
+          echo "Installing govulncheck version {{.GOVULNCHECK_VERSION}}..."
           go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
         fi
     silent: true
@@ -301,17 +307,33 @@ tasks:
         {{.GOVULNCHECK_BIN}} -tags {{.BUILD_TAGS}} ./...
     desc: check for vulnerabilities with govulncheck
     silent: true
+  gqlgen-install:
+    cmds:
+      - |
+        if ! {{.GQLGEN_BIN}} version | grep -q {{.GQLGEN_VERSION}}; then
+          echo "Installing gqlgen version {{.GQLGEN_VERSION}}..."
+          go install github.com/99designs/gqlgen@{{.GQLGEN_VERSION}}
+        fi
+    silent: true
+  gqlgen:
+    cmds:
+      - task: gqlgen-install
+      - find {{.GQLGEN_DIR | default "."}} -name gqlgen.yml -exec echo {} ';' -execdir {{.GQLGEN_BIN}} ';'
+    desc: find gqlgen.yml files and generate graphql servers based on these schemas
+    silent: true
   gqlgenc-install:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.GQLGENC_BIN}} version | grep -q {{.GQLGENC_VERSION}}; then
+          echo "Installing gqlgenc version {{.GQLGENC_VERSION}}..."
           go install github.com/Yamashou/gqlgenc@{{.GQLGENC_VERSION}}
         fi
   graphql-linter-install:
     cmds:
       - |
         if ! {{.GRAPHQL_LINTER_BIN}} --version | grep -q {{.GRAPHQL_LINTER_VERSION}}; then
+          echo "Installing graphql-linter version {{.GRAPHQL_LINTER_VERSION}}..."
           go install github.com/schubergphilis/graphql-linter/cmd/graphql-linter@{{.GRAPHQL_LINTER_VERSION}}
         fi
     silent: true
@@ -424,6 +446,7 @@ tasks:
       - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.MCVS_TEXTTIDY_BIN}} --version | grep -q {{.MCVS_TEXTTIDY_VERSION}}; then
+          echo "Installing mcvs-texttidy version {{.MCVS_TEXTTIDY_VERSION}}..."
           go install github.com/schubergphilis/mcvs-texttidy/cmd/mcvs-texttidy@{{.MCVS_TEXTTIDY_VERSION}}
         fi
     silent: true
@@ -448,6 +471,7 @@ tasks:
       - |
         mockery_major_version=$(echo "{{.MOCKERY_VERSION}}" | cut -d '.' -f 1)
         if ! {{.MOCKERY_BIN}} version | grep "{{.MOCKERY_VERSION}}"; then
+          echo "Installing mockery version {{.MOCKERY_VERSION}}..."
           go install github.com/vektra/mockery/${mockery_major_version}@{{.MOCKERY_VERSION}}
         fi
     internal: true
@@ -486,6 +510,7 @@ tasks:
     cmds:
       - |
         if ! {{.OPA_BIN}} version | grep -q {{.OPA_VERSION}}; then
+          echo "Installing OPA version {{.OPA_VERSION}}..."
           go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
         fi
     silent: true
@@ -540,6 +565,7 @@ tasks:
     cmds:
       - |
         if ! go version -m {{.PRESENT}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
+          echo "Installing present version {{.PRESENT_VERSION}}..."
           go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
         fi
     silent: true
@@ -565,6 +591,7 @@ tasks:
         if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/StyraInc/regal/issues/1275
+          echo "Installing regal version {{.REGAL_VERSION}}..."
           curl -L -o {{.REGAL_BIN}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
           chmod +x {{.REGAL_BIN}}
         fi
@@ -671,6 +698,7 @@ tasks:
       - |
         yq_major_version=$(echo "{{.YQ_VERSION}}" | cut -d '.' -f 1)
         if ! yq --version | grep -q "version {{.YQ_VERSION}}"; then
+          echo "Installing yq version {{.YQ_VERSION}}..."
           go install \
             github.com/mikefarah/yq/${yq_major_version}@{{.YQ_VERSION}}
         fi
