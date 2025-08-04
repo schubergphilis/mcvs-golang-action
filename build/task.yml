@@ -19,6 +19,13 @@ vars:
         exit 0
       fi
       echo ${CODE_COVERAGE_FILE_EXCLUSIONS}
+  OPA_CODE_COVERAGE_EXPECTED:
+    sh: |
+      if [ -z "${OPA_CODE_COVERAGE_EXPECTED}" ]; then
+        yq '.jobs.mcvs-golang-action.steps[] | select(.uses | test(".*mcvs-golang-action.*")) | .with.code-coverage-opa-expected' .github/workflows/golang.yml
+        exit 0
+      fi
+      echo ${OPA_CODE_COVERAGE_EXPECTED}
   GOBIN:
     sh: |
       if [ -z "${GOBIN}" ]; then
@@ -65,7 +72,7 @@ vars:
   MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v3.2.5"}}'
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v0.70.0
+  OPA_VERSION: 0.70.0
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
@@ -511,7 +518,7 @@ tasks:
       - |
         if ! {{.OPA_BIN}} version | grep -q {{.OPA_VERSION}}; then
           echo "Installing OPA version {{.OPA_VERSION}}..."
-          go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
+          go install github.com/open-policy-agent/opa@v{{.OPA_VERSION}}
         fi
     silent: true
   opa-run:
@@ -523,7 +530,7 @@ tasks:
           echo "Running ${opa_cmd} in directory: $dir"
           (cd "$dir" && ${opa_cmd} -v --explain={{.QUERY_EXPLANATION}})
 
-          opa_code_coverage_overview=$(cd "$dir" && ${opa_cmd} -c)
+          opa_code_coverage_overview=$(cd "$dir" && ${opa_cmd} --coverage)
           echo "OPA code coverage overview:"
           echo "${opa_code_coverage_overview}"
 
