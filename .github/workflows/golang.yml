@@ -17,7 +17,7 @@ jobs:
     env:
       TASK_X_REMOTE_TASKFILES: 1
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: ./
         with:
           security-trivyignore: ${{ matrix.args.security-trivyignore }}

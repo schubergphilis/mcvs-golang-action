@@ -10,7 +10,7 @@ jobs:
   check-action-inputs-sorted:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - name: Validate input key order in action.yml
         run: |
           inputs_file="action.yml"
