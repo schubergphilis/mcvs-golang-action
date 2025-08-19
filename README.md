@@ -26,6 +26,9 @@ In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
 fail if an issue arises.
 
+Note: there is an [internal action](.github/workflows/package-version-updater.yml)
+that will update package versions that cannot be updated by Dependabot.
+
 ## Taskfile
 
 Another tool is configuration for [Task](https://taskfile.dev/). This repository
@@ -48,17 +51,15 @@ If you are new to Task, you may want to check out the following resources:
 
 The `./build/task.yml` in this project defines a number of variables. Some of
 these can be overridden when including this Taskfile in your project. See the
-example below, where the `MOCKERY_VERSION` variable is overridden, for how to
-do this.
+example below, where the `CODE_COVERAGE_STRICT` variable is overridden, for how
+to do this.
 
 The following variables can be overridden:
 
-| Variable                    | Description                                                                                                                           |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage.                              |
-| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                                             |
-| `MOCKERY_VERSION`           | Specifies the Mockery version to use.                                                                                                 |
-| `PRESENT_VERSION`           | Indicates the version of [present](https://pkg.go.dev/golang.org/x/tools/present), a tool for both creating and giving presentations. |
+| Variable                    | Description                                                                                              |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------- |
+| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage. |
+| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                |
 
 ## Usage
 
@@ -107,7 +108,6 @@ includes:
       {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
     vars:
       CODE_COVERAGE_STRICT: "false"
-      MOCKERY_VERSION: v3.2.1
 ```
 
 Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.
