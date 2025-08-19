@@ -82,7 +82,7 @@ vars:
   PRESENT_VERSION: v0.36.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
-  REGAL_VERSION: 0.29.2
+  REGAL_VERSION: v0.35.1
   SED_INSERT_ADDITION:
     sh: |
       if [ "{{.OS_COMMAND_TYPE}}" = "{{.OS_TYPE_MAC}}" ]; then
