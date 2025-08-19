@@ -1,0 +1,20 @@
+---
+name: Package version updater
+"on": push
+# schedule:
+#   - cron: 42 5 * * 1
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update-package-version-not-updated-by-dependabot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - env:
+          DEPENDENCIES_LABEL: dependencies
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_VERSION_UPDATER_BRANCH: package-version-updater
+          BUILD_TASKFILE: build/task.yml
+        run: ./scripts/package-version-updater.sh
+        shell: bash
