@@ -79,7 +79,7 @@ vars:
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.34.0
+  PRESENT_VERSION: v0.36.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: 0.29.2
