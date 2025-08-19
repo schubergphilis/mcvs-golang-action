@@ -69,7 +69,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v3.5.3"}}'
+  MOCKERY_VERSION: v3.5.3
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: 0.70.0
@@ -571,7 +571,7 @@ tasks:
   present-install:
     cmds:
       - |
-        if ! go version -m {{.PRESENT}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
+        if ! go version -m {{.PRESENT_BIN}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
           echo "Installing present version {{.PRESENT_VERSION}}..."
           go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
         fi
