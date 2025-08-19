@@ -72,7 +72,7 @@ vars:
   MOCKERY_VERSION: '{{.MOCKERY_VERSION | default "v3.5.3"}}'
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: 0.70.0
+  OPA_VERSION: v1.7.1
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
