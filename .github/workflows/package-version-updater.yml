@@ -1,0 +1,137 @@
+---
+name: Package version updater
+"on": push
+# schedule:
+#   - cron: "42 2 * * 1-5"
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update-package-version-not-updated-by-dependabot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - name: latest stable release vektra mockery
+        env:
+          DEPENDENCIES_LABEL: dependencies
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_VERSION_UPDATER_BRANCH: package-version-updater
+          BUILD_TASKFILE: build/task.yml
+        run: |
+          check_label_exists() {
+            local label_name="$1"
+
+            LABEL_EXISTS=$(
+              gh label list --json name |
+              jq -r '
+                .[] |
+                select(.name == "'"$label_name"'") |
+                .name
+              '
+            )
+            if [ -z "${LABEL_EXISTS}" ]; then
+              echo "label: '${label_name}' does NOT exist"
+              return 1
+            fi
+          }
+
+          latest_stable_package_version_on_github() {
+            gh release list \
+              --repo $1 \
+              --limit 100 \
+              --json tagName,isDraft,isPrerelease,publishedAt | \
+                jq -r '[.[] | select(.isDraft == false and .isPrerelease == false)] | sort_by(.publishedAt) | last.tagName'
+          }
+
+          export GO_SWAGGER_VERSION=$(latest_stable_package_version_on_github \
+            go-swagger/go-swagger)
+          echo "GO_SWAGGER_VERSION: ${GO_SWAGGER_VERSION}"
+          export GQLGEN_VERSION=$(latest_stable_package_version_on_github \
+            99designs/gqlgen)
+          echo "GQLGEN_VERSION: ${GQLGEN_VERSION}"
+          export GQLGENC_VERSION=$(latest_stable_package_version_on_github \
+            Yamashou/gqlgenc)
+          echo "GQLGENC_VERSION: ${GQLGENC_VERSION}"
+          export GRAPHQL_LINTER_VERSION=$(latest_stable_package_version_on_github \
+            schubergphilis/graphql-linter)
+          echo "GRAPHQL_LINTER_VERSION: ${GRAPHQL_LINTER_VERSION}"
+          export MOCKERY_VERSION=$(latest_stable_package_version_on_github \
+            vektra/mockery)
+          echo "MOCKERY_VERSION: ${MOCKERY_VERSION}"
+          export OPA_VERSION=$(latest_stable_package_version_on_github \
+            open-policy-agent/opa)
+          echo "OPA_VERSION: ${OPA_VERSION}"
+          export PRESENT_VERSION=$(go list -m -versions golang.org/x/tools | \
+            tr ' ' '\n' | \
+            grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | \
+            tail -1
+          )
+          echo "PRESENT_VERSION: ${PRESENT_VERSION}"
+          export REGAL_VERSION=$(latest_stable_package_version_on_github \
+            StyraOSS/regal)
+          echo "REGAL_VERSION: ${REGAL_VERSION}"
+          export YQ_VERSION=$(latest_stable_package_version_on_github \
+            mikefarah/yq)
+
+          git fetch -p -P
+          if (git ls-remote --exit-code --heads origin refs/heads/${PACKAGE_VERSION_UPDATER_BRANCH}); then
+            echo "Branch '${PACKAGE_VERSION_UPDATER_BRANCH}' already exists."
+            git checkout ${PACKAGE_VERSION_UPDATER_BRANCH}
+          else
+            git checkout -b ${PACKAGE_VERSION_UPDATER_BRANCH}
+          fi
+
+          echo "GO_SWAGGER_VERSION: ${GO_SWAGGER_VERSION}"
+          yq -i '.vars.GO_SWAGGER_VERSION = strenv(GO_SWAGGER_VERSION)' ${BUILD_TASKFILE}
+          echo "GQLGEN_VERSION: ${GQLGEN_VERSION}"
+          yq -i '.vars.GQLGEN_VERSION = strenv(GQLGEN_VERSION)' ${BUILD_TASKFILE}
+          echo "GQLGENC_VERSION: ${GQLGENC_VERSION}"
+          yq -i '.vars.GQLGENC_VERSION = strenv(GQLGENC_VERSION)' ${BUILD_TASKFILE}
+          echo "GRAPHQL_LINTER_VERSION: ${GRAPHQL_LINTER_VERSION}"
+          yq -i '.vars.GRAPHQL_LINTER_VERSION = strenv(GRAPHQL_LINTER_VERSION)' ${BUILD_TASKFILE}
+          echo "MOCKERY_VERSION: ${MOCKERY_VERSION}"
+          yq -i '.vars.MOCKERY_VERSION = strenv(MOCKERY_VERSION)' ${BUILD_TASKFILE}
+          echo "OPA_VERSION: ${OPA_VERSION}"
+          yq -i '.vars.OPA_VERSION = strenv(OPA_VERSION)' ${BUILD_TASKFILE}
+          echo "PRESENT_VERSION: ${PRESENT_VERSION}"
+          yq -i '.vars.PRESENT_VERSION = strenv(PRESENT_VERSION)' ${BUILD_TASKFILE}
+          echo "REGAL_VERSION: ${REGAL_VERSION}"
+          yq -i '.vars.REGAL_VERSION = strenv(REGAL_VERSION)' ${BUILD_TASKFILE}
+          echo "YQ_VERSION: ${YQ_VERSION}"
+          yq -i '.vars.YQ_VERSION = strenv(YQ_VERSION)' ${BUILD_TASKFILE}
+
+          if [ -n "$(git status --porcelain)" ]; then echo "There are uncommitted changes."; else echo "No changes to commit." && exit 0; fi
+          git add ${BUILD_TASKFILE}
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if ! git commit -m "build(deps): weekly update package versions that cannot be updated by dependabot"; then git commit --amend --no-edit; fi
+          git push origin ${PACKAGE_VERSION_UPDATER_BRANCH} --force-with-lease
+          if gh pr list --json title | jq -e '.[] | select(.title | test("build\\(deps\\): weekly update package versions that cannot be updated by dependabot"))'; then
+            echo "PR exists already. Updating the 'title' and 'description'..."
+            gh pr edit ${PACKAGE_VERSION_UPDATER_BRANCH} \
+              --body "build(deps): weekly update package versions that cannot be updated by dependabot" \
+              --title "build(deps): weekly update package versions that cannot be updated by dependabot"
+            exit 0
+          fi
+          if ! check_label_exists ${DEPENDENCIES_LABEL}; then
+            gh label create "${DEPENDENCIES_LABEL}" \
+              --color "#0366d6" \
+              --description "Pull requests that update a dependency file"
+          fi
+          labels=("${DEPENDENCIES_LABEL}")
+          echo "Labels:"
+          for label in "${labels[@]}"; do
+            echo "'$label'"
+          done
+          echo "creating pr..."
+          label_args=()
+          for label in "${labels[@]}"; do
+            label_args+=(--label "$label")
+          done
+          gh pr create \
+            --base main \
+            --body "build(deps): weekly update package versions that cannot be updated by dependabot" \
+            --fill \
+            --head "${PACKAGE_VERSION_UPDATER_BRANCH}" \
+            --title "build(deps): weekly update package versions that cannot be updated by dependabot" \
+            "${label_args[@]}"

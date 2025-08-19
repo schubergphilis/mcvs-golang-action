@@ -571,7 +571,7 @@ tasks:
   present-install:
     cmds:
       - |
-        if ! go version -m {{.PRESENT}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
+        if ! go version -m {{.PRESENT_BIN}} | grep "mod.*\/x\/tools" | awk '{print $3}' | grep -q {{.PRESENT_VERSION}}; then
           echo "Installing present version {{.PRESENT_VERSION}}..."
           go install golang.org/x/tools/cmd/present@{{.PRESENT_VERSION}}
         fi
