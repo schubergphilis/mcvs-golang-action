@@ -181,6 +181,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | :---------------------------------------------- | :------ | -------- |
 | build-tags                                      | x       |          |
 | code-coverage-expected                          | x       |          |
+| code-coverage-opa-expected                      | x       |          |
 | code-coverage-timeout                           |         |          |
 | github-token-for-downloading-private-go-modules |         |          |
 | golangci-timeout                                | x       |          |

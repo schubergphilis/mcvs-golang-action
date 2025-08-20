@@ -9,6 +9,10 @@ inputs:
     default: "80"
     description: |
       The minimum code coverage.
+  code-coverage-opa-expected:
+    default: "80"
+    description: |
+      The minimum OPA code coverage.
   code-coverage-timeout:
     description: |
       The duration before calculating the code-coverage times out.
@@ -97,6 +101,7 @@ runs:
         inputs.testing-type == 'integration' ||
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'opa' ||
         inputs.testing-type == 'unit'
       with:
         go-version-file: ${{ inputs.go-version-file }}
@@ -112,6 +117,7 @@ runs:
         inputs.testing-type == 'lint' ||
         inputs.testing-type == 'mcvs-texttidy' ||
         inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'opa' ||
         inputs.testing-type == 'unit'
       shell: bash
       run: |
@@ -246,6 +252,15 @@ runs:
       shell: bash
       run: |
         task remote:mocks-tidy --yes
+    #
+    # Run Regal for linting and OPA.
+    #
+    - name: regal and opa
+      if: inputs.testing-type == 'opa'
+      shell: bash
+      run: |
+        task remote:regal --yes
+        task remote:opa --yes
     #
     # Unit tests.
     #
