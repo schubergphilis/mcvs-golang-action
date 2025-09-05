@@ -11,9 +11,9 @@
 #
 # REQUIREMENTS:
 #   - Must set these environment variables:
-#       BUILD_TASKFILE                Path to your Taskfile.yml
+#       BUILD_TASKFILE                  Path to your Taskfile.yml
 #       PACKAGE_VERSION_UPDATER_BRANCH  Name for the update branch
-#       DEPENDENCIES_LABEL            Label name for dependency PRs (e.g. "dependencies")
+#       DEPENDENCIES_LABEL              Label name for dependency PRs (e.g. "dependencies")
 #   - The following CLI tools must be available: gh, jq, yq, git, go, tr, grep
 #
 # USAGE:
