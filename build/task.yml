@@ -69,10 +69,10 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: 'v3.5.3'
+  MOCKERY_VERSION: 'v3.5.4'
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.7.1
+  OPA_VERSION: v1.8.0
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
