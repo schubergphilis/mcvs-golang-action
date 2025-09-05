@@ -1,3 +1,3 @@
 module github.com/schubergphilis/mcvs-golang-action
 
-go 1.25.0
+go 1.25.1
