@@ -56,12 +56,12 @@ vars:
         nproc
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
-  GO_SWAGGER_VERSION: v0.31.0
+  GO_SWAGGER_VERSION: v0.32.3
   GOVULNCHECK_VERSION: v1.1.3
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GQLGEN_VERSION: v0.17.78
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
-  GQLGENC_VERSION: v0.25.4
+  GQLGENC_VERSION: v0.33.0
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
   GRAPHQL_LINTER_VERSION: v0.1.0
@@ -69,27 +69,29 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.5.3
+  MOCKERY_VERSION: v3.5.4
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: 0.70.0
+  OPA_VERSION: v1.8.0
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.34.0
+  PRESENT_VERSION: v0.36.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
-  REGAL_VERSION: 0.29.2
+  REGAL_VERSION: v0.35.1
+  REGAL_VERSION_WITHOUT_V_PREFIX:
+    sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
     sh: |
       if [ "{{.OS_COMMAND_TYPE}}" = "{{.OS_TYPE_MAC}}" ]; then
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.44.3
+  YQ_VERSION: v4.47.1
 tasks:
   build-golang-download-modules:
     cmds:
@@ -172,8 +174,7 @@ tasks:
       - task: test
         vars:
           TEST_EXTRA_ARGS: >-
-            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',')
-            -coverprofile={{.COVERPROFILE}}
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',') -coverprofile={{.COVERPROFILE}}
           TEST_TAGS: integration
           TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
@@ -595,7 +596,7 @@ tasks:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION}}; then
+        if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION_WITHOUT_V_PREFIX}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/StyraInc/regal/issues/1275
           echo "Installing regal version {{.REGAL_VERSION}}..."
