@@ -83,6 +83,8 @@ vars:
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: v0.35.1
+  REGAL_VERSION_WITHOUT_V_PREFIX:
+    sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
     sh: |
       if [ "{{.OS_COMMAND_TYPE}}" = "{{.OS_TYPE_MAC}}" ]; then
@@ -594,7 +596,7 @@ tasks:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION}}; then
+        if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION_WITHOUT_V_PREFIX}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/StyraInc/regal/issues/1275
           echo "Installing regal version {{.REGAL_VERSION}}..."
