@@ -73,6 +73,8 @@ vars:
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v1.8.0
+  OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
+    sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
   OS_COMMAND_TYPE:
     sh: "{{.OS_COMMAND}} -s"
@@ -83,7 +85,7 @@ vars:
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: v0.36.1
-  REGAL_VERSION_WITHOUT_V_PREFIX:
+  REGAL_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
     sh: |
@@ -517,9 +519,9 @@ tasks:
   opa-install:
     cmds:
       - |
-        if ! {{.OPA_BIN}} version | grep -q {{.OPA_VERSION}}; then
+        if ! {{.OPA_BIN}} version | grep -q {{.OPA_VERSION_WITHOUT_V_PREFIX}}; then
           echo "Installing OPA version {{.OPA_VERSION}}..."
-          go install github.com/open-policy-agent/opa@v{{.OPA_VERSION}}
+          go install github.com/open-policy-agent/opa@{{.OPA_VERSION}}
         fi
     silent: true
   opa-run:
@@ -594,13 +596,12 @@ tasks:
     silent: true
   regal-install:
     cmds:
-      - task: keep-local-and-remote-versions-in-sync
       - |
         if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION_WITHOUT_V_PREFIX}}; then
           # regal version installed using `go install` does not include
-          # version, see: https://github.com/StyraInc/regal/issues/1275
+          # version, see: https://github.com/open-policy-agent/regal/issues/1275
           echo "Installing regal version {{.REGAL_VERSION}}..."
-          curl -L -o {{.REGAL_BIN}} https://github.com/StyraInc/regal/releases/download/v{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
+          curl -L -o {{.REGAL_BIN}} https://github.com/open-policy-agent/regal/releases/download/{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
           chmod +x {{.REGAL_BIN}}
         fi
     silent: true
