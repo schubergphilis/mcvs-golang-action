@@ -9,6 +9,7 @@ jobs:
     strategy:
       matrix:
         args:
+          - testing-type: opa
           - testing-type: security-golang-modules
           - testing-type: security-grype
           - testing-type: security-trivy
