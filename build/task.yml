@@ -56,7 +56,7 @@ vars:
         nproc
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
-  GO_SWAGGER_VERSION: v0.32.3
+  GO_SWAGGER_VERSION: v0.33.1
   GOVULNCHECK_VERSION: v1.1.3
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GQLGEN_VERSION: v0.17.81
@@ -81,7 +81,7 @@ vars:
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.37.0
+  PRESENT_VERSION: v0.38.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: v0.36.1
@@ -93,7 +93,7 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.47.2
+  YQ_VERSION: v4.48.1
 tasks:
   build-golang-download-modules:
     cmds:
