@@ -153,7 +153,7 @@ github_labels() {
 
 commit_and_push_changes() {
   if [ -n "$(git status --porcelain)" ]; then echo "There are uncommitted changes."; else echo "No changes to commit." && return; fi
-    git add ${BUILD_TASKFILE}
+    git add .
     git config user.name github-actions[bot]
     git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
@@ -218,10 +218,49 @@ generate_pr_body_with_updates() {
   echo "PR_BODY: ${PR_BODY}"
 }
 
+update_task_version() {
+  local old_version
+  local new_version
+  local display_name="Task"
+
+  old_version=$(yq eval '.inputs.task-version.default' action.yml)
+  new_version=$(latest_stable_package_version_on_github go-task/task)
+
+  if [[ -z "${new_version}" ]]; then
+    echo "Warning: Failed to fetch latest Task version"
+
+    return
+  fi
+
+  new_version="${new_version#v}"
+
+  echo "Task version: ${old_version} → ${new_version}"
+
+  if [[ "${old_version}" != "${new_version}" ]]; then
+    yq eval ".inputs.task-version.default = \"${new_version}\"" -i action.yml
+
+    if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" ]]; then
+      PR_BODY+="**${display_name}**: \`${old_version}\` → \`${new_version}\`"
+      echo "Successfully updated Task version"
+
+      return
+    fi
+
+    echo "Error: Failed to update Task version in action.yml"
+
+    return
+  fi
+
+  echo "Task version is already up to date (${old_version})"
+
+  return
+}
+
 main() {
   latest_stable_package_versions
   checkout_branch_required_to_apply_package_version_updates
   generate_pr_body_with_updates
+  update_task_version
   replace_versions_with_latest_stable_package_versions
   github_labels
   commit_and_push_changes
