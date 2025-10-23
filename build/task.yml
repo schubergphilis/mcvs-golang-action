@@ -176,7 +176,7 @@ tasks:
       - task: test
         vars:
           TEST_EXTRA_ARGS: >-
-            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',') -coverprofile={{.COVERPROFILE}}
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',' | sed 's/,$//') -coverprofile={{.COVERPROFILE}}
           TEST_TAGS: integration
           TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
