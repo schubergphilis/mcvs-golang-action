@@ -2,7 +2,7 @@
 name: gomod-go-version-updater-action
 "on":
   schedule:
-    - cron: "42 6 * * *"
+    - cron: 42 6 * * *
 permissions:
   contents: write
   pull-requests: write

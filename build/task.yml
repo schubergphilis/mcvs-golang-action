@@ -1,6 +1,9 @@
 # TASK_X_REMOTE_TASKFILES=1 task remote:lint
 # - cmd: steps that will be run sequentially.
 # - deps: tasks that will be run in parallel.
+#
+# yamllint disable rule:line-length
+# yamllint disable rule:quoted-strings
 ---
 version: 3
 vars:

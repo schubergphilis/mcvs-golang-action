@@ -1,3 +1,5 @@
+# yamllint disable rule:line-length
+# yamllint disable rule:quoted-strings
 ---
 name: mcvs-golang-action
 description: |
