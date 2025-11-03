@@ -72,7 +72,7 @@ vars:
   MOCKERY_VERSION: v3.5.5
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.9.0
+  OPA_VERSION: v1.10.0
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -176,8 +176,7 @@ tasks:
       - task: test
         vars:
           TEST_EXTRA_ARGS: >-
-            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',' | sed 's/,$//') -coverprofile={{.COVERPROFILE}}
-            -count=1
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',' | sed 's/,$//') -coverprofile={{.COVERPROFILE}} -count=1
           TEST_TAGS: integration
           TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
