@@ -1,0 +1,16 @@
+---
+dir: "{{.InterfaceDir}}/mocks"
+filename: "{{.InterfaceName | snakecase}}.go"
+structname: "{{.InterfaceName}}"
+pkgname: mocks
+template: testify
+packages:
+  github.com/schubergphilis/mcvs-golang-action/internal/app/mcvs_golang_action_bootstrap/application:
+    interfaces:
+      Executor: {}
+  github.com/schubergphilis/mcvs-golang-action/internal/app/mcvs_golang_action_bootstrap/data:
+    interfaces:
+      Storer: {}
+  github.com/schubergphilis/mcvs-golang-action/internal/app/mcvs_golang_action_bootstrap/presentation:
+    interfaces:
+      Presenter: {}
