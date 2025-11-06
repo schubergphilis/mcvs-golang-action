@@ -60,7 +60,7 @@ vars:
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.33.1
-  GOVULNCHECK_VERSION: v0.38.0
+  GOVULNCHECK_VERSION: v1.1.4
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GQLGEN_VERSION: v0.17.81
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
