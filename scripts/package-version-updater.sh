@@ -49,6 +49,7 @@ set -xeuo pipefail
 
 readonly PACKAGES_TO_BE_UPDATED=(
   "GO_SWAGGER_VERSION GO_SWAGGER_VERSION go-swagger latest_stable_package_version_on_github go-swagger/go-swagger"
+  "GOVULNCHECK_VERSION GOVULNCHECK_VERSION govulncheck go_list_latest_version golang.org/x/tools"
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
