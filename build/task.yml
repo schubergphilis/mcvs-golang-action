@@ -60,7 +60,7 @@ vars:
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.33.1
-  GOVULNCHECK_VERSION: v1.1.3
+  GOVULNCHECK_VERSION: v0.38.0
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GQLGEN_VERSION: v0.17.81
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
@@ -75,7 +75,7 @@ vars:
   MOCKERY_VERSION: v3.5.5
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.10.0
+  OPA_VERSION: v1.10.1
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
