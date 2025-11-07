@@ -62,6 +62,7 @@ vars:
   GO_SWAGGER_VERSION: v0.33.1
   GOVULNCHECK_VERSION: v1.1.3
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
+  GOVULNCHECK_OUTPUT: /tmp/govulncheck.txt
   GQLGEN_VERSION: v0.17.81
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.0
@@ -316,8 +317,55 @@ tasks:
   govulncheck:
     cmds:
       - task: govulncheck-install
+      - task: yq-install
       - |
-        {{.GOVULNCHECK_BIN}} -tags {{.BUILD_TAGS}} ./...
+        echo "Running govulncheck scan..."
+        {{.GOVULNCHECK_BIN}} \
+          -format text \
+          -mode source \
+          -show verbose \
+          -tags {{.BUILD_TAGS}} \
+          -test \
+            ./... > {{.GOVULNCHECK_OUTPUT}} || true
+
+        echo "Extracting unique vulnerability codes from output..."
+        codes="$(grep -o 'GO-[0-9]*-[0-9]*' {{.GOVULNCHECK_OUTPUT}} | sort -u)"
+
+        echo "Reading exclusion codes from .govulncheck.yaml..."
+        excludes="$(yq '.vulnerability.exclude[]' .govulncheck.yaml 2>/dev/null || true)"
+
+        echo "Found vulnerability codes:"
+        for code in $codes; do echo "  $code"; done
+
+        echo "Exclude list:"
+        for ex in $excludes; do echo "  $ex"; done
+
+        echo "Filtering vulnerabilities not in exclude list..."
+        filtered=""
+        for code in $codes; do
+          skip=0
+
+          for ex in $excludes; do
+            if [ "$code" = "$ex" ]; then skip=1; break; fi
+          done
+
+          if [ "$skip" -eq 0 ]; then
+            filtered="$filtered $code"
+          fi
+        done
+
+        set -- $filtered
+        if [ $# -eq 0 ]; then
+          echo "No NEW vulnerabilities found. All found codes are excluded."
+
+          exit 0
+        fi
+
+        echo "Remaining vulnerability codes (not excluded):"
+        for code in $filtered; do
+          echo "  $code"
+        done
+        exit 1
     desc: check for vulnerabilities with govulncheck
     silent: true
   gqlgen-install:

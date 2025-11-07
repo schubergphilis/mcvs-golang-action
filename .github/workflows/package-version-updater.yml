@@ -1,8 +1,9 @@
 ---
 name: Package version updater
 "on":
-  schedule:
-    - cron: 42 5 * * 1
+  push
+  # schedule:
+  #   - cron: 42 5 * * 1
 permissions:
   contents: write
   pull-requests: write
