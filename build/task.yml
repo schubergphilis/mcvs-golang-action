@@ -63,7 +63,7 @@ vars:
   GOVULNCHECK_VERSION: v1.1.4
   GOVULNCHECK_BIN: "{{.GOBIN}}/govulncheck"
   GOVULNCHECK_OUTPUT: /tmp/govulncheck.txt
-  GQLGEN_VERSION: v0.17.82
+  GQLGEN_VERSION: v0.17.83
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.0
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
@@ -73,7 +73,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.5.5
+  MOCKERY_VERSION: v3.6.0
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v1.10.1
@@ -85,7 +85,7 @@ vars:
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.38.0
+  PRESENT_VERSION: v0.39.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: v0.37.0
@@ -97,7 +97,7 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.48.1
+  YQ_VERSION: v4.48.2
 tasks:
   build-golang-download-modules:
     cmds:
