@@ -15,7 +15,7 @@ jobs:
           - testing-type: yamllint
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - uses: schubergphilis/mcvs-general-action@v0.5.2
         with:
           testing-type: ${{ matrix.args.testing-type }}
