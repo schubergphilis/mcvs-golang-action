@@ -161,7 +161,7 @@ runs:
       shell: bash
       run: |
         go mod verify
-        task remote:govulncheck --yes
+        task remote:osv-scanner --yes
     #
     # Code security scanning.
     #
