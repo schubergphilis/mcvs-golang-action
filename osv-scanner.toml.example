@@ -1,0 +1,15 @@
+# osv-scanner.toml.example
+# 
+# This is an example configuration file for osv-scanner.
+# Copy this file to osv-scanner.toml in your project root to ignore specific vulnerabilities.
+# 
+# Documentation: https://google.github.io/osv-scanner/configuration/
+
+# Example: Ignore specific vulnerabilities with reasons
+# [[IgnoredVulns]]
+# id = "GO-2025-4020"
+# reason = "Waiting for upstream fix: https://github.com/anchore/syft/issues/4338"
+# 
+# [[IgnoredVulns]]
+# id = "GO-2024-1234"
+# reason = "False positive - not applicable to our usage"
