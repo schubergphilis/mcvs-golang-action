@@ -60,7 +60,7 @@ vars:
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.33.1
-  OSV_SCANNER_VERSION: v1.9.2
+  OSV_SCANNER_VERSION: v2.3.0
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.json
   GQLGEN_VERSION: v0.17.83
@@ -309,9 +309,10 @@ tasks:
   osv-scanner-install:
     cmds:
       - |
+        osv_scanner_version=$(echo "{{.OSV_SCANNER_VERSION}}" | cut -d '.' -f 1)
         if ! {{.OSV_SCANNER_BIN}} --version 2>/dev/null | grep -q "{{.OSV_SCANNER_VERSION}}"; then
           echo "Installing osv-scanner version {{.OSV_SCANNER_VERSION}}..."
-          go install github.com/google/osv-scanner/cmd/osv-scanner@{{.OSV_SCANNER_VERSION}}
+          go install github.com/google/osv-scanner/${osv_scanner_version}/cmd/osv-scanner@{{.OSV_SCANNER_VERSION}}
         fi
     silent: true
   osv-scanner:
