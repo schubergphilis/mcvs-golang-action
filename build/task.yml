@@ -309,9 +309,10 @@ tasks:
   osv-scanner-install:
     cmds:
       - |
+        osv_scanner_version=$(echo "{{.OSV_SCANNER_VERSION}}" | cut -d '.' -f 1)
         if ! {{.OSV_SCANNER_BIN}} --version 2>/dev/null | grep -q "{{.OSV_SCANNER_VERSION}}"; then
           echo "Installing osv-scanner version {{.OSV_SCANNER_VERSION}}..."
-          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@{{.OSV_SCANNER_VERSION}}
+          go install github.com/google/osv-scanner/${osv_scanner_version}/cmd/osv-scanner@{{.OSV_SCANNER_VERSION}}
         fi
     silent: true
   osv-scanner:
