@@ -60,7 +60,7 @@ vars:
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.33.1
-  OSV_SCANNER_VERSION: v2.2.3
+  OSV_SCANNER_VERSION: v2.3.0
   OSV_SCANNER_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
@@ -75,7 +75,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.6.0
+  MOCKERY_VERSION: v3.6.1
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v1.10.1
@@ -99,7 +99,7 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.48.2
+  YQ_VERSION: v4.49.1
 tasks:
   build-golang-download-modules:
     cmds:
