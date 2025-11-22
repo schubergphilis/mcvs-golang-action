@@ -60,7 +60,9 @@ vars:
       fi
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.33.1
-  OSV_SCANNER_VERSION: v2.3.0
+  OSV_SCANNER_VERSION: v2.2.4
+  OSV_SCANNER_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
+    sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.json
   GQLGEN_VERSION: v0.17.83
@@ -310,7 +312,7 @@ tasks:
     cmds:
       - |
         osv_scanner_version=$(echo "{{.OSV_SCANNER_VERSION}}" | cut -d '.' -f 1)
-        if ! {{.OSV_SCANNER_BIN}} --version 2>/dev/null | grep -q "{{.OSV_SCANNER_VERSION}}"; then
+        if ! {{.OSV_SCANNER_BIN}} --version 2>/dev/null | grep -q "{{.OSV_SCANNER_VERSION_WITHOUT_V_PREFIX}}"; then
           echo "Installing osv-scanner version {{.OSV_SCANNER_VERSION}}..."
           go install github.com/google/osv-scanner/${osv_scanner_version}/cmd/osv-scanner@{{.OSV_SCANNER_VERSION}}
         fi
@@ -322,7 +324,6 @@ tasks:
         echo "Running osv-scanner scan..."
         # Run osv-scanner and capture output, allow it to fail
         {{.OSV_SCANNER_BIN}} \
-          --format json \
           --lockfile go.mod \
           > {{.OSV_SCANNER_OUTPUT}} 2>&1 || scan_exit_code=$?
 
@@ -346,7 +347,6 @@ tasks:
           echo "Found osv-scanner.toml configuration file."
           echo "Re-running scan with ignore configuration..."
           {{.OSV_SCANNER_BIN}} \
-            --format json \
             --config osv-scanner.toml \
             --lockfile go.mod \
             > {{.OSV_SCANNER_OUTPUT}} 2>&1 || final_exit_code=$?
