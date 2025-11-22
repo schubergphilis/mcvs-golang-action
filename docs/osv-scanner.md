@@ -2,9 +2,9 @@
 
 ## Overview
 
-The `mcvs-golang-action` uses [osv-scanner](https://github.com/google/osv-scanner) 
-by Google to scan for vulnerabilities in Go modules. osv-scanner is actively 
-maintained and provides robust vulnerability scanning using the OSV 
+The `mcvs-golang-action` uses [osv-scanner](https://github.com/google/osv-scanner)
+by Google to scan for vulnerabilities in Go modules. osv-scanner is actively
+maintained and provides robust vulnerability scanning using the OSV
 (Open Source Vulnerabilities) database.
 
 ## Ignoring Vulnerabilities
@@ -24,10 +24,12 @@ Create an `osv-scanner.toml` file in your project root:
 # Ignore specific vulnerabilities
 [[IgnoredVulns]]
 id = "GO-2025-4020"
+ignoreUntil = 2025-12-20
 reason = "Waiting for upstream fix: https://github.com/anchore/syft/issues/4338"
 
 [[IgnoredVulns]]
 id = "GO-2024-1234"
+ignoreUntil = 2025-12-20
 reason = "False positive - not applicable to our usage"
 ```
 

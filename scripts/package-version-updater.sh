@@ -49,12 +49,12 @@ set -xeuo pipefail
 
 readonly PACKAGES_TO_BE_UPDATED=(
   "GO_SWAGGER_VERSION GO_SWAGGER_VERSION go-swagger latest_stable_package_version_on_github go-swagger/go-swagger"
-  "GOVULNCHECK_VERSION GOVULNCHECK_VERSION govulncheck go_list_latest_version golang.org/x/vuln"
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
   "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery"
   "OPA_VERSION OPA_VERSION opa latest_stable_package_version_on_github open-policy-agent/opa"
+  "OSV_SCANNER_VERSION OSV_SCANNER_VERSION osv-scanner latest_stable_package_version_on_github google/osv-scanner"
   "PRESENT_VERSION PRESENT_VERSION present go_list_latest_version golang.org/x/tools"
   "REGAL_VERSION REGAL_VERSION regal latest_stable_package_version_on_github StyraOSS/regal"
   "YQ_VERSION YQ_VERSION yq latest_stable_package_version_on_github mikefarah/yq"
