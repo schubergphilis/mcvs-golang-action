@@ -1,4 +1,5 @@
 .DS_Store
+.github/workflows/mcvs-golang-action-taskfile-remote-url-ref-updater.yml
 .task
 .vscode
 docs/presentations/static
