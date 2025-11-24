@@ -9,7 +9,7 @@ jobs:
   taskfile-sorted-units:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5.0.1
+      - uses: actions/checkout@v6.0.0
       - run: |
           check_sorted() {
             local task_name="$1"
