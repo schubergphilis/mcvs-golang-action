@@ -93,7 +93,7 @@ runs:
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
-    - uses: actions/setup-go@v6.0.0
+    - uses: actions/setup-go@v6.1.0
       if: |
         inputs.release-dir != '' ||
         inputs.task-install == 'yes' ||
@@ -167,7 +167,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v7.1.0
+    - uses: anchore/scan-action@v7.2.1
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         grype-version: ${{ inputs.grype-version }}
@@ -351,7 +351,7 @@ runs:
         github.event_name == 'push' &&
         contains(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
-      uses: svenstaro/upload-release-action@2.11.2
+      uses: svenstaro/upload-release-action@2.11.3
       with:
         repo_token: ${{ inputs.token }}
         file: build/${{ inputs.release-type }}/${{ inputs.release-application-name }}/${{ inputs.release-architecture }}/main
