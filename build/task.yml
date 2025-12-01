@@ -64,7 +64,7 @@ vars:
   OSV_SCANNER_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
-  OSV_SCANNER_OUTPUT: /tmp/osv-scanner.json
+  OSV_SCANNER_OUTPUT: /tmp/osv-scanner.txt
   GQLGEN_VERSION: v0.17.83
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.0
