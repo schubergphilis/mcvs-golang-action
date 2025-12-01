@@ -63,7 +63,7 @@ vars:
   OSV_SCANNER_VERSION: v2.3.0
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.json
-  GQLGEN_VERSION: v0.17.83
+  GQLGEN_VERSION: v0.17.84
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.0
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
@@ -73,10 +73,10 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.6.0
+  MOCKERY_VERSION: v3.6.1
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.10.1
+  OPA_VERSION: v1.11.0
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -97,7 +97,8 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.48.2
+  YQ_VERSION: v4.49.2
+  GOVULNCHECK_VERSION: v1.1.4
 tasks:
   build-golang-download-modules:
     cmds:
