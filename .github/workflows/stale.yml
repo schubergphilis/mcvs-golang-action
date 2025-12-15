@@ -11,7 +11,7 @@ jobs:
   stale:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/stale@v10.1.0
+      - uses: actions/stale@v10.1.1
         with:
           days-before-stale: 63
           days-before-close: 21
