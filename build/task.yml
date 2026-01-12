@@ -65,7 +65,7 @@ vars:
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.txt
-  GQLGEN_VERSION: v0.17.85
+  GQLGEN_VERSION: v0.17.86
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.0
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
@@ -78,7 +78,7 @@ vars:
   MOCKERY_VERSION: v3.6.1
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.12.1
+  OPA_VERSION: v1.12.2
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -90,7 +90,7 @@ vars:
   PRESENT_VERSION: v0.40.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
-  REGAL_VERSION: v0.37.0
+  REGAL_VERSION: v0.38.0
   REGAL_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
