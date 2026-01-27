@@ -274,12 +274,12 @@ runs:
     # Install digitalocean/gta if partial testing is enabled.
     #
     - name: install gta for partial testing
-      if: inputs.gta-partial-testing == true
+      if: inputs.gta-partial-testing == true || inputs.gta-partial-testing == 'true'
       shell: bash
       env:
-        GTA_VERSION: ${{ inputs.gta-version }}
+        GTA_VERSION: v0.1.2
       run: |
-        task remote:gta-install
+        task remote:gta-install --yes
     #
     # Unit tests.
     #
