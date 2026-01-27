@@ -687,6 +687,12 @@ tasks:
     cmds:
       - task: golang-log
       - |
+        # if GTA_PARTIAL_TESTING eq true, run task: gta-install
+        if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
+          task gta-install
+        fi
+      
+      - |
         # if partial testing is not enabled then set PKGs to ./...
         # else set PKGs to changed packages
         if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
