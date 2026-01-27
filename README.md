@@ -162,6 +162,8 @@ jobs:
           build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          gta-base-branch: main
+          gta-partial-testing: true
           release-architecture: ${{ matrix.args.release-architecture }}
           release-dir: ${{ matrix.args.release-dir }}
           release-type: ${{ matrix.args.release-type }}
@@ -187,6 +189,8 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | golangci-timeout                                | x       |          |
 | golang-unit-tests-exclusions                    | x       |          |
 | grype-version                                   |         |          |
+| gta-base-branch                                 | x       |          |
+| gta-partial-testing                             | x       |          |
 | release-application-name                        |         |          |
 | release-architecture                            |         |          |
 | release-build-tags                              |         |          |
