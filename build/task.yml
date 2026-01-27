@@ -687,20 +687,24 @@ tasks:
     cmds:
       - task: golang-log
       - |
-        # if partial testing is not enabled then set PKGs to ./...
-        # else set PKGs to changed packages
+        set -eu
+
         if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
           echo "Running partial test suite..."
-          export PKGS=$(gta -include "$(go list -f '{{ .Module.Path }}')" -base {{.GTA_BASE_BRANCH}})
+
+          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')" -base {{.GTA_BASE_BRANCH}})" \
+            || { rc=$?; echo "gta failed (exit $rc)"; exit $rc; }
+
           if [ -z "${PKGS}" ]; then
             echo "No packages changed compared to base branch {{.GTA_BASE_BRANCH}}. Skipping tests."
             exit 0
           fi
         else
-          export PKGS=./...
+          PKGS=./...
         fi
-        # when "if testing.Short() { t.Skip() }" is in the go code then such
-        # tests will be skipped if -short is used.
+
+        export PKGS
+
         go test \
           -p {{.GOLANG_PARALLEL_TESTS}} \
           -race \
