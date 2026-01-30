@@ -688,15 +688,12 @@ tasks:
     cmds:
       - task: golang-log
       - |
-        git fetch origin {{ .GTA_BASE_BRANCH }}:{{ .GTA_BASE_BRANCH_ALIAS }}
-        git branch
-      - |
         set -eu
 
         if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
-          echo "Running partial test suite... against {{ .GTA_BASE_BRANCH }} (alias: {{ .GTA_BASE_BRANCH_ALIAS }})"
+          echo "Running partial test suite... against origin {{ .GTA_BASE_BRANCH }}"
 
-          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')/" -base {{ .GTA_BASE_BRANCH_ALIAS }})" \
+          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')/" -base origin/{{ .GTA_BASE_BRANCH }})" \
             || { rc=$?; echo "gta failed (exit $rc)"; exit $rc; }
 
           if [ -z "${PKGS}" ]; then
