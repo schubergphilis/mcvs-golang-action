@@ -687,16 +687,20 @@ tasks:
     cmds:
       - task: golang-log
       - |
+        git fetch origin {{ .GTA_BASE_BRANCH }}:refs/heads/gta-base-branch
+      - |
+        git branch
+
         set -eu
 
         if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
           echo "Running partial test suite..."
 
-          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')" -base {{.GTA_BASE_BRANCH}})" \
+          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')" -base gta-base-branch)" \
             || { rc=$?; echo "gta failed (exit $rc)"; exit $rc; }
 
           if [ -z "${PKGS}" ]; then
-            echo "No packages changed compared to base branch {{.GTA_BASE_BRANCH}}. Skipping tests."
+            echo "No packages changed compared to base branch {{ .GTA_BASE_BRANCH }}. Skipping tests."
             exit 0
           fi
         else
