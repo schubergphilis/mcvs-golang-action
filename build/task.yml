@@ -71,8 +71,7 @@ vars:
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
   GRAPHQL_LINTER_VERSION: v0.1.0
-  GTA_BASE_BRANCH: '{{.GTA_BASE_BRANCH | default "origin/main"}}'
-  GTA_BASE_BRANCH_ALIAS: refs/heads/gta-base-branch
+  GTA_BASE_BRANCH: '{{.GTA_BASE_BRANCH | default "main"}}'
   GTA_PARTIAL_TESTING: '{{.GTA_PARTIAL_TESTING | default "false"}}'
   GTA_VERSION: v0.1.2
   HELM_VERSION: v3.16.2
