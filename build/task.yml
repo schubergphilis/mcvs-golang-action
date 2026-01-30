@@ -688,8 +688,6 @@ tasks:
       - task: golang-log
       - |
         git fetch origin {{ .GTA_BASE_BRANCH }}:refs/heads/gta-base-branch
-      - |
-        git branch
 
         set -eu
 
