@@ -689,6 +689,7 @@ tasks:
       - task: golang-log
       - |
         git fetch origin {{ .GTA_BASE_BRANCH }}:{{ .GTA_BASE_BRANCH_ALIAS }}
+        git branch
       - |
         set -eu
 
