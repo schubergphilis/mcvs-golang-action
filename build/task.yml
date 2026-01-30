@@ -696,7 +696,7 @@ tasks:
         if [ "{{.GTA_PARTIAL_TESTING}}" = true ]; then
           echo "Running partial test suite..."
 
-          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')" -base gta-base-branch)" \
+          PKGS="$(gta -include "$(go list -f '{{ .Module.Path }}')" -base refs/heads/gta-base-branch)" \
             || { rc=$?; echo "gta failed (exit $rc)"; exit $rc; }
 
           if [ -z "${PKGS}" ]; then
