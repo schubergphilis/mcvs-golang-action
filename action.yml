@@ -276,8 +276,6 @@ runs:
     - name: install gta for partial testing
       if: inputs.gta-partial-testing == true || inputs.gta-partial-testing == 'true'
       shell: bash
-      env:
-        GTA_VERSION: v0.1.2
       run: |
         task remote:gta-install --yes
     #
