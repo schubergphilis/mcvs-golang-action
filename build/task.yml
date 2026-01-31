@@ -703,8 +703,8 @@ tasks:
           PKGS=./...
         fi
 
-        export PKGS
-
+        # when "if testing.Short() { t.Skip() }" is in the go code then such
+        # tests will be skipped if -short is used.
         go test \
           -p {{.GOLANG_PARALLEL_TESTS}} \
           -race \

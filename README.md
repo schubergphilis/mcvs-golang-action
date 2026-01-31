@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
         with:
-          fetch-depth: 0 # this is neccessary for gta partial testing
+          fetch-depth: 0 # this is necessary for gta partial testing
       - uses: schubergphilis/mcvs-golang-action@v0.9.0
         with:
           build-tags: ${{ matrix.args.build-tags }}
