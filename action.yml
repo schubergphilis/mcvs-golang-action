@@ -64,7 +64,7 @@ inputs:
     description: |
       Whether Task should be installed.
   task-version:
-    default: 3.47.0
+    default: 3.48.0
     description: |
       The Task version that has to be installed and used.
   test-timeout:

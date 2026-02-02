@@ -78,7 +78,7 @@ vars:
   MOCKERY_VERSION: v3.6.3
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.12.3
+  OPA_VERSION: v1.13.1
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -99,7 +99,7 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
-  YQ_VERSION: v4.50.1
+  YQ_VERSION: v4.52.2
 tasks:
   build-golang-download-modules:
     cmds:
