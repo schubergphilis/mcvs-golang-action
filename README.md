@@ -29,6 +29,17 @@ fail if an issue arises.
 Note: there is an [internal action](.github/workflows/package-version-updater.yml)
 that will update package versions that cannot be updated by Dependabot.
 
+## Versioning
+
+This action follows semantic versioning. When using this action in your workflows:
+
+- **Latest stable version**: Use the latest `v3.x.x` tag (e.g., `v3.4.2`) for production workflows
+- **Major version tracking**: Use `@v3` to automatically get the latest v3.x.x updates
+- **Taskfile references**: When including the remote Taskfile, use a specific version tag (e.g., `v2.1.0`) that matches your needs
+- **Breaking changes**: Major version bumps (v3 → v4) may introduce breaking changes and require workflow updates
+
+Check the [releases page](https://github.com/schubergphilis/mcvs-golang-action/releases) for the latest version and changelog.
+
 ## Taskfile
 
 Another tool is configuration for [Task](https://taskfile.dev/). This repository
@@ -112,9 +123,73 @@ includes:
 
 Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.
 
+## Build Tags
+
+Build tags (also known as build constraints) allow you to include or exclude Go files from compilation based on conditions. This action supports the following common build tag patterns:
+
+- **`integration`**: For integration tests that require external services or databases
+- **`component`**: For component tests that test multiple units working together
+- **`e2e`**: For end-to-end tests that test the entire application flow
+- **`lambda.norpc`**: For building AWS Lambda functions without RPC support
+
+### Using Build Tags
+
+When running tests with specific build tags:
+```zsh
+# Run integration tests
+task remote:test-integration --yes
+
+# Run component tests
+task remote:test-component --yes
+```
+
+When linting code with specific build tags, you may need to run the linter multiple times to cover all code paths:
+```yml
+- testing-type: "lint"  # Lint main code
+- testing-type: "lint", build-tags: "integration"  # Lint integration test code
+- testing-type: "lint", build-tags: "component"  # Lint component test code
+```
+
+This ensures that code in test files with different build tags is properly linted.
+
 ### GitHub
 
-Create a `.github/workflows/golang.yml` file with the following content:
+#### Basic Example
+
+For a simple project that needs standard testing and linting, create a `.github/workflows/golang.yml` file:
+
+```yml
+---
+name: Golang
+"on": pull_request
+permissions:
+  contents: read
+  packages: read
+jobs:
+  MCVS-golang-action:
+    strategy:
+      matrix:
+        args:
+          - testing-type: "unit"
+          - testing-type: "lint"
+          - testing-type: "coverage"
+          - testing-type: "security-golang-modules"
+    runs-on: ubuntu-24.04
+    env:
+      TASK_X_REMOTE_TASKFILES: 1
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: schubergphilis/mcvs-golang-action@v3
+        with:
+          testing-type: ${{ matrix.args.testing-type }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+This basic configuration will run unit tests, linting, code coverage checks, and security scanning on your Go code.
+
+#### Advanced Example
+
+For projects with multiple build configurations, integration tests, or custom requirements, create a `.github/workflows/golang.yml` file with the following content:
 
 ```yml
 ---
@@ -177,29 +252,29 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 
 <!-- markdownlint-disable MD013 -->
 
-| Option                                          | Default | Required |
-| :---------------------------------------------- | :------ | -------- |
-| build-tags                                      | x       |          |
-| code-coverage-expected                          | x       |          |
-| code-coverage-opa-expected                      | x       |          |
-| code-coverage-timeout                           |         |          |
-| github-token-for-downloading-private-go-modules |         |          |
-| golangci-timeout                                | x       |          |
-| golang-unit-tests-exclusions                    | x       |          |
-| grype-version                                   |         |          |
-| release-application-name                        |         |          |
-| release-architecture                            |         |          |
-| release-build-tags                              |         |          |
-| release-dir                                     |         |          |
-| release-os                                      | x       |          |
-| release-type                                    |         |          |
-| task-install                                    | x       |          |
-| task-version                                    | x       |          |
-| testing-type                                    |         |          |
-| test-timeout                                    |         |          |
-| token                                           |         |          |
-| trivy-action-db                                 | x       |          |
-| trivy-action-java-db                            | x       |          |
+| Option                                          | Default | Required | Description                                                                                                      |
+| :---------------------------------------------- | :------ | -------- | :--------------------------------------------------------------------------------------------------------------- |
+| build-tags                                      | x       |          | Build tags to use when running tests and linting (e.g., "integration", "component", "e2e")                       |
+| code-coverage-expected                          | x       |          | Minimum expected code coverage percentage for standard tests                                                     |
+| code-coverage-opa-expected                      | x       |          | Minimum expected code coverage percentage for OPA (Open Policy Agent) tests                                      |
+| code-coverage-timeout                           |         |          | Timeout duration for code coverage analysis (e.g., "10m0s")                                                      |
+| github-token-for-downloading-private-go-modules |         |          | GitHub token with permissions to download Go modules from private repositories                                   |
+| golangci-timeout                                | x       |          | Timeout duration for golangci-lint execution                                                                     |
+| golang-unit-tests-exclusions                    | x       |          | Regex pattern to exclude specific packages from unit testing (e.g., `\(cmd\/app\|internal\/app\)`)              |
+| grype-version                                   |         |          | Specific version of Grype vulnerability scanner to use                                                           |
+| release-application-name                        |         |          | Name of the application binary to build (required when release-type is set)                                      |
+| release-architecture                            |         |          | Target architecture for the binary (e.g., "amd64", "arm64")                                                      |
+| release-build-tags                              |         |          | Build tags to use when building the release binary (e.g., "lambda.norpc")                                        |
+| release-dir                                     |         |          | Directory containing the main.go file for the binary to build                                                    |
+| release-os                                      | x       |          | Target operating system for the binary (e.g., "linux", "darwin")                                                 |
+| release-type                                    |         |          | Type of release to build (e.g., "binary")                                                                        |
+| task-install                                    | x       |          | Whether to install Task runner ("yes" or "no")                                                                   |
+| task-version                                    | x       |          | Version of Task runner to install                                                                                |
+| testing-type                                    |         |          | Type of testing to run (e.g., "unit", "integration", "lint", "coverage", "security-golang-modules")              |
+| test-timeout                                    |         |          | Timeout duration for test execution (e.g., "10m0s")                                                              |
+| token                                           |         |          | GitHub token for authentication (typically ${{ secrets.GITHUB_TOKEN }})                                          |
+| trivy-action-db                                 | x       |          | Trivy vulnerability database configuration                                                                       |
+| trivy-action-java-db                            | x       |          | Trivy Java vulnerability database configuration                                                                  |
 
 Note: If an **x** is registered in the Default column, refer to the
 [action.yml](action.yml) for the corresponding value.
