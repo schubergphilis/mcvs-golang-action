@@ -214,7 +214,7 @@ When you have test files with different build tags, lint them separately:
 
 All tool versions are pinned in [build/task.yml](build/task.yml) (lines 52-95):
 
-- golangci-lint: 2.4.0
+- golangci-lint: v2.9.0
 - osv-scanner: v2.3.1
 - mockery: v3.6.1
 - opa/regal: v1.12.2 / v0.38.0
