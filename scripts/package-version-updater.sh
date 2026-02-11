@@ -48,6 +48,7 @@
 set -xeuo pipefail
 
 readonly PACKAGES_TO_BE_UPDATED=(
+  "GOLANGCI_LINT_VERSION GOLANGCI_LINT_VERSION golangci-lint latest_stable_package_version_on_github golangci/golangci-lint"
   "GO_SWAGGER_VERSION GO_SWAGGER_VERSION go-swagger latest_stable_package_version_on_github go-swagger/go-swagger"
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
