@@ -49,7 +49,7 @@ vars:
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
-  GOLANGCI_LINT_VERSION: 2.4.0
+  GOLANGCI_LINT_VERSION: v2.9.0
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
     sh: |
@@ -256,7 +256,7 @@ tasks:
           echo "Installing golangci-lint version {{.GOLANGCI_LINT_VERSION}}..."
           curl \
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
-            sh -s -- -b {{.GOBIN}} v{{.GOLANGCI_LINT_VERSION}}
+            sh -s -- -b {{.GOBIN}} {{.GOLANGCI_LINT_VERSION}}
         fi
     silent: true
   golangci-lint-fmt:
