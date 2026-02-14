@@ -60,6 +60,7 @@ readonly PACKAGES_TO_BE_UPDATED=(
   "REGAL_VERSION REGAL_VERSION regal latest_stable_package_version_on_github StyraOSS/regal"
   "YQ_VERSION YQ_VERSION yq latest_stable_package_version_on_github mikefarah/yq"
   "GTA_VERSION GTA_VERSION gta latest_stable_package_version_on_github digitalocean/gta"
+  "WSL_VERSION WSL_VERSION wsl latest_stable_package_version_on_github bombsimon/wsl"
 )
 readonly PR_TITLE="build(deps): weekly update package versions that cannot be updated by dependabot"
 

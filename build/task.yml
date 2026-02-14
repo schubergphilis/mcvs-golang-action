@@ -102,6 +102,8 @@ vars:
         echo "\"\""
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
+  WSL_BIN: "{{.GOBIN}}/wsl"
+  WSL_VERSION: v5.1.0
   YQ_VERSION: v4.50.1
 tasks:
   build-golang-download-modules:
@@ -777,6 +779,16 @@ tasks:
         vars:
           TEST_TAGS: integration
     desc: run integration tests in CICD
+    silent: true
+  wsl-install:
+    cmds:
+      - task: keep-local-and-remote-versions-in-sync
+      - |
+        wsl_major_version=$(echo "{{.WSL_VERSION}}" | cut -d '.' -f 1)
+        if ! {{.WSL_BIN}} -V | grep -q {{.WSL_VERSION}}; then
+          echo "Installing wsl version {{.WSL_VERSION}}..."
+          go install github.com/bombsimon/wsl/${wsl_major_version}/cmd/wsl@{{.WSL_VERSION}}
+        fi
     silent: true
   yq-install:
     cmds:
