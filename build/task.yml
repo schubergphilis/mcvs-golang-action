@@ -713,7 +713,6 @@ tasks:
           ${PKGS} \
           {{.TEST_EXTRA_ARGS}} \
           -timeout {{.TEST_TIMEOUT}}
-
     desc: run test
     silent: true
   test-cicd:
