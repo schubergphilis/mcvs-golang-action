@@ -232,11 +232,15 @@ jobs:
       test-timeout: 10m0s
     steps:
       - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0 # this is necessary for gta partial testing
       - uses: schubergphilis/mcvs-golang-action@v0.9.0
         with:
           build-tags: ${{ matrix.args.build-tags }}
           golang-unit-tests-exclusions: |-
             \(cmd\/some-app\|internal\/app\/some-app\)
+          gta-base-branch: main
+          gta-partial-testing: true
           release-architecture: ${{ matrix.args.release-architecture }}
           release-dir: ${{ matrix.args.release-dir }}
           release-type: ${{ matrix.args.release-type }}
@@ -260,8 +264,10 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | code-coverage-timeout                           |         |          | Timeout duration for code coverage analysis (e.g., "10m0s")                                                      |
 | github-token-for-downloading-private-go-modules |         |          | GitHub token with permissions to download Go modules from private repositories                                   |
 | golangci-timeout                                | x       |          | Timeout duration for golangci-lint execution                                                                     |
-| golang-unit-tests-exclusions                    | x       |          | Regex pattern to exclude specific packages from unit testing (e.g., `\(cmd\/app\|internal\/app\)`)              |
+| golang-unit-tests-exclusions                    | x       |          | Regex pattern to exclude specific packages from unit testing (e.g., `\(cmd\/app\|internal\/app\)`)               |
 | grype-version                                   |         |          | Specific version of Grype vulnerability scanner to use                                                           |
+| gta-base-branch                                 | x       |          | The branch changed go packages will be compared to, to perform partial tests                                     |           
+| gta-partial-testing                             | x       |          | Whether to run partial tests (true or false)                                                                     |
 | release-application-name                        |         |          | Name of the application binary to build (required when release-type is set)                                      |
 | release-architecture                            |         |          | Target architecture for the binary (e.g., "amd64", "arm64")                                                      |
 | release-build-tags                              |         |          | Build tags to use when building the release binary (e.g., "lambda.norpc")                                        |
@@ -275,6 +281,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | token                                           |         |          | GitHub token for authentication (typically ${{ secrets.GITHUB_TOKEN }})                                          |
 | trivy-action-db                                 | x       |          | Trivy vulnerability database configuration                                                                       |
 | trivy-action-java-db                            | x       |          | Trivy Java vulnerability database configuration                                                                  |
+
 
 Note: If an **x** is registered in the Default column, refer to the
 [action.yml](action.yml) for the corresponding value.
