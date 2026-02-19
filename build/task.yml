@@ -320,7 +320,8 @@ tasks:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! {{.GOLINES_BIN}} --version | grep -q {{.GOLINES_VERSION}}; then
+        if ! command -v {{.GOLINES_BIN}} >/dev/null 2>&1 || \
+           ! {{.GOLINES_BIN}} --version | grep -q {{.GOLINES_VERSION}}; then
           echo "Installing golines version {{.GOLINES_VERSION}}..."
           go install github.com/segmentio/golines@{{.GOLINES_VERSION}}
         fi
@@ -805,7 +806,8 @@ tasks:
       - task: keep-local-and-remote-versions-in-sync
       - |
         wsl_major_version=$(echo "{{.WSL_VERSION}}" | cut -d '.' -f 1)
-        if ! {{.WSL_BIN}} -V | grep -q {{.WSL_VERSION}}; then
+        if ! command -v {{.WSL_BIN}} >/dev/null 2>&1 || \
+           ! {{.WSL_BIN}} -V | grep -q {{.WSL_VERSION}}; then
           echo "Installing wsl version {{.WSL_VERSION}}..."
           go install github.com/bombsimon/wsl/${wsl_major_version}/cmd/wsl@{{.WSL_VERSION}}
         fi
