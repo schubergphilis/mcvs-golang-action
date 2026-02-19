@@ -104,9 +104,30 @@ task remote:coverage --yes
 # Run security scanning
 task remote:osv-scanner --yes
 
+# Automatically fix linting issues
+task remote:fix-linting-issues --yes
+
 # List all available tasks
 task --list-all
 ```
+
+### Fixing Linting Issues
+
+The `fix-linting-issues` task automatically fixes common linting problems:
+
+```bash
+task remote:fix-linting-issues --yes
+```
+
+This task uses:
+- **golines** (v0.12.2) - Reformats code to meet line length requirements by intelligently wrapping long lines
+- **wsl** (v5.1.0) - Fixes whitespace linting issues by adding/removing blank lines according to Go style guidelines
+
+The task runs:
+1. `golines . -w` - Reformats all Go files in the current directory
+2. `wsl -fix ./...` - Fixes whitespace issues in all Go packages
+
+After running, review the changes as some linting issues may still require manual intervention.
 
 ### Testing in This Repository
 
@@ -212,12 +233,14 @@ When you have test files with different build tags, lint them separately:
 
 ### Tool Versions
 
-All tool versions are pinned in [build/task.yml](build/task.yml) (lines 52-95):
+All tool versions are pinned in [build/task.yml](build/task.yml) (lines 52-109):
 
 - golangci-lint: v2.9.0
-- osv-scanner: v2.3.1
-- mockery: v3.6.1
-- opa/regal: v1.12.2 / v0.38.0
+- osv-scanner: v2.3.3
+- mockery: v3.6.4
+- opa/regal: v1.13.1 / v0.38.1
+- golines: v0.12.2
+- wsl: v5.1.0
 - Task runner: 3.46.4 (defined in action.yml)
 
 The [package-version-updater workflow](.github/workflows/package-version-updater.yml) automatically opens PRs to update these versions weekly.
