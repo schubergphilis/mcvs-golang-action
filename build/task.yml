@@ -50,6 +50,8 @@ vars:
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
   GOLANGCI_LINT_VERSION: v2.9.0
+  GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
+    sh: echo {{.GOLANGCI_LINT_VERSION}} | sed -e "s|v||"
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
   GOLANG_PARALLEL_TESTS:
     sh: |
@@ -265,8 +267,8 @@ tasks:
     cmds:
       - task: keep-local-and-remote-versions-in-sync
       - |
-        if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION}}"; then
-          echo "Installing golangci-lint version {{.GOLANGCI_LINT_VERSION}}..."
+        if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX}}"; then
+          echo "Installing golangci-lint version {{.GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX}}..."
           curl \
             -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
             sh -s -- -b {{.GOBIN}} {{.GOLANGCI_LINT_VERSION}}
