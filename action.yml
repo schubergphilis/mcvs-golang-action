@@ -95,6 +95,10 @@ inputs:
     default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
     description: |
       OCI repository to retrieve trivy-java-db from.
+  trivy-version:
+    default: "v0.69.2"
+    description: |
+      The Trivy CLI version used by aquasecurity/trivy-action.
 runs:
   using: "composite"
   steps:
@@ -209,6 +213,7 @@ runs:
       with:
         scan-type: "fs"
         scan-ref: "."
+        version: ${{ inputs.trivy-version }}
         exit-code: "1"
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
@@ -221,6 +226,7 @@ runs:
       with:
         scan-type: "fs"
         scan-ref: "."
+        version: ${{ inputs.trivy-version }}
         exit-code: "1"
         ignore-unfixed: true
         severity: "CRITICAL,HIGH"
