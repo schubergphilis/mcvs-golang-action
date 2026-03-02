@@ -296,6 +296,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | token                                           |         |          | GitHub token for authentication (typically ${{ secrets.GITHUB_TOKEN }})                                          |
 | trivy-action-db                                 | x       |          | Trivy vulnerability database configuration                                                                       |
 | trivy-action-java-db                            | x       |          | Trivy Java vulnerability database configuration                                                                  |
+| trivy-version                                   | x       |          | Trivy CLI version used by aquasecurity/trivy-action (for example, "v0.69.2")                                    |
 
 
 Note: If an **x** is registered in the Default column, refer to the

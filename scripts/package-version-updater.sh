@@ -28,13 +28,14 @@
 # To add or manage packages, simply update the PACKAGES_TO_BE_UPDATED array below.
 #
 #   Each entry in the array has the form:
-#      "ENV_VAR YAML_VAR DISPLAY_NAME FETCH_FUNCTION FETCH_ARGUMENT"
+#      "ENV_VAR YAML_VAR DISPLAY_NAME FETCH_FUNCTION FETCH_ARGUMENT [VERSION_PREFIX]"
 #
 #      ENV_VAR:         The name of the exported variable used in this script
 #      YAML_VAR:        The variable name in the Taskfile's .vars section
 #      DISPLAY_NAME:    Human-friendly name for PR changelog/report
 #      FETCH_FUNCTION:  Name of the shell function to call for latest version
 #      FETCH_ARGUMENT:  The argument passed to FETCH_FUNCTION (GitHub repo or module path)
+#      VERSION_PREFIX:  Optional tag prefix filter (for example: v3.)
 #
 # Example: To update a new package (e.g., example/examplepkg from GitHub),
 #   1. Add a new entry to PACKAGES_TO_BE_UPDATED:
@@ -54,7 +55,7 @@ readonly PACKAGES_TO_BE_UPDATED=(
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
-  "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery"
+  "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery v3."
   "OPA_VERSION OPA_VERSION opa latest_stable_package_version_on_github open-policy-agent/opa"
   "OSV_SCANNER_VERSION OSV_SCANNER_VERSION osv-scanner latest_stable_package_version_on_github google/osv-scanner"
   "PRESENT_VERSION PRESENT_VERSION present go_list_latest_version golang.org/x/tools"
@@ -83,8 +84,21 @@ check_label_exists() {
 }
 
 latest_stable_package_version_on_github() {
+  local repository="$1"
+  local version_prefix="${2:-}"
+
+  if [[ -n "${version_prefix}" ]]; then
+    gh release list \
+      --repo "${repository}" \
+      --limit 100 \
+      --json tagName,isDraft,isPrerelease,publishedAt | \
+        jq -r --arg version_prefix "${version_prefix}" '[.[] | select(.isDraft == false and .isPrerelease == false and (.tagName | startswith($version_prefix)))] | sort_by(.publishedAt) | last.tagName'
+
+    return
+  fi
+
   gh release list \
-    --repo $1 \
+    --repo "${repository}" \
     --limit 100 \
     --json tagName,isDraft,isPrerelease,publishedAt | \
       jq -r '[.[] | select(.isDraft == false and .isPrerelease == false)] | sort_by(.publishedAt) | last.tagName'
@@ -98,9 +112,16 @@ latest_stable_package_versions() {
     local display_name="$3"
     local fetch_func="$4"
     local fetch_arg="$5"
+    local version_prefix="${6:-}"
 
     local version
-    version="$($fetch_func "$fetch_arg")"
+    version="$($fetch_func "$fetch_arg" "$version_prefix")"
+
+    if [[ -z "${version}" || "${version}" == "null" ]]; then
+      echo "Warning: failed to determine a version for ${display_name}"
+      continue
+    fi
+
     export "$env_var"="$version"
     echo "$env_var: $version"
   done
