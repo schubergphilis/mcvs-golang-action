@@ -49,7 +49,7 @@ vars:
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
-  GOLANGCI_LINT_VERSION: v2.10.1
+  GOLANGCI_LINT_VERSION: v2.11.2
   GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.GOLANGCI_LINT_VERSION}} | sed -e "s|v||"
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
@@ -69,7 +69,7 @@ vars:
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.txt
-  GQLGEN_VERSION: v0.17.87
+  GQLGEN_VERSION: v0.17.88
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
   GQLGENC_VERSION: v0.33.1
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
@@ -82,7 +82,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.6.4
+  MOCKERY_VERSION: v3.7.0
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v1.14.0
