@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - A GitHub Action ([action.yml](action.yml)) for CI/CD pipelines
 - A remote Taskfile ([build/task.yml](build/task.yml)) for local development and CI automation
 
-The action orchestrates: Go version installation (from go.mod), module verification, security scanning (osv-scanner, Grype, Trivy), golangci-lint, unit/integration/component tests, code coverage enforcement, and optional binary releases.
+The action orchestrates: Go version installation (from go.mod), module verification, security scanning (osv-scanner, Grype), golangci-lint, unit/integration/component tests, code coverage enforcement, and optional binary releases.
 
 ## Architecture
 
@@ -20,7 +20,7 @@ The action orchestrates: Go version installation (from go.mod), module verificat
    - Defines all inputs (build-tags, testing-type, release configs, etc.)
    - Orchestrates installation of Go and Task runner
    - Conditionally executes different testing/security/build workflows based on `testing-type` input
-   - Supports multiple testing types: `unit`, `integration`, `component`, `coverage`, `lint`, `security-golang-modules`, `security-grype`, `security-trivy`, `graphql-lint`, `mcvs-texttidy`, `mocks-tidy`, `opa`
+   - Supports multiple testing types: `unit`, `integration`, `component`, `coverage`, `lint`, `security-golang-modules`, `security-grype`, `graphql-lint`, `mcvs-texttidy`, `mocks-tidy`, `opa`
 
 2. **build/task.yml** - Reusable Taskfile
 
@@ -54,11 +54,6 @@ Tests are organized using Go build tags:
 
    - Triggered when `testing-type: security-grype`
    - Severity cutoff: HIGH or above
-
-3. **Trivy** - Optional container/filesystem scanning
-   - Triggered when `testing-type: security-trivy`
-   - Supports custom ignore file via `.trivyignore`
-   - Uses cached databases from public.ecr.aws to avoid rate limits
 
 ## Common Development Commands
 
@@ -120,10 +115,12 @@ task remote:fix-linting-issues --yes
 ```
 
 This task uses:
+
 - **golines** (v0.12.2) - Reformats code to meet line length requirements by intelligently wrapping long lines
 - **wsl** (v5.1.0) - Fixes whitespace linting issues by adding/removing blank lines according to Go style guidelines
 
 The task runs:
+
 1. `golines . -w` - Reformats all Go files in the current directory
 2. `wsl -fix ./...` - Fixes whitespace issues in all Go packages
 
@@ -207,7 +204,7 @@ For building binaries on tagged releases:
 
 ### Key Action Inputs
 
-- **testing-type** - Main selector: `unit`, `integration`, `component`, `coverage`, `lint`, `security-golang-modules`, `security-grype`, `security-trivy`
+- **testing-type** - Main selector: `unit`, `integration`, `component`, `coverage`, `lint`, `security-golang-modules`, `security-grype`
 - **build-tags** - Build constraints for tests/linting (e.g., "integration,component")
 - **golang-unit-tests-exclusions** - Regex to exclude packages from unit tests (e.g., `\(cmd\/app\|internal\/app\)`)
 - **code-coverage-expected** - Minimum coverage percentage (default: 80)

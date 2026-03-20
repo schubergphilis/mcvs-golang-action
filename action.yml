@@ -64,10 +64,6 @@ inputs:
   release-type:
     description: |
       The type of the release, e.g. binary, zip, etc.
-  security-trivyignore:
-    default: ".trivyignore"
-    description: |
-      Whether to ignore certain Trivy vulnerabilities or not.
   task-install:
     default: no
     description: |
@@ -85,20 +81,7 @@ inputs:
       The testing type, e.g. integration, unit or some other.
   token:
     description: |
-      A token is required to allow the mcvs-golang-action to pull the
-      cached trivy DBs to prevent bump into rate limits.
-  trivy-action-db:
-    default: "public.ecr.aws/aquasecurity/trivy-db:2"
-    description: |
-      OCI repository to retrieve trivy-db from.
-  trivy-action-java-db:
-    default: "public.ecr.aws/aquasecurity/trivy-java-db:1"
-    description: |
-      OCI repository to retrieve trivy-java-db from.
-  trivy-version:
-    default: "v0.69.2"
-    description: |
-      The Trivy CLI version used by aquasecurity/trivy-action.
+      A token could be used to pull private golang modules.
 runs:
   using: "composite"
   steps:
@@ -188,49 +171,6 @@ runs:
         output-format: table
         path: "."
         severity-cutoff: high
-    #
-    # * Trivy
-    #
-    - uses: 030/trivyignore-validator-action@v0.1.2
-      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
-    - name: Log in to GitHub Packages Docker registry
-      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
-      shell: bash
-      run: |
-        echo "${{ inputs.token }}" |\
-          docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    #
-    # Duplicated trivy-action parameters as GitHub actions do NOT support
-    # anchors: https://github.com/actions/runner/issues/1182
-    #
-    - uses: aquasecurity/trivy-action@0.35.0
-      if: inputs.token != '' && inputs.testing-type == 'security-trivy'
-      env:
-        TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
-        TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
-        TRIVY_PASSWORD: ${{ inputs.token }}
-        TRIVY_USERNAME: ${{ github.actor }}
-      with:
-        scan-type: "fs"
-        scan-ref: "."
-        version: ${{ inputs.trivy-version }}
-        exit-code: "1"
-        ignore-unfixed: true
-        severity: "CRITICAL,HIGH"
-        trivyignores: ${{ inputs.security-trivyignore }}
-    - uses: aquasecurity/trivy-action@0.35.0
-      if: inputs.token == '' && inputs.testing-type == 'security-trivy'
-      env:
-        TRIVY_DB_REPOSITORY: ${{ inputs.trivy-action-db }}
-        TRIVY_JAVA_DB_REPOSITORY: ${{ inputs.trivy-action-java-db }}
-      with:
-        scan-type: "fs"
-        scan-ref: "."
-        version: ${{ inputs.trivy-version }}
-        exit-code: "1"
-        ignore-unfixed: true
-        severity: "CRITICAL,HIGH"
-        trivyignores: ${{ inputs.security-trivyignore }}
     #
     # Run golangci-lint.
     #
