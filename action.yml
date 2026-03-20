@@ -163,7 +163,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@v7.4.0
+    - uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c # v7.3.2
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         grype-version: ${{ inputs.grype-version }}
