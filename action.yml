@@ -89,7 +89,7 @@ runs:
     # Install task and the golang version that has been defined in the go.mod
     # file.
     #
-    - uses: actions/setup-go@v6.3.0
+    - uses: actions/setup-go@v6.4.0
       if: |
         inputs.release-dir != '' ||
         inputs.task-install == 'yes' ||
