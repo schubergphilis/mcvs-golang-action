@@ -85,7 +85,7 @@ vars:
   MOCKERY_VERSION: v3.7.0
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.15.1
+  OPA_VERSION: v1.15.2
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -94,7 +94,7 @@ vars:
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.43.0
+  PRESENT_VERSION: v0.44.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
   REGAL_VERSION: v0.39.0
