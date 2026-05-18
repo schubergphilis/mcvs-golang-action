@@ -270,7 +270,7 @@ tasks:
         if ! golangci-lint --version | grep -q "has version {{.GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX}}"; then
           echo "Installing golangci-lint version {{.GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX}}..."
           curl \
-            -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
+            -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh |\
             sh -s -- -b {{.GOBIN}} {{.GOLANGCI_LINT_VERSION}}
         fi
     silent: true
