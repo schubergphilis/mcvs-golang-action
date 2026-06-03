@@ -16,7 +16,7 @@ jobs:
     env:
       TASK_X_REMOTE_TASKFILES: 1
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.3
       - uses: ./
         with:
           task-install: yes
