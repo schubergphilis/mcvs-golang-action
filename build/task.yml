@@ -63,7 +63,7 @@ vars:
   GOLINES_BIN: "{{.GOBIN}}/golines"
   GOLINES_VERSION: v0.13.0
   GO_SWAGGER: "{{.GOBIN}}/swagger"
-  GO_SWAGGER_VERSION: v0.34.0
+  GO_SWAGGER_VERSION: v0.34.1
   OSV_SCANNER_VERSION: v2.3.8
   OSV_SCANNER_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
@@ -97,7 +97,7 @@ vars:
   PRESENT_VERSION: v0.45.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
-  REGAL_VERSION: v0.40.0
+  REGAL_VERSION: v0.41.1
   REGAL_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
@@ -108,7 +108,7 @@ vars:
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   WSL_BIN: "{{.GOBIN}}/wsl"
   WSL_VERSION: v5.8.0
-  YQ_VERSION: v4.53.2
+  YQ_VERSION: v4.53.3
 tasks:
   build-golang-download-modules:
     cmds:
