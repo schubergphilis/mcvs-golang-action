@@ -8,7 +8,9 @@ jobs:
   taskfile-without-empty-lines:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - run: |
           yaml_file="./build/task.yml"
           empty_lines=$(grep -n -e '^$' "$yaml_file")
