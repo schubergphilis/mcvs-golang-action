@@ -40,7 +40,7 @@ inputs:
     description: |
       The base branch to compare changed code to.
   gta-partial-testing:
-    default: false
+    default: "false"
     description: |
       Whether partial testing should be performed. Only changed packages will be
       tested.
