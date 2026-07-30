@@ -55,6 +55,7 @@ readonly PACKAGES_TO_BE_UPDATED=(
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
+  "GOTESTSUM_VERSION GOTESTSUM_VERSION gotestsum latest_stable_package_version_on_github gotestyourself/gotestsum"
   "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery v3."
   "OPA_VERSION OPA_VERSION opa latest_stable_package_version_on_github open-policy-agent/opa"
   "OSV_SCANNER_VERSION OSV_SCANNER_VERSION osv-scanner latest_stable_package_version_on_github google/osv-scanner"

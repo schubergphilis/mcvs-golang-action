@@ -62,6 +62,10 @@ vars:
       fi
   GOLINES_BIN: "{{.GOBIN}}/golines"
   GOLINES_VERSION: v0.13.0
+  GOTESTSUM_BIN: "{{.GOBIN}}/gotestsum"
+  GOTESTSUM_ENABLED: '{{.GOTESTSUM_ENABLED | default "true"}}'
+  GOTESTSUM_FORMAT: '{{.GOTESTSUM_FORMAT | default "testname"}}'
+  GOTESTSUM_VERSION: v1.13.0
   GO_SWAGGER: "{{.GOBIN}}/swagger"
   GO_SWAGGER_VERSION: v0.34.1
   OSV_SCANNER_VERSION: v2.4.0
@@ -334,6 +338,17 @@ tasks:
         if ! {{.GO_SWAGGER}} version | grep -q "{{.GO_SWAGGER_VERSION}}"; then
           echo "Installing go-swagger version {{.GO_SWAGGER_VERSION}}..."
           go install github.com/go-swagger/go-swagger/cmd/swagger@{{.GO_SWAGGER_VERSION}}
+        fi
+    silent: true
+  gotestsum-install:
+    cmds:
+      - |
+        if [ "{{.GOTESTSUM_ENABLED}}" != "true" ]; then
+          exit 0
+        fi
+        if ! {{.GOTESTSUM_BIN}} --version 2>/dev/null | grep -q "{{.GOTESTSUM_VERSION}}"; then
+          echo "Installing gotestsum version {{.GOTESTSUM_VERSION}}..."
+          go install gotest.tools/gotestsum@{{.GOTESTSUM_VERSION}}
         fi
     silent: true
   gta-install:
@@ -711,6 +726,7 @@ tasks:
   test:
     cmds:
       - task: golang-log
+      - task: gotestsum-install
       - |
         set -eu
 
@@ -730,7 +746,16 @@ tasks:
 
         # when "if testing.Short() { t.Skip() }" is in the go code then such
         # tests will be skipped if -short is used.
-        go test \
+        #
+        # gotestsum wraps 'go test' and reports the total number of tests that
+        # have been run, per testing type.
+        if [ "{{.GOTESTSUM_ENABLED}}" = "true" ]; then
+          set -- {{.GOTESTSUM_BIN}} --format {{.GOTESTSUM_FORMAT}} --
+        else
+          set -- go test
+        fi
+
+        "$@" \
           -p {{.GOLANG_PARALLEL_TESTS}} \
           -race \
           -short \

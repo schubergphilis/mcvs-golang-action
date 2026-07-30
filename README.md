@@ -21,6 +21,8 @@ consists of the following steps:
 - Unit tests.
 - Integration tests.
 - Code coverage.
+- A test summary, including the number of tests that have been run per testing
+  type, using [gotestsum](https://github.com/gotestyourself/gotestsum).
 
 In summary, using this action will ensure that Golang code meets certain
 standards before it will be deployed to production as the assembly line will
@@ -71,6 +73,8 @@ The following variables can be overridden:
 | :-------------------------- | :------------------------------------------------------------------------------------------------------- |
 | `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage. |
 | `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                |
+| `GOTESTSUM_ENABLED`         | Enables or disables running the tests via [gotestsum](https://github.com/gotestyourself/gotestsum). Default: `true`. |
+| `GOTESTSUM_FORMAT`          | The gotestsum [output format](https://github.com/gotestyourself/gotestsum#output-format). Default: `testname`. |
 
 ## Usage
 
