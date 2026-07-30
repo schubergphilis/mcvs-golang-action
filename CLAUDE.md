@@ -42,6 +42,11 @@ Tests are organized using Go build tags:
 - **`e2e`** - End-to-end tests (`*_e2e_test.go` files with `//go:build e2e`)
 - Default (no tag) - Unit tests
 
+All test tasks run through [gotestsum](https://github.com/gotestyourself/gotestsum),
+which prints a summary with the number of tests that have been run for the
+testing type at hand. Set `GOTESTSUM_ENABLED: "false"` to fall back to plain
+`go test`.
+
 ### Security Scanning Flow
 
 1. **osv-scanner** - First line of defense for Go module vulnerabilities
@@ -154,6 +159,8 @@ Available override variables (see [build/task.yml](build/task.yml) lines 47-53):
 - `CODE_COVERAGE_STRICT` - Enforce minimum coverage (default: "true")
 - `GOLANGCI_LINT_CONFIG_PATH` - Path to golangci-lint config (default: ".golangci.yml")
 - `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` - Linter timeout (default: 3)
+- `GOTESTSUM_ENABLED` - Run tests through gotestsum (default: "true")
+- `GOTESTSUM_FORMAT` - gotestsum output format (default: "testname")
 - `BUILD_TAGS` - Build tags for tests/linting (default: "component,e2e,integration")
 
 ## Using the GitHub Action
