@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         args:
+          - testing-type: lint-action
           - testing-type: lint-commit
           - testing-type: lint-git
           - testing-type: security-file-system
@@ -20,6 +21,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: schubergphilis/mcvs-general-action@f52c4433add29d8eff9036bf37b5b69a2c4cf28b
+      - uses: schubergphilis/mcvs-general-action@dependency-injection-action-check
         with:
           testing-type: ${{ matrix.args.testing-type }}
