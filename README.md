@@ -1,4 +1,9 @@
-# MCVS-golang-action
+# MCVS Golang Action
+
+[![GitHub release](https://img.shields.io/github/v/release/schubergphilis/mcvs-golang-action)](https://github.com/schubergphilis/mcvs-golang-action/releases)
+[![License](https://img.shields.io/github/license/schubergphilis/mcvs-golang-action)](LICENSE)
+
+<img src="./assets/logos/mcvs-golang-action.png" width="250"></a>
 
 The Mission Critical Vulnerability Scanner (MCVS) Golang Action repository is a
 collection of standardized tools to ensure a certain level of quality of a
@@ -69,12 +74,12 @@ to do this.
 
 The following variables can be overridden:
 
-| Variable                    | Description                                                                                              |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------- |
-| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage. |
-| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                |
+| Variable                    | Description                                                                                                          |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage.             |
+| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                            |
 | `GOTESTSUM_ENABLED`         | Enables or disables running the tests via [gotestsum](https://github.com/gotestyourself/gotestsum). Default: `true`. |
-| `GOTESTSUM_FORMAT`          | The gotestsum [output format](https://github.com/gotestyourself/gotestsum#output-format). Default: `testname`. |
+| `GOTESTSUM_FORMAT`          | The gotestsum [output format](https://github.com/gotestyourself/gotestsum#output-format). Default: `testname`.       |
 
 ## Usage
 
