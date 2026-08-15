@@ -21,6 +21,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: schubergphilis/mcvs-general-action@dd9e92cb0bf9e98226c0c13283e287781a6637a7 # v0.6.0
+      - uses: schubergphilis/mcvs-general-action@03b7d82ed321d30353707237ce1d95a65899548c # v0.6.2
         with:
           testing-type: ${{ matrix.args.testing-type }}
