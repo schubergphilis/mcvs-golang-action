@@ -4,6 +4,7 @@ name: gomod-go-version-updater-action
 "on":
   schedule:
     - cron: 42 6 * * *
+  workflow_dispatch:
 permissions:
   contents: write
   pull-requests: write
@@ -12,4 +13,4 @@ jobs:
   gomod-go-version-updater-action:
     runs-on: ubuntu-24.04
     steps:
-      - uses: schubergphilis/gomod-go-version-updater-action@773e180a2d3700d164a7ded2157f466ce8bc6cd6
+      - uses: schubergphilis/gomod-go-version-updater-action@773e180a2d3700d164a7ded2157f466ce8bc6cd6 # v0.3.7
