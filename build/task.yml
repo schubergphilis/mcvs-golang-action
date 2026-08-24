@@ -49,7 +49,7 @@ vars:
   COVERPROFILE: profile.cov
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
-  GOLANGCI_LINT_VERSION: v2.13.0
+  GOLANGCI_LINT_VERSION: v2.13.1
   GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.GOLANGCI_LINT_VERSION}} | sed -e "s|v||"
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
@@ -67,18 +67,18 @@ vars:
   GOTESTSUM_FORMAT: '{{.GOTESTSUM_FORMAT | default "testname"}}'
   GOTESTSUM_VERSION: v1.13.0
   GO_SWAGGER: "{{.GOBIN}}/swagger"
-  GO_SWAGGER_VERSION: v0.34.1
-  OSV_SCANNER_VERSION: v2.4.0
+  GO_SWAGGER_VERSION: v0.36.4
+  OSV_SCANNER_VERSION: v2.5.1
   OSV_SCANNER_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OSV_SCANNER_VERSION}} | sed -e "s|v||"
   OSV_SCANNER_BIN: "{{.GOBIN}}/osv-scanner"
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.txt
-  GQLGEN_VERSION: v0.17.92
+  GQLGEN_VERSION: v0.17.94
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
-  GQLGENC_VERSION: v0.37.0
+  GQLGENC_VERSION: v0.38.2
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
-  GRAPHQL_LINTER_VERSION: v0.1.2
+  GRAPHQL_LINTER_VERSION: v0.2.1
   GTA_BASE_BRANCH: '{{.GTA_BASE_BRANCH | default "main"}}'
   GTA_PARTIAL_TESTING: '{{.GTA_PARTIAL_TESTING | default "false"}}'
   GTA_VERSION: v0.2.0
@@ -86,10 +86,10 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.7.1
+  MOCKERY_VERSION: v3.7.4
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.17.1
+  OPA_VERSION: v1.19.1
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
@@ -98,10 +98,10 @@ vars:
   OS_COMMAND_TYPE_ARCHITECTURE:
     sh: "{{.OS_COMMAND}} -m"
   PRESENT_BIN: "{{.GOBIN}}/present"
-  PRESENT_VERSION: v0.46.0
+  PRESENT_VERSION: v0.49.0
   PRESENT_PRESENTATIONS_HOME: '{{.PRESENT_PRESENTATIONS_HOME | default "./docs/presentations"}}'
   REGAL_BIN: "{{.GOBIN}}/regal"
-  REGAL_VERSION: v0.41.1
+  REGAL_VERSION: v0.42.0
   REGAL_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.REGAL_VERSION}} | sed -e "s|v||"
   SED_INSERT_ADDITION:
@@ -111,8 +111,8 @@ vars:
       fi
   TEST_TIMEOUT: '{{.TEST_TIMEOUT | default "4m0s"}}'
   WSL_BIN: "{{.GOBIN}}/wsl"
-  WSL_VERSION: v5.8.0
-  YQ_VERSION: v4.53.3
+  WSL_VERSION: v5.9.0
+  YQ_VERSION: v4.53.6
 tasks:
   build-golang-download-modules:
     cmds:
