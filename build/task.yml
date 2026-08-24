@@ -75,7 +75,7 @@ vars:
   OSV_SCANNER_OUTPUT: /tmp/osv-scanner.txt
   GQLGEN_VERSION: v0.17.94
   GQLGEN_BIN: "{{.GOBIN}}/gqlgen"
-  GQLGENC_VERSION: v0.38.1
+  GQLGENC_VERSION: v0.38.2
   GQLGENC_BIN: "{{.GOBIN}}/gqlgenc"
   GRAPHQL_LINTER_BIN: "{{.GOBIN}}/graphql-linter"
   GRAPHQL_LINTER_VERSION: v0.2.1
@@ -86,7 +86,7 @@ vars:
   MCVS_TEXTTIDY_BIN: "{{.GOBIN}}/mcvs-texttidy"
   MCVS_TEXTTIDY_VERSION: 0.1.0
   MOCKERY_BIN: "{{.GOBIN}}/mockery"
-  MOCKERY_VERSION: v3.7.3
+  MOCKERY_VERSION: v3.7.4
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
   OPA_VERSION: v1.19.1
