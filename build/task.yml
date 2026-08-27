@@ -509,8 +509,10 @@ tasks:
           mcvs_golang_action_uses='.jobs."mcvs-golang-action".steps[] | select(.uses | test(".*/mcvs-golang-action@.*")) | .uses'
           # Prefer the readable version in the trailing comment, e.g.
           # uses: schubergphilis/mcvs-golang-action@<sha> # v3.12.1, and fall
-          # back to the ref itself if the action is not pinned to a sha.
-          expected_mcvs_golang_action_version=$(yq "${mcvs_golang_action_uses} | line_comment" .github/workflows/golang.yml | sed -nE 's/^[[:space:]]*(v?[0-9]+(\.[0-9]+)*)[[:space:]]*$/\1/p')
+          # back to the ref itself if the action is not pinned to a sha. The
+          # pattern accepts semver pre-release and build metadata as well, e.g.
+          # v1.2.3, 1.2.3-rc.1 and v2.0.0-beta+exp.sha.5114f85.
+          expected_mcvs_golang_action_version=$(yq "${mcvs_golang_action_uses} | line_comment" .github/workflows/golang.yml | sed -nE 's/^[[:space:]]*(v?[0-9]+(\.[0-9]+)*(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?)[[:space:]]*$/\1/p')
           if [ -z "${expected_mcvs_golang_action_version}" ]; then
             expected_mcvs_golang_action_version=$(yq "${mcvs_golang_action_uses}" .github/workflows/golang.yml | sed -E 's/.*@(.*)/\1/')
           fi
