@@ -104,13 +104,8 @@ includes:
 and run:
 
 ```zsh
-TASK_X_REMOTE_TASKFILES=1 \
 task remote:test
 ```
-
-Note that the `TASK_X_REMOTE_TASKFILES` variable is required as long as the
-remote Taskfiles are still experimental. (See [issue
-1317](https://github.com/go-task/task/issues/1317) for more information.)
 
 You can use `task --list-all` to get a list of all available tasks.
 Alternatively, if you have [configured
@@ -122,7 +117,6 @@ shell, you can tab to get a list of available tasks.
 When golangci-lint reports issues that can be automatically fixed, you can use the `fix-linting-issues` task:
 
 ```zsh
-TASK_X_REMOTE_TASKFILES=1 \
 task remote:fix-linting-issues --yes
 ```
 
@@ -202,8 +196,6 @@ jobs:
           - testing-type: "coverage"
           - testing-type: "security-golang-modules"
     runs-on: ubuntu-24.04
-    env:
-      TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v3
@@ -253,7 +245,6 @@ jobs:
           - testing-type: "unit"
     runs-on: ubuntu-24.04
     env:
-      TASK_X_REMOTE_TASKFILES: 1
       test-timeout: 10m0s
     steps:
       - uses: actions/checkout@v4.1.1
@@ -340,8 +331,6 @@ jobs:
             release-os: darwin
             release-type: binary
     runs-on: ubuntu-24.04
-    env:
-      TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: schubergphilis/mcvs-golang-action@v3.4.2
