@@ -80,9 +80,6 @@ includes:
 Then run tasks with:
 
 ```bash
-# Required: enable experimental remote taskfiles support
-export TASK_X_REMOTE_TASKFILES=1
-
 # Run unit tests
 task remote:test --yes
 
@@ -183,8 +180,6 @@ jobs:
           - testing-type: "coverage"
           - testing-type: "security-golang-modules"
     runs-on: ubuntu-24.04
-    env:
-      TASK_X_REMOTE_TASKFILES: 1
     steps:
       - uses: actions/checkout@v4.1.1
       - uses: schubergphilis/mcvs-golang-action@v3 # Use @v3 for latest v3.x.x
