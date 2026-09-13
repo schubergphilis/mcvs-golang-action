@@ -121,22 +121,10 @@ runs:
         inputs.testing-type == 'unit'
       shell: bash
       run: |
-        # Task <= 3.38 reported 'Task version: v3.38.0 (h1:...)', whereas newer
-        # releases report a bare '3.51.1'. Matching the bare version covers
-        # both, so that an already installed Task is actually detected.
+        # 3.38 printed 'Task version: v3.38.0 (...)', newer prints bare '3.51.1'.
         if ! task --version 2>/dev/null | grep -qF "${{ inputs.task-version }}"; then
-          # The prebuilt binary is used rather than 'go install', which compiles
-          # Task from source and costs roughly 90s in every job. This mirrors
-          # how golangci-lint is installed in build/task.yml.
-          #
-          # The destination mirrors what 'go install' would have used, so that
-          # Task still lands on a directory that is already on the PATH.
-          bindir="$(go env GOBIN)"
-          if [ -z "${bindir}" ]; then
-            bindir="$(go env GOPATH)/bin"
-          fi
-          curl \
-            -sSfL https://raw.githubusercontent.com/go-task/task/main/install-task.sh |\
+          bindir="$(go env GOBIN)"; bindir="${bindir:-$(go env GOPATH)/bin}"
+          curl -sSfL https://raw.githubusercontent.com/go-task/task/main/install-task.sh |\
             sh -s -- -b "${bindir}" v${{ inputs.task-version }}
         fi
 
