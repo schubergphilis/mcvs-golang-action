@@ -234,6 +234,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
+        TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:test-cicd --yes
     #
@@ -274,6 +275,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
+        TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:test-component-cicd --yes
     #
