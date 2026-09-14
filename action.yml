@@ -104,7 +104,7 @@ runs:
         inputs.testing-type == 'unit'
       with:
         go-version-file: ${{ inputs.go-version-file }}
-        cache: false
+        cache: true
     - name: install task
       if: |
         inputs.release-dir != '' ||
@@ -121,9 +121,11 @@ runs:
         inputs.testing-type == 'unit'
       shell: bash
       run: |
-        if ! task --version | grep -q "Task version: v${{ inputs.task-version }}"; then
-          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
-          go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
+        # 3.38 printed 'Task version: v3.38.0 (...)', newer prints bare '3.51.1'.
+        if ! task --version 2>/dev/null | grep -qF "${{ inputs.task-version }}"; then
+          bindir="$(go env GOBIN)"; bindir="${bindir:-$(go env GOPATH)/bin}"
+          curl -sSfL https://raw.githubusercontent.com/go-task/task/main/install-task.sh |\
+            sh -s -- -b "${bindir}" v${{ inputs.task-version }}
         fi
 
         echo "verifying that task can be found and run..."
