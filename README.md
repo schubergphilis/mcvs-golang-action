@@ -140,7 +140,10 @@ includes:
       CODE_COVERAGE_STRICT: "false"
 ```
 
-Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` setting.
+Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` and
+`GOLANGCI_LINT_INSTALL_ATTEMPTS` settings. The latter defaults to `3` and
+bounds how many times the golangci-lint download is retried before the job
+fails; set it to `1` to restore the previous fail-on-first-error behaviour.
 
 ## Build Tags
 
