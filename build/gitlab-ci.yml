@@ -1,0 +1,120 @@
+# GitLab CI counterpart of action.yml. Include it and extend the hidden jobs:
+#
+#   include:
+#     - remote: https://raw.githubusercontent.com/schubergphilis/mcvs-golang-action/<ref>/build/gitlab-ci.yml
+#   unit:
+#     extends: .mcvs-golang-unit
+#
+# yamllint disable rule:line-length
+---
+variables:
+  CODE_COVERAGE_EXPECTED: "80"
+  CODE_COVERAGE_FILE_EXCLUSIONS: " "
+  # The golang image pins GOTOOLCHAIN=local. auto makes go download the
+  # version that is defined in go.mod, like setup-go does on GitHub.
+  GOTOOLCHAIN: auto
+  MCVS_GOLANG_IMAGE: golang:1
+  MCVS_TASK_VERSION: 3.53.1
+  OPA_CODE_COVERAGE_EXPECTED: "80"
+.mcvs-golang:
+  image: ${MCVS_GOLANG_IMAGE}
+  before_script:
+    - |
+      if [ -n "${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES}" ]; then
+        git config --global url.https://${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES}@github.com/.insteadOf https://github.com/
+      fi
+    - go install github.com/go-task/task/v3/cmd/task@v${MCVS_TASK_VERSION}
+    - task --version
+.mcvs-golang-mod-tidy:
+  extends: .mcvs-golang
+  before_script:
+    - !reference [.mcvs-golang, before_script]
+    - go mod tidy
+    - |
+      if ! git diff --exit-code; then
+        echo "A discrepancy has been detected. Has 'go mod tidy' been issued?"
+        exit 1
+      fi
+.mcvs-golang-component:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:test-component-cicd --yes
+.mcvs-golang-coverage:
+  extends: .mcvs-golang-mod-tidy
+  script:
+    - apt-get update -qq && apt-get install -y -qq bc
+    - task remote:coverage --yes
+.mcvs-golang-graphql-lint:
+  extends: .mcvs-golang
+  script: task remote:graphql-lint --yes
+.mcvs-golang-integration:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:test-integration-cicd --yes
+.mcvs-golang-lint:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:golangci-lint --yes
+.mcvs-golang-mcvs-texttidy:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:mcvs-texttidy --yes
+.mcvs-golang-mocks-tidy:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:mocks-tidy --yes
+.mcvs-golang-opa:
+  extends: .mcvs-golang
+  script:
+    - apt-get update -qq && apt-get install -y -qq bc jq
+    - task remote:regal --yes
+    - task remote:opa --yes
+# Counterpart of the release-* inputs. The binary is uploaded to the generic
+# package registry and linked to the release when a tag is pipelined.
+.mcvs-golang-release:
+  extends: .mcvs-golang-mod-tidy
+  variables:
+    RELEASE_OS: linux
+  script:
+    - |
+      BUILD_DIR="build/${RELEASE_TYPE}/${RELEASE_APPLICATION_NAME}/${RELEASE_ARCHITECTURE}"
+      mkdir -p "${BUILD_DIR}"
+      if [ -n "${RELEASE_BUILD_TAGS}" ]; then
+        GOARCH="${RELEASE_ARCHITECTURE}" GOOS="${RELEASE_OS}" go build \
+          -tags "${RELEASE_BUILD_TAGS}" \
+          -o "${BUILD_DIR}/main" "${RELEASE_DIR}/main.go"
+      else
+        GOARCH="${RELEASE_ARCHITECTURE}" GOOS="${RELEASE_OS}" go build \
+          -ldflags="-X 'main.Version=${CI_COMMIT_REF_NAME}'" \
+          -o "${BUILD_DIR}/main" "${RELEASE_DIR}/main.go"
+      fi
+
+      ASSET_NAME="${RELEASE_APPLICATION_NAME}-${CI_COMMIT_REF_NAME}-${RELEASE_OS}-${RELEASE_ARCHITECTURE}"
+      if [ -n "${RELEASE_BUILD_TAGS}" ]; then
+        ASSET_NAME="${ASSET_NAME}-${RELEASE_BUILD_TAGS}"
+      fi
+
+      if [ -z "${CI_COMMIT_TAG}" ]; then
+        exit 0
+      fi
+
+      PACKAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${RELEASE_APPLICATION_NAME}/${CI_COMMIT_TAG}/${ASSET_NAME}"
+      curl -fsS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "${BUILD_DIR}/main" "${PACKAGE_URL}"
+
+      # The release might already exist, e.g. created by a job that uploaded
+      # another architecture, hence a failure is ignored.
+      curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data-urlencode "tag_name=${CI_COMMIT_TAG}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || true
+      curl -fsS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data-urlencode "name=${ASSET_NAME}" \
+        --data-urlencode "url=${PACKAGE_URL}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
+.mcvs-golang-security-golang-modules:
+  extends: .mcvs-golang
+  script:
+    - go mod verify
+    - task remote:osv-scanner --yes
+.mcvs-golang-security-grype:
+  extends: .mcvs-golang
+  script:
+    - curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin ${GRYPE_VERSION}
+    - grype dir:. --fail-on high --output table
+.mcvs-golang-unit:
+  extends: .mcvs-golang-mod-tidy
+  script: task remote:test-cicd --yes
