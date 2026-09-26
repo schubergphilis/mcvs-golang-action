@@ -36,6 +36,10 @@ vars:
           echo /home/runner/go/bin
           exit 0
         fi
+        if [ -n "${GITLAB_CI}" ]; then
+          echo "$(go env GOPATH)/bin"
+          exit 0
+        fi
         echo "GOBIN has not been not set. Ensure that it has been set on the system."
         exit 1
       fi

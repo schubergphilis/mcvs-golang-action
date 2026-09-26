@@ -265,6 +265,7 @@ update_task_version() {
 
   if [[ "${old_version}" != "${new_version}" ]]; then
     yq eval ".inputs.task-version.default = \"${new_version}\"" -i action.yml
+    yq eval ".variables.MCVS_TASK_VERSION = \"${new_version}\"" -i build/gitlab-ci.yml
 
     if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" ]]; then
       PR_BODY+=$'\n'"- **${display_name}**: \`${old_version}\` → \`${new_version}\`"

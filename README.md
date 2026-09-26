@@ -36,6 +36,43 @@ fail if an issue arises.
 Note: there is an [internal action](.github/workflows/package-version-updater.yml)
 that will update package versions that cannot be updated by Dependabot.
 
+## GitLab CI
+
+[build/gitlab-ci.yml](build/gitlab-ci.yml) offers the same checks for GitLab.
+It uses the same Taskfile, so the project needs the `Taskfile.yml` described
+[below](#locally). Include it in `.gitlab-ci.yml` and extend the jobs you need:
+
+```yml
+---
+include:
+  - remote: https://raw.githubusercontent.com/schubergphilis/mcvs-golang-action/<ref>/build/gitlab-ci.yml
+
+variables:
+  CODE_COVERAGE_EXPECTED: "80"
+
+coverage:
+  extends: .mcvs-golang-coverage
+lint:
+  extends: .mcvs-golang-lint
+security-golang-modules:
+  extends: .mcvs-golang-security-golang-modules
+unit:
+  extends: .mcvs-golang-unit
+```
+
+Available jobs: `.mcvs-golang-<testing-type>` for `component`, `coverage`,
+`graphql-lint`, `integration`, `lint`, `mcvs-texttidy`, `mocks-tidy`, `opa`,
+`security-golang-modules`, `security-grype` and `unit`. The action inputs map
+to variables, e.g. `BUILD_TAGS`, `TEST_TIMEOUT`, `GRYPE_VERSION`,
+`GOLANGCI_LINT_RUN_TIMEOUT_MINUTES`, `CODE_COVERAGE_FILE_EXCLUSIONS` and
+`GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES`.
+
+Binaries are built by `.mcvs-golang-release`, configured with the
+`RELEASE_APPLICATION_NAME`, `RELEASE_ARCHITECTURE`, `RELEASE_BUILD_TAGS`,
+`RELEASE_DIR`, `RELEASE_OS` and `RELEASE_TYPE` variables. On a tag pipeline the
+binary is uploaded to the generic package registry and linked to the release of
+that tag, which is created if it does not exist yet.
+
 ## Versioning
 
 This action follows semantic versioning. When using this action in your workflows:
