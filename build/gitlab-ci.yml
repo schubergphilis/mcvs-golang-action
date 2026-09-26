@@ -1,11 +1,10 @@
+# yamllint disable rule:line-length
 # GitLab CI counterpart of action.yml. Include it and extend the hidden jobs:
 #
 #   include:
 #     - remote: https://raw.githubusercontent.com/schubergphilis/mcvs-golang-action/<ref>/build/gitlab-ci.yml
 #   unit:
 #     extends: .mcvs-golang-unit
-#
-# yamllint disable rule:line-length
 ---
 variables:
   CODE_COVERAGE_EXPECTED: "80"
