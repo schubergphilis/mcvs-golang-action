@@ -40,9 +40,9 @@ that will update package versions that cannot be updated by Dependabot.
 
 This action follows semantic versioning. When using this action in your workflows:
 
-- **Latest stable version**: Use the latest `v3.x.x` tag (e.g., `v3.4.2`) for production workflows
+- **Latest stable version**: Use the latest `v3.x.x` tag (e.g., `v3.12.12`) for production workflows
 - **Major version tracking**: Use `@v3` to automatically get the latest v3.x.x updates
-- **Taskfile references**: When including the remote Taskfile, use a specific version tag (e.g., `v2.1.0`) that matches your needs
+- **Taskfile references**: When including the remote Taskfile, use a specific version tag (e.g., `v3.12.12`) that matches your needs
 - **Breaking changes**: Major version bumps (v3 → v4) may introduce breaking changes and require workflow updates
 
 Check the [releases page](https://github.com/schubergphilis/mcvs-golang-action/releases) for the latest version and changelog.
@@ -65,22 +65,6 @@ If you are new to Task, you may want to check out the following resources:
 - Instructions to [configure completions](https://taskfile.dev/installation/#setup-completions)
 - [Integrations](https://taskfile.dev/integrations/) with e.g. Visual Studio Code, Sublime and IntelliJ.
 
-### Configuration
-
-The `./build/task.yml` in this project defines a number of variables. Some of
-these can be overridden when including this Taskfile in your project. See the
-example below, where the `CODE_COVERAGE_STRICT` variable is overridden, for how
-to do this.
-
-The following variables can be overridden:
-
-| Variable                    | Description                                                                                                          |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| `CODE_COVERAGE_STRICT`      | Enables or disables strict enforcement of setting the minimum coverage to the maximum observed coverage.             |
-| `GOLANGCI_LINT_CONFIG_PATH` | Defines the path to the golangci-lint configuration file.                                                            |
-| `GOTESTSUM_ENABLED`         | Enables or disables running the tests via [gotestsum](https://github.com/gotestyourself/gotestsum). Default: `true`. |
-| `GOTESTSUM_FORMAT`          | The gotestsum [output format](https://github.com/gotestyourself/gotestsum#output-format). Default: `testname`.       |
-
 ## Usage
 
 ### Locally
@@ -93,7 +77,7 @@ version: 3
 
 vars:
   REMOTE_URL: https://raw.githubusercontent.com
-  REMOTE_URL_REF: v2.1.0
+  REMOTE_URL_REF: v3.12.12
   REMOTE_URL_REPO: schubergphilis/mcvs-golang-action
 
 includes:
@@ -101,80 +85,20 @@ includes:
     {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
 ```
 
-and run:
+and run one of the most common tasks:
 
 ```zsh
-task remote:test
+task remote:test --yes
+task remote:test-integration --yes
+task remote:lint --yes
+task remote:coverage --yes
+task remote:osv-scanner --yes
 ```
 
 You can use `task --list-all` to get a list of all available tasks.
 Alternatively, if you have [configured
 completions](https://taskfile.dev/installation/#setup-completions) in your
 shell, you can tab to get a list of available tasks.
-
-### Automatically Fixing Linting Issues
-
-When golangci-lint reports issues that can be automatically fixed, you can use the `fix-linting-issues` task:
-
-```zsh
-task remote:fix-linting-issues --yes
-```
-
-This task automatically fixes common linting issues using two tools:
-
-- **golines**: Reformats Go code to meet line length requirements (wraps long lines)
-- **wsl**: Fixes whitespace linting issues (adds/removes blank lines according to style rules)
-
-After running this task, review the changes and commit them. Note that some linting issues may still require manual fixes.
-
-If you want to override one of the variables in our Taskfile, you will have to
-adjust the `includes` sections like this:
-
-```yml
----
-includes:
-  remote:
-    taskfile: >-
-      {{.REMOTE_URL}}/{{.REMOTE_URL_REPO}}/{{.REMOTE_URL_REF}}/build/task.yml
-    vars:
-      CODE_COVERAGE_STRICT: "false"
-```
-
-Note: same goes for the `GOLANGCI_LINT_RUN_TIMEOUT_MINUTES` and
-`GOLANGCI_LINT_INSTALL_ATTEMPTS` settings. The latter defaults to `3` and
-bounds how many times the golangci-lint download is retried before the job
-fails; set it to `1` to restore the previous fail-on-first-error behaviour.
-
-## Build Tags
-
-Build tags (also known as build constraints) allow you to include or exclude Go files from compilation based on conditions. This action supports the following common build tag patterns:
-
-- **`integration`**: For integration tests that require external services or databases
-- **`component`**: For component tests that test multiple units working together
-- **`e2e`**: For end-to-end tests that test the entire application flow
-- **`lambda.norpc`**: For building AWS Lambda functions without RPC support
-
-### Using Build Tags
-
-When running tests with specific build tags:
-
-```zsh
-# Run integration tests
-task remote:test-integration --yes
-
-# Run component tests
-task remote:test-component --yes
-```
-
-When linting code with specific build tags, you may need to run the linter multiple times to cover all code paths:
-
-```yml
-- testing-type: "lint"  # Lint main code
-- testing-type: "lint", build-tags: "integration"  # Lint integration test code
-- testing-type: "lint", build-tags: "component"  # Lint component test code
-```
-
-This ensures that code in test files with different build tags is properly linted.
 
 ### GitHub
 
@@ -209,167 +133,14 @@ jobs:
 
 This basic configuration will run unit tests, linting, code coverage checks, and security scanning on your Go code.
 
-#### Advanced Example
+## Documentation
 
-For projects with multiple build configurations, integration tests, or custom requirements, create a `.github/workflows/golang.yml` file with the following content:
-
-```yml
----
-name: Golang
-"on": pull_request
-permissions:
-  contents: read
-  packages: read
-jobs:
-  MCVS-golang-action:
-    strategy:
-      matrix:
-        args:
-          - release-architecture: "amd64",
-            release-dir: "./cmd/path-to-app",
-            release-type: "binary",
-            release-application-name: "some-app",
-          - release-architecture: "arm64",
-            release-dir: "./cmd/path-to-app",
-            release-type: "binary",
-            release-application-name: "some-lambda-func",
-            release-build-tags: "lambda.norpc",
-          - testing-type: "component"
-          - testing-type: "coverage"
-          - testing-type: "graphql-lint"
-          - testing-type: "integration"
-          - testing-type: "lint", build-tags: "component"
-          - testing-type: "lint", build-tags: "e2e"
-          - testing-type: "lint", build-tags: "integration"
-          - testing-type: "mcvs-texttidy"
-          - testing-type: "mocks-tidy"
-          - testing-type: "security-golang-modules"
-          - testing-type: "security-grype"
-          - testing-type: "unit"
-    runs-on: ubuntu-24.04
-    env:
-      test-timeout: 10m0s
-    steps:
-      - uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 0 # this is necessary for gta partial testing
-      - uses: schubergphilis/mcvs-golang-action@v0.9.0
-        with:
-          build-tags: ${{ matrix.args.build-tags }}
-          golang-unit-tests-exclusions: |-
-            \(cmd\/some-app\|internal\/app\/some-app\)
-          gta-base-branch: main
-          gta-partial-testing: true
-          release-architecture: ${{ matrix.args.release-architecture }}
-          release-dir: ${{ matrix.args.release-dir }}
-          release-type: ${{ matrix.args.release-type }}
-          task-install: yes
-          testing-type: ${{ matrix.args.testing-type }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          test-timeout: ${{ env.test-timeout }}
-          code-coverage-timeout: ${{ env.test-timeout }}
-```
-
-and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
-
-<!-- markdownlint-disable MD013 -->
-
-| Option                                          | Default | Required | Description                                                                                         |
-| :---------------------------------------------- | :------ | -------- | :-------------------------------------------------------------------------------------------------- |
-| build-tags                                      | x       |          | Build tags to use when running tests and linting (e.g., "integration", "component", "e2e")          |
-| code-coverage-expected                          | x       |          | Minimum expected code coverage percentage for standard tests                                        |
-| code-coverage-opa-expected                      | x       |          | Minimum expected code coverage percentage for OPA (Open Policy Agent) tests                         |
-| code-coverage-timeout                           |         |          | Timeout duration for code coverage analysis (e.g., "10m0s")                                         |
-| github-token-for-downloading-private-go-modules |         |          | GitHub token with permissions to download Go modules from private repositories                      |
-| golangci-timeout                                | x       |          | Timeout duration for golangci-lint execution                                                        |
-| golang-unit-tests-exclusions                    | x       |          | Regex pattern to exclude specific packages from unit testing (e.g., `\(cmd\/app\|internal\/app\)`)  |
-| grype-version                                   |         |          | Specific version of Grype vulnerability scanner to use                                              |
-| gta-base-branch                                 | x       |          | The branch changed go packages will be compared to, to perform partial tests                        |
-| gta-partial-testing                             | x       |          | Whether to run partial tests (true or false)                                                        |
-| release-application-name                        |         |          | Name of the application binary to build (required when release-type is set)                         |
-| release-architecture                            |         |          | Target architecture for the binary (e.g., "amd64", "arm64")                                         |
-| release-build-tags                              |         |          | Build tags to use when building the release binary (e.g., "lambda.norpc")                           |
-| release-dir                                     |         |          | Directory containing the main.go file for the binary to build                                       |
-| release-os                                      | x       |          | Target operating system for the binary (e.g., "linux", "darwin")                                    |
-| release-type                                    |         |          | Type of release to build (e.g., "binary")                                                           |
-| task-install                                    | x       |          | Whether to install Task runner ("yes" or "no")                                                      |
-| task-version                                    | x       |          | Version of Task runner to install                                                                   |
-| testing-type                                    |         |          | Type of testing to run (e.g., "unit", "integration", "lint", "coverage", "security-golang-modules") |
-| test-timeout                                    |         |          | Timeout duration for test execution (e.g., "10m0s")                                                 |
-| token                                           |         |          | GitHub token for authentication (typically ${{ secrets.GITHUB_TOKEN }})                             |
-
-Note: If an **x** is registered in the Default column, refer to the
-[action.yml](action.yml) for the corresponding value.
-
-<!-- markdownlint-enable MD013 -->
-
-### Releases
-
-In some cases, you may want the executable binary to be built and released
-automatically. This action will build the binary which could then be used
-as a release asset.
-
-Create a `.github/workflows/golang-releases.yml` file with the following
-content:
-
-```yml
----
-name: golang-releases
-"on": push
-permissions:
-  contents: write
-  packages: read
-jobs:
-  mcvs-golang-action:
-    strategy:
-      matrix:
-        args:
-          - release-application-name: mcvs-image-downloader
-            release-architecture: amd64
-            release-dir: cmd/mcvs-image-downloader
-            release-type: binary
-          - release-application-name: mcvs-image-downloader
-            release-architecture: arm64
-            release-dir: cmd/mcvs-image-downloader
-            release-os: darwin
-            release-type: binary
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: schubergphilis/mcvs-golang-action@v3.4.2
-        with:
-          release-application-name: ${{ matrix.args.release-application-name }}
-          release-architecture: ${{ matrix.args.release-architecture }}
-          release-build-tags: ${{ matrix.args.release-build-tags }}
-          release-dir: ${{ matrix.args.release-dir }}
-          release-os: ${{ matrix.args.release-os }}
-          release-type: ${{ matrix.args.release-type }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-```
-
-### Integration
-
-To execute integration tests, make sure that the code is located in a file with
-a `_integration_test.go` postfix, such as `some_integration_test.go`.
-Additionally, include the following header in the file:
-
-```bash
-//go:build integration
-```
-
-After adding this header, issue the command `task remote:test-integration --yes`
-as demonstrated in this example. This action will run both unit and integration
-tests. If `task remote:test --yes` is executed, only unit tests will be run.
-
-### Component
-
-See the integration paragraph for the steps and replace `integration` with
-`component` to run them.
-
-### Downloading released assets from another private repository
-
-You will need a personal access token (PAT) with the `repo` scope. To download
-releases from a private repository. You can simply use the gh command or curl
-to download the release assets. Please read the
-[GitHub documentation](https://docs.github.com/en/rest/releases/assets)
-for more information.
+- [Action inputs](docs/action-inputs.md): advanced workflow example and all
+  inputs of the GitHub Action.
+- [Taskfile variables](docs/taskfile-variables.md): variables that can be
+  overridden when including the Taskfile.
+- [Build tags](docs/build-tags.md): integration, component and e2e tests.
+- [Linting](docs/linting.md): automatically fixing linting issues.
+- [Releases](docs/releases.md): building binaries as release assets.
+- [osv-scanner](docs/osv-scanner.md): security scanning and temporarily
+  ignoring vulnerabilities.
