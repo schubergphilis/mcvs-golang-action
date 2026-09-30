@@ -3,12 +3,16 @@
 name: General
 "on":
   pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 permissions:
   contents: read
   packages: read
 jobs:
   MCVS-general-action:
     strategy:
+      fail-fast: false
       matrix:
         args:
           - testing-type: lint-action
@@ -17,6 +21,7 @@ jobs:
           - testing-type: lint-links
           - testing-type: yamllint
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
