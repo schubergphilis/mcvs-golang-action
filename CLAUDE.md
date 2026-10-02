@@ -137,6 +137,10 @@ This repository uses itself for CI. Check [.github/workflows/golang.yml](.github
 # Matrix strategy runs multiple testing-type values in parallel
 ```
 
+`scripts/package-version-updater.sh` has BATS tests in `test/`, run on every PR by
+[.github/workflows/bats.yml](.github/workflows/bats.yml). Run them locally with
+`bats test/` (requires mikefarah yq v4 and jq).
+
 ### Overriding Variables
 
 Override Taskfile variables when including remotely:
@@ -259,7 +263,10 @@ The Go version is determined from `go.mod` using `actions/setup-go` with `go-ver
 │   └── task.yml           # Remote Taskfile with all tasks
 ├── scripts/
 │   └── package-version-updater.sh  # Tool version updater
+├── test/
+│   └── package-version-updater.bats  # BATS tests for the updater script
 ├── .github/workflows/
+│   ├── bats.yml           # Runs the BATS tests
 │   ├── golang.yml         # Self-testing workflow (uses this action)
 │   └── package-version-updater.yml  # Weekly tool updates
 ├── docs/
