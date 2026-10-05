@@ -48,8 +48,6 @@
 # TIP: Prefer short and readable display names.
 ###############################################################################
 
-set -xeuo pipefail
-
 readonly PACKAGES_TO_BE_UPDATED=(
   "GOLANGCI_LINT_VERSION GOLANGCI_LINT_VERSION golangci-lint latest_stable_package_version_on_github golangci/golangci-lint"
   "GOLINES_VERSION GOLINES_VERSION golines latest_stable_package_version_on_github segmentio/golines"
@@ -255,6 +253,8 @@ update_task_version() {
 }
 
 main() {
+  set -xeuo pipefail
+
   latest_stable_package_versions
   checkout_branch_required_to_apply_package_version_updates
   generate_pr_body_with_updates
@@ -276,4 +276,6 @@ main() {
   fi
 }
 
-main
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
