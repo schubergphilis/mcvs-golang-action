@@ -37,9 +37,11 @@ task remote:test-e2e --yes
 When linting code with specific build tags, you may need to run the linter multiple times to cover all code paths:
 
 ```yml
-- testing-type: "lint"  # Lint main code
-- testing-type: "lint", build-tags: "integration"  # Lint integration test code
-- testing-type: "lint", build-tags: "component"  # Lint component test code
+- testing-type: "lint" # Lint main code
+- testing-type: "lint" # Lint integration test code
+  build-tags: "integration"
+- testing-type: "lint" # Lint component test code
+  build-tags: "component"
 ```
 
 This ensures that code in test files with different build tags is properly linted.
