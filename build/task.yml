@@ -737,7 +737,18 @@ tasks:
           # regal version installed using `go install` does not include
           # version, see: https://github.com/open-policy-agent/regal/issues/1275
           echo "Installing regal version {{.REGAL_VERSION}}..."
-          curl -L -o {{.REGAL_BIN}} https://github.com/open-policy-agent/regal/releases/download/{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
+          regal_asset="regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}"
+          case "$regal_asset" in
+            regal_Linux_x86_64) regal_sha256=REPLACE_WITH_SHA256_OF_REGAL_VERSION_LINUX_X86_64 ;;
+            regal_Linux_aarch64) regal_sha256=REPLACE_WITH_SHA256_OF_REGAL_VERSION_LINUX_AARCH64 ;;
+            regal_Darwin_x86_64) regal_sha256=REPLACE_WITH_SHA256_OF_REGAL_VERSION_DARWIN_X86_64 ;;
+            regal_Darwin_arm64) regal_sha256=REPLACE_WITH_SHA256_OF_REGAL_VERSION_DARWIN_ARM64 ;;
+            *) echo "no pinned sha256 for $regal_asset, add it to regal-install"; exit 1 ;;
+          esac
+          regal_tmp=$(mktemp)
+          curl -fL -o "$regal_tmp" https://github.com/open-policy-agent/regal/releases/download/{{.REGAL_VERSION}}/"$regal_asset"
+          echo "$regal_sha256  $regal_tmp" | shasum -a 256 -c -
+          mv "$regal_tmp" {{.REGAL_BIN}}
           chmod +x {{.REGAL_BIN}}
         fi
     silent: true
