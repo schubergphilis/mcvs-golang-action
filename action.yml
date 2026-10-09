@@ -111,8 +111,14 @@ runs:
     # runner, so restore it from the cache and let the version check in the
     # next step skip the build.
     #
-    - name: cache task
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+    # Restore and save are separate steps so that the binary is saved right
+    # after `go install` built it. A combined actions/cache saves in its post
+    # step at the end of the job, after the caller's own code (tests, linters,
+    # go generate) has run and could have replaced ~/go/bin/task.
+    #
+    - name: restore task from cache
+      id: task-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: |
         inputs.release-dir != '' ||
         inputs.task-install == 'yes' ||
@@ -159,6 +165,16 @@ runs:
 
         echo "verifying that task can be found and run..."
         task --version
+    # outcome is 'success' only when the restore step ran, so this inherits
+    # its testing-type conditions without repeating them.
+    - name: save task to cache
+      if: |
+        steps.task-cache.outcome == 'success' &&
+        steps.task-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/go/bin/task
+        key: ${{ steps.task-cache.outputs.cache-primary-key }}
     - run: |
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
