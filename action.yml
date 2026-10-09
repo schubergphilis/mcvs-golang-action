@@ -105,6 +105,30 @@ runs:
       with:
         go-version-file: ${{ inputs.go-version-file }}
         cache: false
+    #
+    # Building task with `go install` takes about two minutes, in every job
+    # that needs it. The binary only depends on the task version and the
+    # runner, so restore it from the cache and let the version check in the
+    # next step skip the build.
+    #
+    - name: cache task
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: |
+        inputs.release-dir != '' ||
+        inputs.task-install == 'yes' ||
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'graphql-lint' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'opa' ||
+        inputs.testing-type == 'security-golang-modules' ||
+        inputs.testing-type == 'unit'
+      with:
+        path: ~/go/bin/task
+        key: task-${{ inputs.task-version }}-${{ runner.os }}-${{ runner.arch }}
     - name: install task
       if: |
         inputs.release-dir != '' ||
@@ -121,7 +145,12 @@ runs:
         inputs.testing-type == 'unit'
       shell: bash
       run: |
-        if ! task --version | grep -q "Task version: v${{ inputs.task-version }}"; then
+        # task 3.x prints a bare version (e.g. "3.53.1"), older releases
+        # "Task version: v3.x.y (h1:...)"; extract the number from either, as
+        # the keep-local-task-up-to-date-with-version-defined-in-action task in
+        # build/task.yml does.
+        current_version=$(task --version 2>/dev/null | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
+        if [ "${current_version}" != "${{ inputs.task-version }}" ]; then
           major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
           go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
         fi
