@@ -143,6 +143,8 @@ runs:
         inputs.testing-type == 'opa' ||
         inputs.testing-type == 'security-golang-modules' ||
         inputs.testing-type == 'unit'
+      env:
+        TASK_VERSION: ${{ inputs.task-version }}
       shell: bash
       run: |
         # task 3.x prints a bare version (e.g. "3.53.1"), older releases
@@ -150,9 +152,9 @@ runs:
         # the keep-local-task-up-to-date-with-version-defined-in-action task in
         # build/task.yml does.
         current_version=$(task --version 2>/dev/null | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
-        if [ "${current_version}" != "${{ inputs.task-version }}" ]; then
-          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
-          go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
+        if [ "${current_version}" != "${TASK_VERSION}" ]; then
+          major_version=$(echo "${TASK_VERSION}" | sed -E 's/^([0-9]+).*/\1/')
+          go install "github.com/go-task/task/v${major_version}/cmd/task@v${TASK_VERSION}"
         fi
 
         echo "verifying that task can be found and run..."
