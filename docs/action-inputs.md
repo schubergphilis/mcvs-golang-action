@@ -52,7 +52,9 @@ jobs:
             \(cmd\/some-app\|internal\/app\/some-app\)
           gta-base-branch: main
           gta-partial-testing: true
+          release-application-name: ${{ matrix.args.release-application-name }}
           release-architecture: ${{ matrix.args.release-architecture }}
+          release-build-tags: ${{ matrix.args.release-build-tags }}
           release-dir: ${{ matrix.args.release-dir }}
           release-type: ${{ matrix.args.release-type }}
           task-install: yes

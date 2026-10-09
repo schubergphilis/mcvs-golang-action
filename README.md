@@ -9,63 +9,7 @@ The Mission Critical Vulnerability Scanner (MCVS) Golang Action repository is a
 collection of standardized tools to ensure a certain level of quality of a
 project with Go code.
 
-## Github Action
-
-The [GitHub Action](https://github.com/features/actions) in this repository
-consists of the following steps:
-
-- Install the Golang version that is defined in the project `go.mod`.
-- Verify to be downloaded Golang modules.
-- Check for incorrect import order and indicate how to resolve it.
-- Code security scanning and suppression of certain CVEs for a maximum of one
-  month. In some situations a particular CVE will be resolved in a couple of
-  weeks and this allows the developer to continue in a safe way while knowing
-  that the pipeline will fail again if the issue has not been resolved in a
-  couple of weeks.
-- Linting.
-- Unit tests.
-- Integration tests.
-- Code coverage.
-- A test summary, including the number of tests that have been run per testing
-  type, using [gotestsum](https://github.com/gotestyourself/gotestsum).
-
-In summary, using this action will ensure that Golang code meets certain
-standards before it will be deployed to production as the assembly line will
-fail if an issue arises.
-
-Note: there is an [internal action](.github/workflows/package-version-updater.yml)
-that will update package versions that cannot be updated by Dependabot.
-
-## Versioning
-
-This action follows semantic versioning. When using this action in your workflows:
-
-- **Latest stable version**: Use the latest `v3.x.x` tag (e.g., `v3.12.12`) for production workflows
-- **Major version tracking**: Use `@v3` to automatically get the latest v3.x.x updates
-- **Taskfile references**: When including the remote Taskfile, use a specific version tag (e.g., `v3.12.12`) that matches your needs
-- **Breaking changes**: Major version bumps (v3 → v4) may introduce breaking changes and require workflow updates
-
-Check the [releases page](https://github.com/schubergphilis/mcvs-golang-action/releases) for the latest version and changelog.
-
-## Taskfile
-
-Another tool is configuration for [Task](https://taskfile.dev/). This repository
-offers a `./build/task.yml` which contains standard tasks, like installing and
-running a linter.
-
-This `./build/task.yml` can then be used by other projects. This has the
-advantage that you do not need to copy and paste Makefile snippets from one
-project to another. As a consequence each project using this `./build/task.yml`
-immediately benefits from improvements made here (e.g. new tasks or
-improvements in the tasks).
-
-If you are new to Task, you may want to check out the following resources:
-
-- [Installation instructions](https://taskfile.dev/installation/)
-- Instructions to [configure completions](https://taskfile.dev/installation/#setup-completions)
-- [Integrations](https://taskfile.dev/integrations/) with e.g. Visual Studio Code, Sublime and IntelliJ.
-
-## Usage
+## Quickstart
 
 ### Locally
 
@@ -135,6 +79,10 @@ This basic configuration will run unit tests, linting, code coverage checks, and
 
 ## Documentation
 
+- [GitHub Action](docs/overview.md): the steps the action runs.
+- [Versioning](docs/versioning.md): which version tag to use.
+- [Taskfile](docs/taskfile.md): what the remote Taskfile offers and how to
+  get started with Task.
 - [Action inputs](docs/action-inputs.md): advanced workflow example and all
   inputs of the GitHub Action.
 - [Taskfile variables](docs/taskfile-variables.md): variables that can be
