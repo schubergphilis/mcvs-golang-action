@@ -105,6 +105,36 @@ runs:
       with:
         go-version-file: ${{ inputs.go-version-file }}
         cache: false
+    #
+    # Building task with `go install` takes about two minutes, in every job
+    # that needs it. The binary only depends on the task version and the
+    # runner, so restore it from the cache and let the version check in the
+    # next step skip the build.
+    #
+    # Restore and save are separate steps so that the binary is saved right
+    # after `go install` built it. A combined actions/cache saves in its post
+    # step at the end of the job, after the caller's own code (tests, linters,
+    # go generate) has run and could have replaced ~/go/bin/task.
+    #
+    - name: restore task from cache
+      id: task-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: |
+        inputs.release-dir != '' ||
+        inputs.task-install == 'yes' ||
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'graphql-lint' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'opa' ||
+        inputs.testing-type == 'security-golang-modules' ||
+        inputs.testing-type == 'unit'
+      with:
+        path: ~/go/bin/task
+        key: task-${{ inputs.task-version }}-${{ runner.os }}-${{ runner.arch }}
     - name: install task
       if: |
         inputs.release-dir != '' ||
@@ -119,15 +149,32 @@ runs:
         inputs.testing-type == 'opa' ||
         inputs.testing-type == 'security-golang-modules' ||
         inputs.testing-type == 'unit'
+      env:
+        TASK_VERSION: ${{ inputs.task-version }}
       shell: bash
       run: |
-        if ! task --version | grep -q "Task version: v${{ inputs.task-version }}"; then
-          major_version=$(echo "${{ inputs.task-version }}" | sed -E 's/^([0-9]+).*/\1/')
-          go install github.com/go-task/task/v${major_version}/cmd/task@v${{ inputs.task-version }}
+        # task 3.x prints a bare version (e.g. "3.53.1"), older releases
+        # "Task version: v3.x.y (h1:...)"; extract the number from either, as
+        # the keep-local-task-up-to-date-with-version-defined-in-action task in
+        # build/task.yml does.
+        current_version=$(task --version 2>/dev/null | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
+        if [ "${current_version}" != "${TASK_VERSION}" ]; then
+          major_version=$(echo "${TASK_VERSION}" | sed -E 's/^([0-9]+).*/\1/')
+          go install "github.com/go-task/task/v${major_version}/cmd/task@v${TASK_VERSION}"
         fi
 
         echo "verifying that task can be found and run..."
         task --version
+    # outcome is 'success' only when the restore step ran, so this inherits
+    # its testing-type conditions without repeating them.
+    - name: save task to cache
+      if: |
+        steps.task-cache.outcome == 'success' &&
+        steps.task-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/go/bin/task
+        key: ${{ steps.task-cache.outputs.cache-primary-key }}
     - run: |
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
