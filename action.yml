@@ -175,9 +175,19 @@ runs:
       with:
         path: ~/go/bin/task
         key: ${{ steps.task-cache.outputs.cache-primary-key }}
+    # Exports git config through GITHUB_ENV instead of ~/.gitconfig, so the token
+    # is never written to disk and the header is only sent to github.com over HTTPS.
     - run: |
-        git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
+        auth=$(printf 'x-access-token:%s' "${PRIVATE_MODULES_TOKEN}" | base64 | tr -d '\n')
+        echo "::add-mask::${auth}"
+        {
+          echo "GIT_CONFIG_COUNT=1"
+          echo "GIT_CONFIG_KEY_0=http.https://github.com/.extraheader"
+          echo "GIT_CONFIG_VALUE_0=AUTHORIZATION: basic ${auth}"
+        } >> "${GITHUB_ENV}"
       shell: bash
+      env:
+        PRIVATE_MODULES_TOKEN: ${{ inputs.github-token-for-downloading-private-go-modules }}
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
     - if: |
         inputs.release-dir != '' ||
