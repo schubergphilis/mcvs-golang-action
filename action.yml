@@ -373,10 +373,15 @@ runs:
     # evaluated. A tag ref here therefore failed consumers that never release a
     # binary and never reach this step, as an unexplained `startup_failure` with
     # no step logs. See issue #443.
+    #
+    # workflow_dispatch on a tag ref is accepted too: a tag that a workflow
+    # creates with GITHUB_TOKEN, as mcvs-general-action's auto-release does,
+    # starts no push run, but that workflow may dispatch this one on the tag.
     - name: Upload binaries to release
       if: |
-        github.event_name == 'push' &&
-        contains(github.ref, 'refs/tags/') &&
+        (github.event_name == 'push' ||
+          github.event_name == 'workflow_dispatch') &&
+        startsWith(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
       uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
       with:
