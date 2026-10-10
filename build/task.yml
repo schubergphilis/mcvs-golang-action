@@ -200,7 +200,7 @@ tasks:
       - task: test
         vars:
           TEST_EXTRA_ARGS: >-
-            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v '{{.CODE_COVERAGE_FILE_EXCLUSIONS}}' | tr '\n' ',' | sed 's/,$//') -coverprofile={{.COVERPROFILE}} -count=1
+            -coverpkg=$(go list --tags={{.TEST_TAGS}} ./... | grep -v -e {{shellQuote .CODE_COVERAGE_FILE_EXCLUSIONS}} | tr '\n' ',' | sed 's/,$//') -coverprofile={{.COVERPROFILE}} -count=1
           TEST_TAGS: integration
           TEST_TIMEOUT: "{{.CODE_COVERAGE_TIMEOUT}}"
       - |
@@ -210,7 +210,7 @@ tasks:
         code_coverage_output=$(go tool cover -func {{.COVERPROFILE_UNIQUE}})
         code_coverage_actual=$(echo "${code_coverage_output}" | awk '/total:/ {print $3}' | sed 's/%//')
 
-        echo "CODE_COVERAGE_FILE_EXCLUSIONS: {{.CODE_COVERAGE_FILE_EXCLUSIONS}}"
+        printf 'CODE_COVERAGE_FILE_EXCLUSIONS: %s\n' {{shellQuote .CODE_COVERAGE_FILE_EXCLUSIONS}}
         echo "Code coverage overview:"
         echo "${code_coverage_output}" | cut -d'/' -f4-
 
