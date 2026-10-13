@@ -337,15 +337,17 @@ runs:
         GOARCH: ${{ inputs.release-architecture }}
         GOOS: ${{ inputs.release-os }}
         SOURCE_FILE: ${{ inputs.release-dir }}/main.go
+        RELEASE_BUILD_TAGS: ${{ inputs.release-build-tags }}
+        REF_NAME: ${{ github.ref_name }}
       run: |
         mkdir -p "${BUILD_DIR}"
-        if [ -n "${{ inputs.release-build-tags }}" ]; then
+        if [ -n "${RELEASE_BUILD_TAGS}" ]; then
           go build \
-            -tags "${{ inputs.release-build-tags }}" \
+            -tags "${RELEASE_BUILD_TAGS}" \
             -o "${BUILD_DIR}/main" "${SOURCE_FILE}"
         else
           go build \
-            -ldflags="-X 'main.Version=${{ github.ref_name }}'" \
+            -ldflags="-X 'main.Version=${REF_NAME}'" \
             -o "${BUILD_DIR}/main" "${SOURCE_FILE}"
         fi
     #
@@ -355,10 +357,16 @@ runs:
       if: inputs.release-dir != ''
       id: compute_asset_name
       shell: bash
+      env:
+        APPLICATION_NAME: ${{ inputs.release-application-name }}
+        REF_NAME: ${{ github.ref_name }}
+        RELEASE_OS: ${{ inputs.release-os }}
+        RELEASE_ARCHITECTURE: ${{ inputs.release-architecture }}
+        RELEASE_BUILD_TAGS: ${{ inputs.release-build-tags }}
       run: |
-        ASSET_NAME_BASE="${{ inputs.release-application-name }}-${{ github.ref_name }}-${{ inputs.release-os }}-${{ inputs.release-architecture }}"
-        if [ -n "${{ inputs.release-build-tags }}" ]; then
-          ASSET_NAME="${ASSET_NAME_BASE}-${{ inputs.release-build-tags }}"
+        ASSET_NAME_BASE="${APPLICATION_NAME}-${REF_NAME}-${RELEASE_OS}-${RELEASE_ARCHITECTURE}"
+        if [ -n "${RELEASE_BUILD_TAGS}" ]; then
+          ASSET_NAME="${ASSET_NAME_BASE}-${RELEASE_BUILD_TAGS}"
         else
           ASSET_NAME="${ASSET_NAME_BASE}"
         fi
