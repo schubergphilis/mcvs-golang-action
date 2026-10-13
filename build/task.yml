@@ -258,7 +258,7 @@ tasks:
         if ! helm version | grep -q "{{.HELM_VERSION}}"; then
           echo "Installing Helm version {{.HELM_VERSION}}..."
           curl \
-            -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |\
+            -fsSL https://raw.githubusercontent.com/helm/helm/{{.HELM_VERSION}}/scripts/get-helm-3 |\
             bash -s -- --version {{.HELM_VERSION}}
         fi
     silent: true
@@ -286,7 +286,7 @@ tasks:
           trap 'rm -f "${install_script}"' EXIT
           attempt=1
           until curl \
-            -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh \
+            -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/{{.GOLANGCI_LINT_VERSION}}/install.sh \
             -o "${install_script}" &&
             sh "${install_script}" -b {{.GOBIN}} {{.GOLANGCI_LINT_VERSION}}; do
             if [ "${attempt}" -ge "{{.GOLANGCI_LINT_INSTALL_ATTEMPTS}}" ]; then
