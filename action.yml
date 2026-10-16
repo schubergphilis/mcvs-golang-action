@@ -175,9 +175,19 @@ runs:
       with:
         path: ~/go/bin/task
         key: ${{ steps.task-cache.outputs.cache-primary-key }}
+    # Exports the insteadOf rewrite through GITHUB_ENV instead of ~/.gitconfig,
+    # so the token is never written to disk and does not outlive the job.
     - run: |
-        git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
+        echo "::add-mask::${PRIVATE_MODULES_TOKEN}"
+        index="${GIT_CONFIG_COUNT:-0}"
+        {
+          echo "GIT_CONFIG_COUNT=$((index + 1))"
+          echo "GIT_CONFIG_KEY_${index}=url.https://${PRIVATE_MODULES_TOKEN}@github.com/.insteadOf"
+          echo "GIT_CONFIG_VALUE_${index}=https://github.com/"
+        } >> "${GITHUB_ENV}"
       shell: bash
+      env:
+        PRIVATE_MODULES_TOKEN: ${{ inputs.github-token-for-downloading-private-go-modules }}
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
     - if: |
         inputs.release-dir != '' ||
