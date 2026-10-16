@@ -104,7 +104,11 @@ runs:
         inputs.testing-type == 'unit'
       with:
         go-version-file: ${{ inputs.go-version-file }}
-        cache: false
+        # Restore the module and build caches, so that every job does not
+        # download and compile all dependencies from scratch. Release builds
+        # skip the cache, so that a poisoned cache cannot end up in a
+        # published binary.
+        cache: ${{ inputs.release-dir == '' }}
     #
     # Building task with `go install` takes about two minutes, in every job
     # that needs it. The binary only depends on the task version and the
