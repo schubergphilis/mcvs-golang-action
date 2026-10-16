@@ -175,15 +175,15 @@ runs:
       with:
         path: ~/go/bin/task
         key: ${{ steps.task-cache.outputs.cache-primary-key }}
-    # Exports git config through GITHUB_ENV instead of ~/.gitconfig, so the token
-    # is never written to disk and the header is only sent to github.com over HTTPS.
+    # Exports the insteadOf rewrite through GITHUB_ENV instead of ~/.gitconfig,
+    # so the token is never written to disk and does not outlive the job.
     - run: |
-        auth=$(printf 'x-access-token:%s' "${PRIVATE_MODULES_TOKEN}" | base64 | tr -d '\n')
-        echo "::add-mask::${auth}"
+        echo "::add-mask::${PRIVATE_MODULES_TOKEN}"
+        index="${GIT_CONFIG_COUNT:-0}"
         {
-          echo "GIT_CONFIG_COUNT=1"
-          echo "GIT_CONFIG_KEY_0=http.https://github.com/.extraheader"
-          echo "GIT_CONFIG_VALUE_0=AUTHORIZATION: basic ${auth}"
+          echo "GIT_CONFIG_COUNT=$((index + 1))"
+          echo "GIT_CONFIG_KEY_${index}=url.https://${PRIVATE_MODULES_TOKEN}@github.com/.insteadOf"
+          echo "GIT_CONFIG_VALUE_${index}=https://github.com/"
         } >> "${GITHUB_ENV}"
       shell: bash
       env:
