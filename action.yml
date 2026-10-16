@@ -69,7 +69,7 @@ inputs:
     description: |
       Whether Task should be installed.
   task-version:
-    default: 3.51.1
+    default: 3.54.0
     description: |
       The Task version that has to be installed and used.
   test-timeout:
@@ -104,7 +104,41 @@ runs:
         inputs.testing-type == 'unit'
       with:
         go-version-file: ${{ inputs.go-version-file }}
-        cache: true
+        # Restore the module and build caches, so that every job does not
+        # download and compile all dependencies from scratch. Release builds
+        # skip the cache, so that a poisoned cache cannot end up in a
+        # published binary.
+        cache: ${{ inputs.release-dir == '' }}
+    #
+    # Building task with `go install` takes about two minutes, in every job
+    # that needs it. The binary only depends on the task version and the
+    # runner, so restore it from the cache and let the version check in the
+    # next step skip the build.
+    #
+    # Restore and save are separate steps so that the binary is saved right
+    # after `go install` built it. A combined actions/cache saves in its post
+    # step at the end of the job, after the caller's own code (tests, linters,
+    # go generate) has run and could have replaced ~/go/bin/task.
+    #
+    - name: restore task from cache
+      id: task-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: |
+        inputs.release-dir != '' ||
+        inputs.task-install == 'yes' ||
+        inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'graphql-lint' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mcvs-texttidy' ||
+        inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'opa' ||
+        inputs.testing-type == 'security-golang-modules' ||
+        inputs.testing-type == 'unit'
+      with:
+        path: ~/go/bin/task
+        key: task-${{ inputs.task-version }}-${{ runner.os }}-${{ runner.arch }}
     - name: install task
       if: |
         inputs.release-dir != '' ||
@@ -119,17 +153,32 @@ runs:
         inputs.testing-type == 'opa' ||
         inputs.testing-type == 'security-golang-modules' ||
         inputs.testing-type == 'unit'
+      env:
+        TASK_VERSION: ${{ inputs.task-version }}
       shell: bash
       run: |
-        # 3.38 printed 'Task version: v3.38.0 (...)', newer prints bare '3.51.1'.
-        if ! task --version 2>/dev/null | grep -qF "${{ inputs.task-version }}"; then
-          bindir="$(go env GOBIN)"; bindir="${bindir:-$(go env GOPATH)/bin}"
-          curl -sSfL https://raw.githubusercontent.com/go-task/task/main/install-task.sh |\
-            sh -s -- -b "${bindir}" v${{ inputs.task-version }}
+        # task 3.x prints a bare version (e.g. "3.53.1"), older releases
+        # "Task version: v3.x.y (h1:...)"; extract the number from either, as
+        # the keep-local-task-up-to-date-with-version-defined-in-action task in
+        # build/task.yml does.
+        current_version=$(task --version 2>/dev/null | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
+        if [ "${current_version}" != "${TASK_VERSION}" ]; then
+          major_version=$(echo "${TASK_VERSION}" | sed -E 's/^([0-9]+).*/\1/')
+          go install "github.com/go-task/task/v${major_version}/cmd/task@v${TASK_VERSION}"
         fi
 
         echo "verifying that task can be found and run..."
         task --version
+    # outcome is 'success' only when the restore step ran, so this inherits
+    # its testing-type conditions without repeating them.
+    - name: save task to cache
+      if: |
+        steps.task-cache.outcome == 'success' &&
+        steps.task-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/go/bin/task
+        key: ${{ steps.task-cache.outputs.cache-primary-key }}
     - run: |
         git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
       shell: bash
@@ -165,7 +214,7 @@ runs:
     #
     # * Grype
     #
-    - uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+    - uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
       if: inputs.token != '' && inputs.testing-type == 'security-grype'
       with:
         grype-version: ${{ inputs.grype-version }}
@@ -236,6 +285,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
+        TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:test-cicd --yes
     #
@@ -276,6 +326,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
+        TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:test-component-cicd --yes
     #
@@ -326,10 +377,15 @@ runs:
     # evaluated. A tag ref here therefore failed consumers that never release a
     # binary and never reach this step, as an unexplained `startup_failure` with
     # no step logs. See issue #443.
+    #
+    # workflow_dispatch on a tag ref is accepted too: a tag that a workflow
+    # creates with GITHUB_TOKEN, as mcvs-general-action's auto-release does,
+    # starts no push run, but that workflow may dispatch this one on the tag.
     - name: Upload binaries to release
       if: |
-        github.event_name == 'push' &&
-        contains(github.ref, 'refs/tags/') &&
+        (github.event_name == 'push' ||
+          github.event_name == 'workflow_dispatch') &&
+        startsWith(github.ref, 'refs/tags/') &&
         inputs.release-dir != ''
       uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
       with:
