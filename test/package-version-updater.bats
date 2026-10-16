@@ -24,6 +24,18 @@ inputs:
   task-version:
     default: 3.1.0
 YAML
+
+  mkdir templates
+  cat >templates/golang.yml <<'YAML'
+---
+spec:
+  inputs:
+    task-version:
+      default: 3.1.0
+---
+job:
+  script: task --version
+YAML
 }
 
 # records the arguments of a stubbed command, one call per line
@@ -122,7 +134,7 @@ JSON
   [ "$(yq -r '.vars.MOCKERY_VERSION' "${BUILD_TASKFILE}")" = "v3.1.0" ]
 }
 
-@test "update_task_version updates action.yml and the PR body" {
+@test "update_task_version updates action.yml, the GitLab component and the PR body" {
   latest_stable_package_version_on_github() { record "$@"; echo v3.2.0; }
   PR_BODY=""
 
@@ -130,6 +142,8 @@ JSON
 
   [ "$(cat "${CALLS}")" = "go-task/task v3." ]
   [ "$(yq -r '.inputs.task-version.default' action.yml)" = "3.2.0" ]
+  [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.task-version.default' templates/golang.yml)" = "3.2.0" ]
+  [ "$(yq -r 'select(documentIndex == 1) | .job.script' templates/golang.yml)" = "task --version" ]
   [ "${PR_BODY}" = "Updated Task: 3.1.0 → 3.2.0"$'\n' ]
 }
 
@@ -139,6 +153,7 @@ JSON
   update_task_version 2>/dev/null
 
   [ "$(yq -r '.inputs.task-version.default' action.yml)" = "3.1.0" ]
+  [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.task-version.default' templates/golang.yml)" = "3.1.0" ]
   [ "${FAILED_LOOKUPS[*]}" = "Task" ]
 }
 

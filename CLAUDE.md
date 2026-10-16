@@ -263,6 +263,9 @@ The Go version is determined from `go.mod` using `actions/setup-go` with `go-ver
 │   └── task.yml           # Remote Taskfile with all tasks
 ├── scripts/
 │   └── package-version-updater.sh  # Tool version updater
+├── templates/             # GitLab CI/CD components, see docs/gitlab-ci.md
+│   ├── golang.yml         # Counterpart of action.yml per testing-type
+│   └── golang-release.yml # Counterpart of the release-* inputs
 ├── test/
 │   └── package-version-updater.bats  # BATS tests for the updater script
 ├── .github/workflows/
