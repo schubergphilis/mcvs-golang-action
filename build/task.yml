@@ -733,11 +733,32 @@ tasks:
   regal-install:
     cmds:
       - |
+        set -eu
+
         if ! {{.REGAL_BIN}} version | grep -q {{.REGAL_VERSION_WITHOUT_V_PREFIX}}; then
           # regal version installed using `go install` does not include
           # version, see: https://github.com/open-policy-agent/regal/issues/1275
           echo "Installing regal version {{.REGAL_VERSION}}..."
-          curl -L -o {{.REGAL_BIN}} https://github.com/open-policy-agent/regal/releases/download/{{.REGAL_VERSION}}/regal_{{.OS_COMMAND_TYPE}}_{{.OS_COMMAND_TYPE_ARCHITECTURE}}
+          # The regal release assets use arm64, while `uname -m` reports
+          # aarch64 on Linux.
+          regal_architecture="{{.OS_COMMAND_TYPE_ARCHITECTURE}}"
+          if [ "${regal_architecture}" = "aarch64" ]; then
+            regal_architecture=arm64
+          fi
+          regal_asset="regal_{{.OS_COMMAND_TYPE}}_${regal_architecture}"
+          regal_url="https://github.com/open-policy-agent/regal/releases/download/{{.REGAL_VERSION}}"
+          # Verify the binary against the checksums.txt of the same release,
+          # so the check keeps working when REGAL_VERSION is bumped.
+          regal_tmp="$(mktemp -d)"
+          trap 'rm -rf "${regal_tmp}"' EXIT
+          curl -fsSL -o "${regal_tmp}/${regal_asset}" "${regal_url}/${regal_asset}"
+          curl -fsSL -o "${regal_tmp}/checksums.txt" "${regal_url}/checksums.txt"
+          if ! grep -q " ${regal_asset}\$" "${regal_tmp}/checksums.txt"; then
+            echo "no checksum for ${regal_asset} in regal {{.REGAL_VERSION}} checksums.txt" >&2
+            exit 1
+          fi
+          (cd "${regal_tmp}" && grep " ${regal_asset}\$" checksums.txt | shasum -a 256 -c -)
+          mv "${regal_tmp}/${regal_asset}" {{.REGAL_BIN}}
           chmod +x {{.REGAL_BIN}}
         fi
     silent: true
