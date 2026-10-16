@@ -5,8 +5,9 @@
 #
 # PURPOSE:
 #   Automates updating manually pinned package versions in a Taskfile (e.g., Taskfile.yml)
-#   and the Task version in action.yml. The script checks for the latest available
-#   versions, rebuilds the update branch from main, applies them and opens or updates
+#   and the Task version in action.yml and templates/golang.yml. The script checks for
+#   the latest available versions, rebuilds the update branch from main, applies them
+#   and opens or updates
 #   a pull request on GitHub summarizing all changes. Nothing is pushed if all
 #   versions are up to date.
 #   The PR body will only list packages whose versions have changed.
@@ -55,6 +56,7 @@ readonly PACKAGES_TO_BE_UPDATED=(
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
+  "GRYPE_VERSION GRYPE_VERSION grype latest_stable_package_version_on_github anchore/grype"
   "GOTESTSUM_VERSION GOTESTSUM_VERSION gotestsum latest_stable_package_version_on_github gotestyourself/gotestsum"
   "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery v3."
   "OPA_VERSION OPA_VERSION opa latest_stable_package_version_on_github open-policy-agent/opa"
@@ -217,6 +219,7 @@ update_task_version() {
   local old_version
   local new_version
   local display_name="Task"
+  local gitlab_task_version=".spec.inputs.task-version.default"
 
   old_version=$(yq eval '.inputs.task-version.default' action.yml)
   new_version=$(latest_stable_package_version_on_github go-task/task v3.) || new_version=""
@@ -234,16 +237,17 @@ update_task_version() {
 
   if [[ "${old_version}" != "${new_version}" ]]; then
     yq eval ".inputs.task-version.default = \"${new_version}\"" -i action.yml
-    yq eval ".variables.MCVS_TASK_VERSION = \"${new_version}\"" -i build/gitlab-ci.yml
+    yq eval "(select(documentIndex == 0) | ${gitlab_task_version}) = \"${new_version}\"" -i templates/golang.yml
 
-    if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" ]]; then
+    if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" &&
+      $(yq eval "select(documentIndex == 0) | ${gitlab_task_version}" templates/golang.yml) == "${new_version}" ]]; then
       PR_BODY+="Updated ${display_name}: ${old_version} → ${new_version}"$'\n'
       echo "Successfully updated Task version"
 
       return
     fi
 
-    echo "Error: Failed to update Task version in action.yml" >&2
+    echo "Error: Failed to update Task version in action.yml or templates/golang.yml" >&2
 
     return 1
   fi
