@@ -50,7 +50,7 @@ vars:
   COVERPROFILE_UNIQUE: "unique_{{.COVERPROFILE}}"
   GOLANGCI_LINT_CONFIG_PATH: '{{.GOLANGCI_LINT_CONFIG_PATH | default ".golangci.yml"}}'
   GOLANGCI_LINT_INSTALL_ATTEMPTS: "{{.GOLANGCI_LINT_INSTALL_ATTEMPTS | default 3}}"
-  GOLANGCI_LINT_VERSION: v2.14.0
+  GOLANGCI_LINT_VERSION: v2.15.0
   GOLANGCI_LINT_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.GOLANGCI_LINT_VERSION}} | sed -e "s|v||"
   GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: "{{.GOLANGCI_LINT_RUN_TIMEOUT_MINUTES | default 3}}"
@@ -94,7 +94,7 @@ vars:
   MOCKERY_VERSION: v3.8.1
   OPA_BIN: "{{.GOBIN}}/opa"
   OPA_FMT: "{{.OPA_BIN}} fmt ."
-  OPA_VERSION: v1.21.1
+  OPA_VERSION: v1.21.2
   OPA_VERSION_WITHOUT_V_PREFIX: # the version found by the package-version-updater contains a 'v' prefix
     sh: echo {{.OPA_VERSION}} | sed -e "s|v||"
   OS_COMMAND: uname
