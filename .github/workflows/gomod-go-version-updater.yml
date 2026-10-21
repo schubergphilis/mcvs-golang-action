@@ -11,6 +11,6 @@ permissions:
   repository-projects: write
 jobs:
   gomod-go-version-updater-action:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: schubergphilis/gomod-go-version-updater-action@773e180a2d3700d164a7ded2157f466ce8bc6cd6 # v0.3.7
