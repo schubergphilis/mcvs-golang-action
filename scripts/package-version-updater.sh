@@ -179,7 +179,6 @@ create_or_edit_pr() {
   gh pr create \
     --base main \
     --body "${PR_BODY}" \
-    --fill \
     --head "${PACKAGE_VERSION_UPDATER_BRANCH}" \
     --label "${DEPENDENCIES_LABEL}" \
     --title "${PR_TITLE}"
