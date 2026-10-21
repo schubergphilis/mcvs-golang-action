@@ -4,11 +4,12 @@
 # Weekly Dependency Version Updater Script
 #
 # PURPOSE:
-#   Automates updating manually pinned package versions in a Taskfile (e.g., Taskfile.yml)
-#   and the Task version in action.yml. The script checks for the latest available
-#   versions, rebuilds the update branch from main, applies them and opens or updates
-#   a pull request on GitHub summarizing all changes. Nothing is pushed if all
-#   versions are up to date.
+#   Automates updating manually pinned package versions in a Taskfile (e.g., Taskfile.yml),
+#   the Task version in action.yml and templates/golang.yml, and the golang image of
+#   the GitLab CI/CD components in templates/. The script checks for the latest
+#   available versions, rebuilds the update branch from main, applies them and opens
+#   or updates a pull request on GitHub summarizing all changes. Nothing is pushed if
+#   all versions are up to date.
 #   The PR body will only list packages whose versions have changed.
 #
 # REQUIREMENTS:
@@ -16,7 +17,7 @@
 #       BUILD_TASKFILE                  Path to your Taskfile.yml
 #       PACKAGE_VERSION_UPDATER_BRANCH  Name for the update branch
 #       DEPENDENCIES_LABEL              Label name for dependency PRs (e.g. "dependencies")
-#   - The following CLI tools must be available: gh, jq, yq, git, go, tr, grep
+#   - The following CLI tools must be available: gh, jq, yq, git, go, tr, grep, curl, shasum
 #
 # USAGE:
 #   Set the required environment variables and run this script in CI or locally:
@@ -55,6 +56,7 @@ readonly PACKAGES_TO_BE_UPDATED=(
   "GQLGEN_VERSION GQLGEN_VERSION gqlgen latest_stable_package_version_on_github 99designs/gqlgen"
   "GQLGENC_VERSION GQLGENC_VERSION gqlgenc latest_stable_package_version_on_github Yamashou/gqlgenc"
   "GRAPHQL_LINTER_VERSION GRAPHQL_LINTER_VERSION graphql-linter latest_stable_package_version_on_github schubergphilis/graphql-linter"
+  "GRYPE_VERSION GRYPE_VERSION grype latest_stable_package_version_on_github anchore/grype"
   "GOTESTSUM_VERSION GOTESTSUM_VERSION gotestsum latest_stable_package_version_on_github gotestyourself/gotestsum"
   "MOCKERY_VERSION MOCKERY_VERSION mockery latest_stable_package_version_on_github vektra/mockery v3."
   "OPA_VERSION OPA_VERSION opa latest_stable_package_version_on_github open-policy-agent/opa"
@@ -216,6 +218,7 @@ update_task_version() {
   local old_version
   local new_version
   local display_name="Task"
+  local gitlab_task_version=".spec.inputs.task-version.default"
 
   old_version=$(yq eval '.inputs.task-version.default' action.yml)
   new_version=$(latest_stable_package_version_on_github go-task/task v3.) || new_version=""
@@ -233,15 +236,17 @@ update_task_version() {
 
   if [[ "${old_version}" != "${new_version}" ]]; then
     yq eval ".inputs.task-version.default = \"${new_version}\"" -i action.yml
+    yq eval "(select(documentIndex == 0) | ${gitlab_task_version}) = \"${new_version}\"" -i templates/golang.yml
 
-    if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" ]]; then
+    if [[ $(yq eval '.inputs.task-version.default' action.yml) == "${new_version}" &&
+      $(yq eval "select(documentIndex == 0) | ${gitlab_task_version}" templates/golang.yml) == "${new_version}" ]]; then
       PR_BODY+="Updated ${display_name}: ${old_version} → ${new_version}"$'\n'
       echo "Successfully updated Task version"
 
       return
     fi
 
-    echo "Error: Failed to update Task version in action.yml" >&2
+    echo "Error: Failed to update Task version in action.yml or templates/golang.yml" >&2
 
     return 1
   fi
@@ -251,6 +256,68 @@ update_task_version() {
   return
 }
 
+# GRYPE_CHECKSUMS_SHA256 pins the checksums file of the GRYPE_VERSION release,
+# so it has to follow every GRYPE_VERSION bump
+update_grype_checksums_sha256() {
+  local version
+  local checksums_sha256
+
+  version=$(yq -r '.vars.GRYPE_VERSION' "${BUILD_TASKFILE}")
+  if ! checksums_sha256=$(curl -fsSL "https://github.com/anchore/grype/releases/download/${version}/grype_${version#v}_checksums.txt" | shasum -a 256 | cut -d ' ' -f 1); then
+    echo "Error: failed to download the grype ${version} checksums file" >&2
+
+    return 1
+  fi
+
+  yq -i ".vars.GRYPE_CHECKSUMS_SHA256 = \"${checksums_sha256}\"" "${BUILD_TASKFILE}"
+}
+
+# pins the golang image of the GitLab CI/CD components to the Go version of
+# go.mod and the current digest of that tag, which changes when the image is
+# rebuilt, e.g. for OS updates
+update_golang_image() {
+  local display_name="golang image"
+  local image_default=".spec.inputs.image.default"
+  local templates=(templates/golang.yml templates/golang-release.yml)
+  local go_version
+  local token
+  local digest
+  local old_image
+  local new_image
+  local template
+
+  go_version=$(awk '$1 == "go" { print $2 }' go.mod)
+  token=$(curl -fsS "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/golang:pull" | jq -r .token) || token=""
+  digest=$(curl -fsSI \
+    -H "Authorization: Bearer ${token}" \
+    -H "Accept: application/vnd.oci.image.index.v1+json" \
+    -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" \
+    "https://registry-1.docker.io/v2/library/golang/manifests/${go_version}" | \
+      tr -d '\r' | awk 'tolower($1) == "docker-content-digest:" { print $2 }') || digest=""
+
+  if [[ -z "${go_version}" || "${digest}" != sha256:* ]]; then
+    echo "Warning: failed to determine the golang image digest" >&2
+    FAILED_LOOKUPS+=("${display_name}")
+
+    return
+  fi
+
+  old_image=$(yq -r "select(documentIndex == 0) | ${image_default}" "${templates[0]}")
+  new_image="golang:${go_version}@${digest}"
+
+  if [[ "${old_image}" == "${new_image}" ]]; then
+    echo "golang image is already up to date (${old_image})"
+
+    return
+  fi
+
+  for template in "${templates[@]}"; do
+    yq -i "(select(documentIndex == 0) | ${image_default}) = \"${new_image}\"" "${template}"
+  done
+
+  PR_BODY+="Updated ${display_name}: ${old_image} → ${new_image}"$'\n'
+}
+
 main() {
   set -xeuo pipefail
 
@@ -258,7 +325,9 @@ main() {
   checkout_branch_required_to_apply_package_version_updates
   generate_pr_body_with_updates
   update_task_version
+  update_golang_image
   replace_versions_with_latest_stable_package_versions
+  update_grype_checksums_sha256
 
   if [[ -n "$(git status --porcelain)" ]]; then
     github_labels
