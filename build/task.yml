@@ -757,11 +757,11 @@ tasks:
           trap 'rm -rf "${regal_tmp}"' EXIT
           curl -fsSL -o "${regal_tmp}/${regal_asset}" "${regal_url}/${regal_asset}"
           curl -fsSL -o "${regal_tmp}/checksums.txt" "${regal_url}/checksums.txt"
-          if ! grep -q " ${regal_asset}\$" "${regal_tmp}/checksums.txt"; then
+          if ! grep " ${regal_asset}\$" "${regal_tmp}/checksums.txt" > "${regal_tmp}/checksum"; then
             echo "no checksum for ${regal_asset} in regal {{.REGAL_VERSION}} checksums.txt" >&2
             exit 1
           fi
-          (cd "${regal_tmp}" && grep " ${regal_asset}\$" checksums.txt | shasum -a 256 -c -)
+          (cd "${regal_tmp}" && shasum -a 256 -c checksum)
           mv "${regal_tmp}/${regal_asset}" {{.REGAL_BIN}}
           chmod +x {{.REGAL_BIN}}
         fi
