@@ -205,6 +205,7 @@ JSON
   create_or_edit_pr
 
   grep -q "^gh pr create .*--label dependencies" "${CALLS}"
+  [[ "$(cat "${CALLS}")" != *--fill* ]]
 }
 
 @test "main stops before committing when all versions are up to date" {
