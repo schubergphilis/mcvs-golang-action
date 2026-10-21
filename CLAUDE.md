@@ -240,6 +240,7 @@ All tool versions are pinned in [build/task.yml](build/task.yml) (lines 52-109):
 
 - golangci-lint: v2.9.0
 - osv-scanner: v2.3.3
+- grype: v0.121.0 (archive verified against the pinned `GRYPE_CHECKSUMS_SHA256`)
 - mockery: v3.6.4
 - opa/regal: v1.13.1 / v0.38.1
 - golines: v0.12.2
@@ -263,6 +264,9 @@ The Go version is determined from `go.mod` using `actions/setup-go` with `go-ver
 │   └── task.yml           # Remote Taskfile with all tasks
 ├── scripts/
 │   └── package-version-updater.sh  # Tool version updater
+├── templates/             # GitLab CI/CD components, see docs/gitlab-ci.md
+│   ├── golang.yml         # Counterpart of action.yml per testing-type
+│   └── golang-release.yml # Counterpart of the release-* inputs
 ├── test/
 │   └── package-version-updater.bats  # BATS tests for the updater script
 ├── .github/workflows/

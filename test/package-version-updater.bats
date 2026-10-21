@@ -24,6 +24,33 @@ inputs:
   task-version:
     default: 3.1.0
 YAML
+
+  mkdir templates
+  cat >templates/golang.yml <<'YAML'
+---
+spec:
+  inputs:
+    image:
+      default: golang:1.1.0@sha256:old
+    task-version:
+      default: 3.1.0
+---
+job:
+  script: task --version
+YAML
+
+  cat >templates/golang-release.yml <<'YAML'
+---
+spec:
+  inputs:
+    image:
+      default: golang:1.1.0@sha256:old
+---
+release:
+  script: go build
+YAML
+
+  printf 'module example\n\ngo 1.2.3\n' >go.mod
 }
 
 # records the arguments of a stubbed command, one call per line
@@ -122,7 +149,7 @@ JSON
   [ "$(yq -r '.vars.MOCKERY_VERSION' "${BUILD_TASKFILE}")" = "v3.1.0" ]
 }
 
-@test "update_task_version updates action.yml and the PR body" {
+@test "update_task_version updates action.yml, the GitLab component and the PR body" {
   latest_stable_package_version_on_github() { record "$@"; echo v3.2.0; }
   PR_BODY=""
 
@@ -130,6 +157,8 @@ JSON
 
   [ "$(cat "${CALLS}")" = "go-task/task v3." ]
   [ "$(yq -r '.inputs.task-version.default' action.yml)" = "3.2.0" ]
+  [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.task-version.default' templates/golang.yml)" = "3.2.0" ]
+  [ "$(yq -r 'select(documentIndex == 1) | .job.script' templates/golang.yml)" = "task --version" ]
   [ "${PR_BODY}" = "Updated Task: 3.1.0 → 3.2.0"$'\n' ]
 }
 
@@ -139,10 +168,11 @@ JSON
   update_task_version 2>/dev/null
 
   [ "$(yq -r '.inputs.task-version.default' action.yml)" = "3.1.0" ]
+  [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.task-version.default' templates/golang.yml)" = "3.1.0" ]
   [ "${FAILED_LOOKUPS[*]}" = "Task" ]
 }
 
-@test "update_task_version fails when action.yml is not updated" {
+@test "update_task_version fails when action.yml and the GitLab component are not updated" {
   latest_stable_package_version_on_github() { echo v3.2.0; }
   # ignore in-place writes, so that the version check reads the old value
   yq() {
@@ -156,6 +186,75 @@ JSON
   run update_task_version
 
   [ "${status}" -eq 1 ]
+}
+
+@test "update_task_version fails when only the GitLab component is not updated" {
+  latest_stable_package_version_on_github() { echo v3.2.0; }
+  # ignore in-place writes to the template only
+  yq() {
+    if [[ "$*" == *" -i templates/golang.yml"* ]]; then
+      return 0
+    fi
+
+    command yq "$@"
+  }
+
+  run update_task_version
+
+  [ "${status}" -eq 1 ]
+  [ "$(command yq -r '.inputs.task-version.default' action.yml)" = "3.2.0" ]
+}
+
+@test "update_golang_image pins both templates to the go.mod version and digest" {
+  curl() {
+    record curl "$@"
+    if [[ "$*" == *auth.docker.io* ]]; then
+      echo '{"token": "t"}'
+    else
+      printf 'HTTP/1.1 200 OK\r\nDocker-Content-Digest: sha256:new\r\n\r\n'
+    fi
+  }
+  PR_BODY=""
+
+  update_golang_image
+
+  grep -q "manifests/1.2.3$" "${CALLS}"
+  for template in templates/golang.yml templates/golang-release.yml; do
+    [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.image.default' "${template}")" = "golang:1.2.3@sha256:new" ]
+  done
+  [ "$(yq -r 'select(documentIndex == 1) | .release.script' templates/golang-release.yml)" = "go build" ]
+  [ "${PR_BODY}" = "Updated golang image: golang:1.1.0@sha256:old → golang:1.2.3@sha256:new"$'\n' ]
+}
+
+@test "update_golang_image keeps the templates when no digest is found" {
+  curl() { return 22; }
+
+  update_golang_image 2>/dev/null
+
+  [ "$(yq -r 'select(documentIndex == 0) | .spec.inputs.image.default' templates/golang.yml)" = "golang:1.1.0@sha256:old" ]
+  [ "${FAILED_LOOKUPS[*]}" = "golang image" ]
+}
+
+@test "update_grype_checksums_sha256 pins the checksums file of GRYPE_VERSION" {
+  yq -i '.vars.GRYPE_VERSION = "v0.2.0"' "${BUILD_TASKFILE}"
+  curl() { record curl "$@"; echo checksums; }
+
+  update_grype_checksums_sha256
+
+  grep -q "/download/v0.2.0/grype_0.2.0_checksums.txt$" "${CALLS}"
+  [ "$(yq -r '.vars.GRYPE_CHECKSUMS_SHA256' "${BUILD_TASKFILE}")" = "$(echo checksums | shasum -a 256 | cut -d ' ' -f 1)" ]
+}
+
+@test "update_grype_checksums_sha256 fails when the checksums file cannot be downloaded" {
+  yq -i '.vars.GRYPE_VERSION = "v0.2.0"' "${BUILD_TASKFILE}"
+  curl() { return 22; }
+
+  # pipefail, as in main
+  set -o pipefail
+  run update_grype_checksums_sha256
+
+  [ "${status}" -eq 1 ]
+  [ "$(yq -r '.vars.GRYPE_CHECKSUMS_SHA256' "${BUILD_TASKFILE}")" = "null" ]
 }
 
 @test "checkout_branch_required_to_apply_package_version_updates rebuilds the branch from main" {
@@ -213,7 +312,9 @@ JSON
   checkout_branch_required_to_apply_package_version_updates() { :; }
   generate_pr_body_with_updates() { :; }
   update_task_version() { :; }
+  update_golang_image() { :; }
   replace_versions_with_latest_stable_package_versions() { :; }
+  update_grype_checksums_sha256() { :; }
   git() { :; }
   github_labels() { record github_labels; }
   commit_and_push_changes() { record commit_and_push_changes; }
@@ -230,7 +331,9 @@ JSON
   checkout_branch_required_to_apply_package_version_updates() { :; }
   generate_pr_body_with_updates() { :; }
   update_task_version() { :; }
+  update_golang_image() { :; }
   replace_versions_with_latest_stable_package_versions() { :; }
+  update_grype_checksums_sha256() { :; }
   git() { echo " M build/task.yml"; }
   github_labels() { record github_labels; }
   commit_and_push_changes() { record commit_and_push_changes; }
@@ -247,7 +350,9 @@ JSON
   checkout_branch_required_to_apply_package_version_updates() { :; }
   generate_pr_body_with_updates() { :; }
   update_task_version() { :; }
+  update_golang_image() { :; }
   replace_versions_with_latest_stable_package_versions() { :; }
+  update_grype_checksums_sha256() { :; }
   git() { echo " M build/task.yml"; }
   github_labels() { record github_labels; }
   commit_and_push_changes() { record commit_and_push_changes; }

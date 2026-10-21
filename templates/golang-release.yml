@@ -1,0 +1,105 @@
+# yamllint disable rule:line-length
+# GitLab CI/CD component counterpart of the release-* inputs of action.yml.
+# It builds the binary and, in a tag pipeline, uploads it to the generic
+# package registry and links it to the release of the tag. See
+# docs/gitlab-ci.md.
+---
+spec:
+  inputs:
+    image:
+      default: golang:1.27.3@sha256:f20d83a83e18dbd2a4714b8ffd4b30b287b6243962dd75608e86abcc63ba4efc
+      description: The image of the job. GOTOOLCHAIN=auto makes go download the version that is defined in go.mod if the image has an older one.
+    job-name-suffix:
+      default: ""
+      description: Appended to the job name, to release more than one binary, e.g. for other architectures.
+    release-application-name:
+      description: The name of the application that has to be released.
+    release-architecture:
+      description: The architecture of the release, e.g. amd64, arm64, etc.
+    release-build-tags:
+      default: ""
+      description: The build tags that have to be used when building the release, e.g. lambda.norpc for AWS Lambda.
+    release-dir:
+      description: The directory of the main.go file to be compiled and released.
+    release-os:
+      default: linux
+      description: The OS of the main.go file to be compiled and released.
+    release-type:
+      description: The type of the release, e.g. binary, zip, etc.
+    stage:
+      default: build
+      description: The stage of the job.
+---
+"mcvs-golang-release$[[ inputs.job-name-suffix ]]":
+  image: $[[ inputs.image ]]
+  stage: $[[ inputs.stage ]]
+  # The inputs are passed as variables, so that the script never contains
+  # them as shell code.
+  variables:
+    # The golang image pins GOTOOLCHAIN=local.
+    GOTOOLCHAIN: auto
+    RELEASE_APPLICATION_NAME: $[[ inputs.release-application-name ]]
+    RELEASE_ARCHITECTURE: $[[ inputs.release-architecture ]]
+    RELEASE_BUILD_TAGS: $[[ inputs.release-build-tags ]]
+    RELEASE_DIR: $[[ inputs.release-dir ]]
+    RELEASE_OS: $[[ inputs.release-os ]]
+    RELEASE_TYPE: $[[ inputs.release-type ]]
+  before_script:
+    # Authenticate proactively through a credential helper instead of a token
+    # in an insteadOf URL, which git drops when GitHub answers with a
+    # redirect, see action.yml. The settings are exported through
+    # GIT_CONFIG_*, so the token is never written to disk.
+    - |
+      if [ -n "${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES:-}" ]; then
+        index="${GIT_CONFIG_COUNT:-0}"
+        export GIT_CONFIG_COUNT="$((index + 3))"
+        # an empty helper drops helpers configured earlier
+        export "GIT_CONFIG_KEY_${index}=credential.https://github.com.helper"
+        export "GIT_CONFIG_VALUE_${index}="
+        export "GIT_CONFIG_KEY_$((index + 1))=credential.https://github.com.helper"
+        # shellcheck disable=SC2016
+        export "GIT_CONFIG_VALUE_$((index + 1))="'!f() { echo username=x-access-token; echo "password=${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES}"; }; f'
+        export "GIT_CONFIG_KEY_$((index + 2))=http.https://github.com/.proactiveAuth"
+        export "GIT_CONFIG_VALUE_$((index + 2))=basic"
+      fi
+    - go mod tidy
+    - |
+      if ! git diff --exit-code; then
+        echo "A discrepancy has been detected. Has 'go mod tidy' been issued?"
+        exit 1
+      fi
+  script:
+    - |
+      BUILD_DIR="build/${RELEASE_TYPE}/${RELEASE_APPLICATION_NAME}/${RELEASE_ARCHITECTURE}"
+      mkdir -p "${BUILD_DIR}"
+      if [ -n "${RELEASE_BUILD_TAGS}" ]; then
+        GOARCH="${RELEASE_ARCHITECTURE}" GOOS="${RELEASE_OS}" go build \
+          -tags "${RELEASE_BUILD_TAGS}" \
+          -o "${BUILD_DIR}/main" "${RELEASE_DIR}/main.go"
+      else
+        GOARCH="${RELEASE_ARCHITECTURE}" GOOS="${RELEASE_OS}" go build \
+          -ldflags="-X 'main.Version=${CI_COMMIT_REF_NAME}'" \
+          -o "${BUILD_DIR}/main" "${RELEASE_DIR}/main.go"
+      fi
+
+      ASSET_NAME="${RELEASE_APPLICATION_NAME}-${CI_COMMIT_REF_NAME}-${RELEASE_OS}-${RELEASE_ARCHITECTURE}"
+      if [ -n "${RELEASE_BUILD_TAGS}" ]; then
+        ASSET_NAME="${ASSET_NAME}-${RELEASE_BUILD_TAGS}"
+      fi
+
+      if [ -z "${CI_COMMIT_TAG:-}" ]; then
+        exit 0
+      fi
+
+      PACKAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${RELEASE_APPLICATION_NAME}/${CI_COMMIT_TAG}/${ASSET_NAME}"
+      curl -fsS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "${BUILD_DIR}/main" "${PACKAGE_URL}"
+
+      # The release might already exist, e.g. created by a job that uploaded
+      # another architecture, hence a failure is ignored.
+      curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data-urlencode "tag_name=${CI_COMMIT_TAG}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || true
+      curl -fsS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data-urlencode "name=${ASSET_NAME}" \
+        --data-urlencode "url=${PACKAGE_URL}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
