@@ -175,10 +175,23 @@ runs:
       with:
         path: ~/go/bin/task
         key: ${{ steps.task-cache.outputs.cache-primary-key }}
-    - run: |
-        git config --global url.https://${{ inputs.github-token-for-downloading-private-go-modules }}@github.com/.insteadOf https://github.com/
-      shell: bash
+    #
+    # Authenticate proactively instead of embedding the token in the URL via
+    # url.<base>.insteadOf. With a token in the URL, git sends the first
+    # request anonymously and drops the token when GitHub answers it with a
+    # redirect, which fails intermittently with "could not read Username".
+    # See: https://github.blog/changelog/2026-10-19-some-git-over-https-may-temporarily-require-authentication
+    #
+    - name: configure git credentials for private go modules
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN_PRIVATE_GO_MODULES: ${{ inputs.github-token-for-downloading-private-go-modules }}
+      run: |
+        printf 'protocol=https\nhost=github.com\nusername=x-access-token\npassword=%s\n\n' \
+          "${GITHUB_TOKEN_PRIVATE_GO_MODULES}" | git credential-store store
+        git config --global credential.https://github.com.helper store
+        git config --global http.https://github.com/.proactiveAuth basic
     - if: |
         inputs.release-dir != '' ||
         inputs.testing-type == 'component' ||
