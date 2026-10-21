@@ -13,7 +13,7 @@ jobs:
   mcvs-general-action:
     permissions:
       contents: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 10
     steps:
       # yamllint disable-line rule:line-length
