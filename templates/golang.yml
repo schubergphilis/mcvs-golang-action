@@ -1,0 +1,155 @@
+# yamllint disable rule:line-length
+# GitLab CI/CD component counterpart of action.yml. Every include adds one
+# job that runs the checks of the given testing-type. See docs/gitlab-ci.md.
+---
+spec:
+  inputs:
+    build-tags:
+      default: ""
+      description: What kind of code should be checked, e.g. component, e2e.
+    code-coverage-expected:
+      default: "80"
+      description: The minimum code coverage.
+    code-coverage-opa-expected:
+      default: "80"
+      description: The minimum OPA code coverage.
+    code-coverage-timeout:
+      default: ""
+      description: The duration before calculating the code-coverage times out.
+    golang-unit-tests-exclusions:
+      default: " "
+      description: The Golang paths that should be excluded from unit testing.
+    golangci-timeout:
+      default: ""
+      description: The duration before golangci-lint times out.
+    gta-base-branch:
+      default: main
+      description: The base branch to compare changed code to.
+    gta-partial-testing:
+      default: "false"
+      description: Whether only changed packages should be tested.
+      options: ["false", "true"]
+    image:
+      default: golang:1.27.3@sha256:f20d83a83e18dbd2a4714b8ffd4b30b287b6243962dd75608e86abcc63ba4efc
+      description: The image of the job. GOTOOLCHAIN=auto makes go download the version that is defined in go.mod if the image has an older one.
+    job-name-suffix:
+      default: ""
+      description: Appended to the job name, to include the same testing-type twice, e.g. to lint with other build-tags.
+    stage:
+      default: test
+      description: The stage of the job.
+    task-version:
+      default: 3.54.0
+      description: The Task version that has to be installed and used.
+    test-timeout:
+      default: ""
+      description: The duration before a test times out.
+    testing-type:
+      description: The testing type, e.g. integration, unit or some other.
+      options:
+        - component
+        - coverage
+        - graphql-lint
+        - integration
+        - lint
+        - mcvs-texttidy
+        - mocks-tidy
+        - opa
+        - security-golang-modules
+        - security-grype
+        - unit
+---
+"mcvs-golang-$[[ inputs.testing-type ]]$[[ inputs.job-name-suffix ]]":
+  image: $[[ inputs.image ]]
+  stage: $[[ inputs.stage ]]
+  # The inputs are passed as variables, so that the scripts never contain them
+  # as shell code.
+  variables:
+    BUILD_TAGS: $[[ inputs.build-tags ]]
+    CODE_COVERAGE_EXPECTED: $[[ inputs.code-coverage-expected ]]
+    CODE_COVERAGE_FILE_EXCLUSIONS: $[[ inputs.golang-unit-tests-exclusions ]]
+    CODE_COVERAGE_TIMEOUT: $[[ inputs.code-coverage-timeout ]]
+    GOLANGCI_LINT_RUN_TIMEOUT_MINUTES: $[[ inputs.golangci-timeout ]]
+    # The golang image pins GOTOOLCHAIN=local.
+    GOTOOLCHAIN: auto
+    GTA_BASE_BRANCH: $[[ inputs.gta-base-branch ]]
+    GTA_PARTIAL_TESTING: $[[ inputs.gta-partial-testing ]]
+    MCVS_TASK_VERSION: $[[ inputs.task-version ]]
+    MCVS_TESTING_TYPE: $[[ inputs.testing-type ]]
+    OPA_CODE_COVERAGE_EXPECTED: $[[ inputs.code-coverage-opa-expected ]]
+    TEST_TIMEOUT: $[[ inputs.test-timeout ]]
+  before_script:
+    # Authenticate proactively through a credential helper instead of a token
+    # in an insteadOf URL, which git drops when GitHub answers with a
+    # redirect, see action.yml. The settings are exported through
+    # GIT_CONFIG_*, so the token is never written to disk.
+    - |
+      if [ -n "${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES:-}" ]; then
+        index="${GIT_CONFIG_COUNT:-0}"
+        export GIT_CONFIG_COUNT="$((index + 3))"
+        # an empty helper drops helpers configured earlier
+        export "GIT_CONFIG_KEY_${index}=credential.https://github.com.helper"
+        export "GIT_CONFIG_VALUE_${index}="
+        export "GIT_CONFIG_KEY_$((index + 1))=credential.https://github.com.helper"
+        # shellcheck disable=SC2016
+        export "GIT_CONFIG_VALUE_$((index + 1))="'!f() { echo username=x-access-token; echo "password=${GITHUB_TOKEN_FOR_DOWNLOADING_PRIVATE_GO_MODULES}"; }; f'
+        export "GIT_CONFIG_KEY_$((index + 2))=http.https://github.com/.proactiveAuth"
+        export "GIT_CONFIG_VALUE_$((index + 2))=basic"
+      fi
+    - go install "github.com/go-task/task/v3/cmd/task@v${MCVS_TASK_VERSION}"
+    - task --version
+    - |
+      case "${MCVS_TESTING_TYPE}" in
+        component | coverage | integration | lint | mcvs-texttidy | mocks-tidy | unit)
+          go mod tidy
+          if ! git diff --exit-code; then
+            echo "A discrepancy has been detected. Has 'go mod tidy' been issued?"
+            exit 1
+          fi
+          ;;
+      esac
+    - |
+      if [ "${GTA_PARTIAL_TESTING}" = "true" ]; then
+        task remote:gta-install --yes
+      fi
+  script:
+    - |
+      case "${MCVS_TESTING_TYPE}" in
+        component)
+          task remote:test-component-cicd --yes
+          ;;
+        coverage)
+          apt-get update -qq && apt-get install -y -qq bc
+          task remote:coverage --yes
+          ;;
+        graphql-lint)
+          task remote:graphql-lint --yes
+          ;;
+        integration)
+          task remote:test-integration-cicd --yes
+          ;;
+        lint)
+          task remote:golangci-lint --yes
+          ;;
+        mcvs-texttidy)
+          task remote:mcvs-texttidy --yes
+          ;;
+        mocks-tidy)
+          task remote:mocks-tidy --yes
+          ;;
+        opa)
+          apt-get update -qq && apt-get install -y -qq bc jq
+          task remote:regal --yes
+          task remote:opa --yes
+          ;;
+        security-golang-modules)
+          go mod verify
+          task remote:osv-scanner --yes
+          ;;
+        security-grype)
+          task remote:grype --yes
+          ;;
+        unit)
+          task remote:test-cicd --yes
+          ;;
+      esac

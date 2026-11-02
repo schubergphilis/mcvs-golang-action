@@ -90,5 +90,7 @@ This basic configuration will run unit tests, linting, code coverage checks, and
 - [Build tags](docs/build-tags.md): integration, component and e2e tests.
 - [Linting](docs/linting.md): automatically fixing linting issues.
 - [Releases](docs/releases.md): building binaries as release assets.
+- [GitLab CI](docs/gitlab-ci.md): running the checks and releases on GitLab
+  CI with the CI/CD components.
 - [osv-scanner](docs/osv-scanner.md): security scanning and temporarily
   ignoring vulnerabilities.
