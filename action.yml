@@ -182,16 +182,32 @@ runs:
     # redirect, which fails intermittently with "could not read Username".
     # See: https://github.blog/changelog/2026-10-19-some-git-over-https-may-temporarily-require-authentication
     #
+    # The settings are exported through GIT_CONFIG_* in GITHUB_ENV and the
+    # helper reads the token from the environment, so nothing is written to
+    # ~/.gitconfig or ~/.git-credentials and the token does not outlive the
+    # job on a self-hosted runner.
+    #
     - name: configure git credentials for private go modules
       if: ${{ inputs.github-token-for-downloading-private-go-modules != '' }}
       shell: bash
       env:
         GITHUB_TOKEN_PRIVATE_GO_MODULES: ${{ inputs.github-token-for-downloading-private-go-modules }}
       run: |
-        printf 'protocol=https\nhost=github.com\nusername=x-access-token\npassword=%s\n\n' \
-          "${GITHUB_TOKEN_PRIVATE_GO_MODULES}" | git credential-store store
-        git config --global credential.https://github.com.helper store
-        git config --global http.https://github.com/.proactiveAuth basic
+        echo "::add-mask::${GITHUB_TOKEN_PRIVATE_GO_MODULES}"
+        index="${GIT_CONFIG_COUNT:-0}"
+        {
+          echo "GITHUB_TOKEN_PRIVATE_GO_MODULES=${GITHUB_TOKEN_PRIVATE_GO_MODULES}"
+          echo "GIT_CONFIG_COUNT=$((index + 3))"
+          # An empty helper drops helpers configured earlier, e.g. on a
+          # self-hosted runner, so they cannot answer with other credentials.
+          echo "GIT_CONFIG_KEY_${index}=credential.https://github.com.helper"
+          echo "GIT_CONFIG_VALUE_${index}="
+          echo "GIT_CONFIG_KEY_$((index + 1))=credential.https://github.com.helper"
+          # shellcheck disable=SC2016
+          echo "GIT_CONFIG_VALUE_$((index + 1))="'!f() { echo username=x-access-token; echo "password=${GITHUB_TOKEN_PRIVATE_GO_MODULES}"; }; f'
+          echo "GIT_CONFIG_KEY_$((index + 2))=http.https://github.com/.proactiveAuth"
+          echo "GIT_CONFIG_VALUE_$((index + 2))=basic"
+        } >> "${GITHUB_ENV}"
     - if: |
         inputs.release-dir != '' ||
         inputs.testing-type == 'component' ||
