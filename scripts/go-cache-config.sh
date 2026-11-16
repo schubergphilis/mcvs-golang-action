@@ -78,6 +78,8 @@ go_cache_save_modules() {
 }
 
 main() {
+  set -euo pipefail
+
   local go_version save variant
 
   variant=$(go_cache_variant "${TESTING_TYPE:-}" "${BUILD_TAGS:-}")
@@ -97,6 +99,5 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-  set -euo pipefail
   main "$@"
 fi

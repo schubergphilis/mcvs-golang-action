@@ -361,15 +361,20 @@ runs:
       if: inputs.testing-type == 'unit'
       shell: bash
       env:
-        # The restored build cache also holds test results. Without -count=1
-        # a test whose inputs did not change is reported as passed without
-        # being run, also when it depends on a service or a container image.
-        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-cicd --yes
     #
     # Integration tests.
@@ -378,15 +383,20 @@ runs:
       if: inputs.testing-type == 'integration'
       shell: bash
       env:
-        # The restored build cache also holds test results. Without -count=1
-        # a test whose inputs did not change is reported as passed without
-        # being run, also when it depends on a service or a container image.
-        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-integration-cicd --yes
     #
     # Coverage.
@@ -395,10 +405,7 @@ runs:
       if: inputs.testing-type == 'coverage'
       shell: bash
       env:
-        # The restored build cache also holds test results. Without -count=1
-        # a test whose inputs did not change is reported as passed without
-        # being run, also when it depends on a service or a container image.
-        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
         CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -406,6 +413,14 @@ runs:
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
       run: |
+        # The coverage task passes -count=1 itself. This is a safeguard for a
+        # Taskfile that includes an older build/task.yml without it: a cached
+        # test result would be reported as passed without being run. It is
+        # appended in the shell, so that a GOFLAGS of the runner or of the
+        # container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:coverage --yes
     #
     # Component tests.
@@ -414,15 +429,20 @@ runs:
       if: inputs.testing-type == 'component'
       shell: bash
       env:
-        # The restored build cache also holds test results. Without -count=1
-        # a test whose inputs did not change is reported as passed without
-        # being run, also when it depends on a service or a container image.
-        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-component-cicd --yes
     #
     # Save the Go caches, also when a test failed: the caches are just as

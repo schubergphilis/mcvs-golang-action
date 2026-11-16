@@ -263,10 +263,8 @@ The Go version is determined from `go.mod` using `actions/setup-go` with `go-ver
 ├── build/
 │   └── task.yml           # Remote Taskfile with all tasks
 ├── scripts/
-│   ├── go-cache-config.sh  # Cache keys and save decision of the go-cache input
 │   └── package-version-updater.sh  # Tool version updater
 ├── test/
-│   ├── go-cache-config.bats  # BATS tests for the go-cache script
 │   └── package-version-updater.bats  # BATS tests for the updater script
 ├── .github/workflows/
 │   ├── bats.yml           # Runs the BATS tests

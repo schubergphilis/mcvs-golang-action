@@ -64,7 +64,8 @@ A pull request does not get faster until the default branch has run once with
 - **Tests are never served from the cache**: the build cache also holds test
   results. With `go-cache: true` the tests run with `-count=1`, so a test that
   depends on a service or a container image is not reported as passed without
-  being run.
+  being run. It is added to the `GOFLAGS` that the runner or the container
+  image already has.
 - **Release builds** (`release-dir` set) never restore a cache, so that a
   poisoned cache cannot end up in a published binary.
 

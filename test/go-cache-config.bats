@@ -123,7 +123,9 @@ go() {
   export GITHUB_EVENT_NAME=pull_request GITHUB_REF=refs/pull/1/merge
   export GITHUB_OUTPUT="${BATS_TEST_TMPDIR}/output" RUNNER_ARCH=X64 RUNNER_OS=Linux
 
-  main
+  # in a subshell, as main sets shell options
+  run main
+  [ "${status}" -eq 0 ]
 
   run cat "${GITHUB_OUTPUT}"
   [ "${lines[0]}" = "build-cache=/home/runner/.cache/go-build" ]
@@ -140,9 +142,22 @@ go() {
   export GITHUB_EVENT_NAME=push GITHUB_REF=refs/heads/main
   export GITHUB_OUTPUT="${BATS_TEST_TMPDIR}/output" RUNNER_ARCH=X64 RUNNER_OS=Linux
 
-  main
+  # in a subshell, as main sets shell options
+  run main
+  [ "${status}" -eq 0 ]
 
   run cat "${GITHUB_OUTPUT}"
   [ "${lines[5]}" = "save=true" ]
   [ "${lines[6]}" = "save-modules=true" ]
+}
+
+@test "main: fails when a required variable is not set" {
+  export BUILD_TAGS="" DEFAULT_BRANCH=main TESTING_TYPE=unit
+  export GITHUB_EVENT_NAME=push GITHUB_REF=refs/heads/main
+  export GITHUB_OUTPUT="${BATS_TEST_TMPDIR}/output" RUNNER_OS=Linux
+  unset RUNNER_ARCH
+
+  run main
+
+  [ "${status}" -ne 0 ]
 }
