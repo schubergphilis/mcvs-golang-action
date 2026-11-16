@@ -47,10 +47,12 @@ A pull request does not get faster until the default branch has run once with
 - **Restore**: the `component`, `coverage`, `integration`, `lint`,
   `mocks-tidy`, `security-golang-modules` and `unit` testing types restore the
   caches. The other testing types compile no Go code of the project.
-- **Save**: only a run on the default branch saves, including a scheduled run.
-  GitHub lets every pull request restore a cache of the default branch, but
-  not one of another pull request. It also means that a pull request cannot
-  write a cache that other runs restore.
+- **Save**: only a `push`, `schedule` or `workflow_dispatch` run on the
+  default branch saves. GitHub lets every pull request restore a cache of the
+  default branch, but not one of another pull request. It also means that a
+  pull request cannot write a cache that other runs restore. Other events
+  that run on the default branch, such as `pull_request_target`, never save,
+  as a workflow may use those to test the code of a pull request.
 - **Module cache**: one cache for all jobs, keyed on the `go.sum` files.
 - **Build cache**: one cache per testing type and build tags, as those compile
   with different flags. It is keyed on the Go version and the `go.mod` and
@@ -62,6 +64,17 @@ A pull request does not get faster until the default branch has run once with
   being run.
 - **Release builds** (`release-dir` set) never restore a cache, so that a
   poisoned cache cannot end up in a published binary.
+
+## Private modules
+
+Every pull request, also one from a fork, can restore a cache of the default
+branch. The module cache holds the source of every module and the build cache
+its compiled packages.
+
+- When `github-token-for-downloading-private-go-modules` is set, nothing is
+  cached, also with `go-cache: true`.
+- Do not set `go-cache: true` in a public repository that downloads private
+  modules in another way, for example with a `.netrc` file.
 
 ## Keeping the caches
 

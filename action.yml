@@ -26,7 +26,8 @@ inputs:
     description: |
       Whether the Go module cache, the Go build cache and the golangci-lint
       cache are restored, 'true' or 'false'. They are only saved by a run on
-      the default branch, so the workflow has to run there as well. See
+      the default branch, so the workflow has to run there as well. Nothing is
+      cached when github-token-for-downloading-private-go-modules is set. See
       docs/caching.md.
   go-version-file:
     default: "go.mod"
@@ -128,10 +129,16 @@ runs:
     # Release builds never restore a cache, so that a poisoned cache cannot
     # end up in a published binary.
     #
+    # Nothing is cached when private modules are downloaded. The module cache
+    # would hold their source and the build cache their compiled packages,
+    # and every pull request, also one from a fork, can restore a cache of the
+    # default branch.
+    #
     - name: configure the go caches
       id: go-cache
       if: |
         inputs.go-cache == 'true' &&
+        inputs.github-token-for-downloading-private-go-modules == '' &&
         inputs.release-dir == '' &&
         (inputs.testing-type == 'component' ||
         inputs.testing-type == 'coverage' ||
@@ -155,13 +162,23 @@ runs:
         # Only the default branch saves: every pull request can restore its
         # caches, and a pull request cannot write a cache that other runs
         # restore. A scheduled run always runs on the default branch.
+        #
+        # The event is checked as well as the ref. pull_request_target,
+        # issue_comment and workflow_run also run on the default branch, and
+        # a workflow may use those to test the code of a pull request, which
+        # must never end up in a cache of the default branch.
         save=false
-        if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
-          save=true
-        elif [ -n "${DEFAULT_BRANCH}" ] &&
-          [ "${GITHUB_REF}" = "refs/heads/${DEFAULT_BRANCH}" ]; then
-          save=true
-        fi
+        case "${GITHUB_EVENT_NAME}" in
+          schedule)
+            save=true
+            ;;
+          push | workflow_dispatch)
+            if [ -n "${DEFAULT_BRANCH}" ] &&
+              [ "${GITHUB_REF}" = "refs/heads/${DEFAULT_BRANCH}" ]; then
+              save=true
+            fi
+            ;;
+        esac
 
         {
           echo "build-cache=$(go env GOCACHE)"
