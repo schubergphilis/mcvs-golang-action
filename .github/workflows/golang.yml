@@ -1,9 +1,15 @@
 ---
 name: golang
-"on": pull_request
+"on":
+  pull_request:
+  # The Go caches are only saved on the default branch, see docs/caching.md.
+  push:
+    branches:
+      - main
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # yamllint disable-line rule:line-length
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
   packages: read
@@ -24,5 +30,6 @@ jobs:
           persist-credentials: false
       - uses: ./
         with:
+          go-cache: true
           task-install: yes
           testing-type: ${{ matrix.args.testing-type }}

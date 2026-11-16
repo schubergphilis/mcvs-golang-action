@@ -21,6 +21,13 @@ inputs:
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
+  go-cache:
+    default: "false"
+    description: |
+      Whether the Go module cache, the Go build cache and the golangci-lint
+      cache are restored, 'true' or 'false'. They are only saved by a run on
+      the default branch, so the workflow has to run there as well. See
+      docs/caching.md.
   go-version-file:
     default: "go.mod"
     description: |
@@ -105,6 +112,85 @@ runs:
       with:
         go-version-file: ${{ inputs.go-version-file }}
         cache: false
+    #
+    # Restore the Go caches. Without them every job downloads all modules and
+    # compiles them from scratch, which is most of the duration of a job.
+    #
+    # The cache of actions/setup-go is not used, hence `cache: false` above:
+    # * it uses one key for every job, so the first job that finishes saves
+    #   its build cache and the other jobs, which compile with other flags
+    #   and build tags, hardly benefit from it;
+    # * it saves from every branch, while a pull request cannot restore the
+    #   cache of another pull request;
+    # * it has no restore-keys, so a pull request that changes go.sum starts
+    #   from scratch.
+    #
+    # Release builds never restore a cache, so that a poisoned cache cannot
+    # end up in a published binary.
+    #
+    - name: configure the go caches
+      id: go-cache
+      if: |
+        inputs.go-cache == 'true' &&
+        inputs.release-dir == '' &&
+        (inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'security-golang-modules' ||
+        inputs.testing-type == 'unit')
+      env:
+        BUILD_TAGS: ${{ inputs.build-tags }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        TESTING_TYPE: ${{ inputs.testing-type }}
+      shell: bash
+      run: |
+        # Jobs that compile differently get a build cache of their own. A
+        # cache key cannot contain a comma, which build tags are separated by.
+        variant=$(printf '%s' "${TESTING_TYPE}-${BUILD_TAGS}" | tr -c 'A-Za-z0-9._-' '-')
+        # A build cache is of no use to another Go version.
+        go_version=$(go env GOVERSION)
+
+        # Only the default branch saves: every pull request can restore its
+        # caches, and a pull request cannot write a cache that other runs
+        # restore. A scheduled run always runs on the default branch.
+        save=false
+        if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+          save=true
+        elif [ -n "${DEFAULT_BRANCH}" ] &&
+          [ "${GITHUB_REF}" = "refs/heads/${DEFAULT_BRANCH}" ]; then
+          save=true
+        fi
+
+        {
+          echo "build-cache=$(go env GOCACHE)"
+          echo "build-key=go-build-${RUNNER_OS}-${RUNNER_ARCH}-${go_version}-${variant}-"
+          echo "enabled=true"
+          echo "module-cache=$(go env GOMODCACHE)"
+          echo "module-key=go-modules-${RUNNER_OS}-${RUNNER_ARCH}-"
+          echo "save=${save}"
+        } >> "${GITHUB_OUTPUT}"
+    - name: restore go modules
+      id: go-cache-modules
+      if: steps.go-cache.outputs.enabled == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.go-cache.outputs.module-cache }}
+        key: ${{ steps.go-cache.outputs.module-key }}${{ hashFiles('**/go.sum') }}
+        # The module cache is never trimmed, so the default branch starts from
+        # scratch when go.sum changes instead of carrying old versions along.
+        restore-keys: ${{ steps.go-cache.outputs.save != 'true' && steps.go-cache.outputs.module-key || '' }}
+    - name: restore go build cache
+      id: go-cache-build
+      if: steps.go-cache.outputs.enabled == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.go-cache.outputs.build-cache }}
+          ~/.cache/golangci-lint
+        key: ${{ steps.go-cache.outputs.build-key }}${{ hashFiles('**/go.mod', '**/go.sum') }}
+        restore-keys: ${{ steps.go-cache.outputs.build-key }}
     #
     # Building task with `go install` takes about two minutes, in every job
     # that needs it. The binary only depends on the task version and the
@@ -291,6 +377,10 @@ runs:
       if: inputs.testing-type == 'unit'
       shell: bash
       env:
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
@@ -304,6 +394,10 @@ runs:
       if: inputs.testing-type == 'integration'
       shell: bash
       env:
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
@@ -317,6 +411,10 @@ runs:
       if: inputs.testing-type == 'coverage'
       shell: bash
       env:
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
         CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -332,12 +430,41 @@ runs:
       if: inputs.testing-type == 'component'
       shell: bash
       env:
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        GOFLAGS: ${{ inputs.go-cache == 'true' && format('{0} -count=1', env.GOFLAGS) || env.GOFLAGS }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
         task remote:test-component-cicd --yes
+    #
+    # Save the Go caches, also when a test failed: the caches are just as
+    # valid, and a failing default branch would otherwise leave every pull
+    # request without them.
+    #
+    - name: save go modules
+      if: |
+        steps.go-cache.outputs.save == 'true' &&
+        steps.go-cache-modules.outputs.cache-hit != 'true' &&
+        !cancelled()
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.go-cache.outputs.module-cache }}
+        key: ${{ steps.go-cache-modules.outputs.cache-primary-key }}
+    - name: save go build cache
+      if: |
+        steps.go-cache.outputs.save == 'true' &&
+        steps.go-cache-build.outputs.cache-hit != 'true' &&
+        !cancelled()
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.go-cache.outputs.build-cache }}
+          ~/.cache/golangci-lint
+        key: ${{ steps.go-cache-build.outputs.cache-primary-key }}
     #
     # Build binary (with optional tags)
     #

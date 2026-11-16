@@ -75,6 +75,7 @@ and a [.golangci.yml](https://golangci-lint.run/usage/configuration/).
 | code-coverage-opa-expected                      | x       |          | Minimum expected code coverage percentage for OPA (Open Policy Agent) tests                         |
 | code-coverage-timeout                           |         |          | Timeout duration for code coverage analysis (e.g., "10m0s")                                         |
 | github-token-for-downloading-private-go-modules |         |          | GitHub token with permissions to download Go modules from private repositories                      |
+| go-cache                                        | x       |          | Whether the Go module, build and golangci-lint caches are restored, see [Caching](caching.md)       |
 | go-version-file                                 | x       |          | Path to the go.mod or go.work file used to determine the Go version                                 |
 | golangci-timeout                                |         |          | Timeout duration for golangci-lint execution                                                        |
 | golang-unit-tests-exclusions                    | x       |          | Regex pattern to exclude specific packages from unit testing (e.g., `\(cmd\/app\|internal\/app\)`)  |
