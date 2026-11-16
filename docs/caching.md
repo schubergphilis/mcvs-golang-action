@@ -53,7 +53,10 @@ A pull request does not get faster until the default branch has run once with
   pull request cannot write a cache that other runs restore. Other events
   that run on the default branch, such as `pull_request_target`, never save,
   as a workflow may use those to test the code of a pull request.
-- **Module cache**: one cache for all jobs, keyed on the `go.sum` files.
+- **Module cache**: one cache for all jobs, keyed on the `go.sum` files. It
+  is saved by the first job that finishes, except `security-golang-modules`:
+  that job downloads hardly any module source, and a cache that is saved once
+  is not replaced until `go.sum` changes.
 - **Build cache**: one cache per testing type and build tags, as those compile
   with different flags. It is keyed on the Go version and the `go.mod` and
   `go.sum` files. When those change, the most recent cache of the same job is

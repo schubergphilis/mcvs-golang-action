@@ -152,42 +152,9 @@ runs:
         DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         TESTING_TYPE: ${{ inputs.testing-type }}
       shell: bash
-      run: |
-        # Jobs that compile differently get a build cache of their own. A
-        # cache key cannot contain a comma, which build tags are separated by.
-        variant=$(printf '%s' "${TESTING_TYPE}-${BUILD_TAGS}" | tr -c 'A-Za-z0-9._-' '-')
-        # A build cache is of no use to another Go version.
-        go_version=$(go env GOVERSION)
-
-        # Only the default branch saves: every pull request can restore its
-        # caches, and a pull request cannot write a cache that other runs
-        # restore. A scheduled run always runs on the default branch.
-        #
-        # The event is checked as well as the ref. pull_request_target,
-        # issue_comment and workflow_run also run on the default branch, and
-        # a workflow may use those to test the code of a pull request, which
-        # must never end up in a cache of the default branch.
-        save=false
-        case "${GITHUB_EVENT_NAME}" in
-          schedule)
-            save=true
-            ;;
-          push | workflow_dispatch)
-            if [ -n "${DEFAULT_BRANCH}" ] &&
-              [ "${GITHUB_REF}" = "refs/heads/${DEFAULT_BRANCH}" ]; then
-              save=true
-            fi
-            ;;
-        esac
-
-        {
-          echo "build-cache=$(go env GOCACHE)"
-          echo "build-key=go-build-${RUNNER_OS}-${RUNNER_ARCH}-${go_version}-${variant}-"
-          echo "enabled=true"
-          echo "module-cache=$(go env GOMODCACHE)"
-          echo "module-key=go-modules-${RUNNER_OS}-${RUNNER_ARCH}-"
-          echo "save=${save}"
-        } >> "${GITHUB_OUTPUT}"
+      # The decision is made by a script, so that it is covered by the bats
+      # tests in test/go-cache-config.bats.
+      run: bash "${GITHUB_ACTION_PATH}/scripts/go-cache-config.sh"
     - name: restore go modules
       id: go-cache-modules
       if: steps.go-cache.outputs.enabled == 'true'
@@ -464,7 +431,7 @@ runs:
     #
     - name: save go modules
       if: |
-        steps.go-cache.outputs.save == 'true' &&
+        steps.go-cache.outputs.save-modules == 'true' &&
         steps.go-cache-modules.outputs.cache-hit != 'true' &&
         !cancelled()
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
