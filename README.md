@@ -87,6 +87,8 @@ This basic configuration will run unit tests, linting, code coverage checks, and
   inputs of the GitHub Action.
 - [Taskfile variables](docs/taskfile-variables.md): variables that can be
   overridden when including the Taskfile.
+- [Caching](docs/caching.md): restoring the Go module and build caches to
+  speed up the jobs.
 - [Build tags](docs/build-tags.md): integration, component and e2e tests.
 - [Linting](docs/linting.md): automatically fixing linting issues.
 - [Releases](docs/releases.md): building binaries as release assets.

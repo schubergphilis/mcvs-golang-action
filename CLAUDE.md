@@ -214,6 +214,7 @@ For building binaries on tagged releases:
 - **build-tags** - Build constraints for tests/linting (e.g., "integration,component")
 - **golang-unit-tests-exclusions** - Regex to exclude packages from unit tests (e.g., `\(cmd\/app\|internal\/app\)`)
 - **code-coverage-expected** - Minimum coverage percentage (default: 80)
+- **go-cache** - Restore the Go module, build and golangci-lint caches; saved on the default branch only (see [docs/caching.md](docs/caching.md))
 - **golangci-timeout** - Timeout for golangci-lint
 - **test-timeout** / **code-coverage-timeout** - Timeouts for test execution (e.g., "10m0s")
 

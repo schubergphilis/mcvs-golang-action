@@ -21,6 +21,14 @@ inputs:
   github-token-for-downloading-private-go-modules:
     description: |
       Whether private go modules have to be downloaded.
+  go-cache:
+    default: "false"
+    description: |
+      Whether the Go module cache, the Go build cache and the golangci-lint
+      cache are restored, 'true' or 'false'. They are only saved by a run on
+      the default branch, so the workflow has to run there as well. Nothing is
+      cached when github-token-for-downloading-private-go-modules is set. See
+      docs/caching.md.
   go-version-file:
     default: "go.mod"
     description: |
@@ -105,6 +113,68 @@ runs:
       with:
         go-version-file: ${{ inputs.go-version-file }}
         cache: false
+    #
+    # Restore the Go caches. Without them every job downloads all modules and
+    # compiles them from scratch, which is most of the duration of a job.
+    #
+    # The cache of actions/setup-go is not used, hence `cache: false` above:
+    # * it uses one key for every job, so the first job that finishes saves
+    #   its build cache and the other jobs, which compile with other flags
+    #   and build tags, hardly benefit from it;
+    # * it saves from every branch, while a pull request cannot restore the
+    #   cache of another pull request;
+    # * it has no restore-keys, so a pull request that changes go.sum starts
+    #   from scratch.
+    #
+    # Release builds never restore a cache, so that a poisoned cache cannot
+    # end up in a published binary.
+    #
+    # Nothing is cached when private modules are downloaded. The module cache
+    # would hold their source and the build cache their compiled packages,
+    # and every pull request, also one from a fork, can restore a cache of the
+    # default branch.
+    #
+    - name: configure the go caches
+      id: go-cache
+      if: |
+        inputs.go-cache == 'true' &&
+        inputs.github-token-for-downloading-private-go-modules == '' &&
+        inputs.release-dir == '' &&
+        (inputs.testing-type == 'component' ||
+        inputs.testing-type == 'coverage' ||
+        inputs.testing-type == 'integration' ||
+        inputs.testing-type == 'lint' ||
+        inputs.testing-type == 'mocks-tidy' ||
+        inputs.testing-type == 'security-golang-modules' ||
+        inputs.testing-type == 'unit')
+      env:
+        BUILD_TAGS: ${{ inputs.build-tags }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        TESTING_TYPE: ${{ inputs.testing-type }}
+      shell: bash
+      # The decision is made by a script, so that it is covered by the bats
+      # tests in test/go-cache-config.bats.
+      run: bash "${GITHUB_ACTION_PATH}/scripts/go-cache-config.sh"
+    - name: restore go modules
+      id: go-cache-modules
+      if: steps.go-cache.outputs.enabled == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.go-cache.outputs.module-cache }}
+        key: ${{ steps.go-cache.outputs.module-key }}${{ hashFiles('**/go.sum') }}
+        # The module cache is never trimmed, so the default branch starts from
+        # scratch when go.sum changes instead of carrying old versions along.
+        restore-keys: ${{ steps.go-cache.outputs.save != 'true' && steps.go-cache.outputs.module-key || '' }}
+    - name: restore go build cache
+      id: go-cache-build
+      if: steps.go-cache.outputs.enabled == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.go-cache.outputs.build-cache }}
+          ~/.cache/golangci-lint
+        key: ${{ steps.go-cache.outputs.build-key }}${{ hashFiles('**/go.mod', '**/go.sum') }}
+        restore-keys: ${{ steps.go-cache.outputs.build-key }}
     #
     # Building task with `go install` takes about two minutes, in every job
     # that needs it. The binary only depends on the task version and the
@@ -291,11 +361,20 @@ runs:
       if: inputs.testing-type == 'unit'
       shell: bash
       env:
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-cicd --yes
     #
     # Integration tests.
@@ -304,11 +383,20 @@ runs:
       if: inputs.testing-type == 'integration'
       shell: bash
       env:
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-integration-cicd --yes
     #
     # Coverage.
@@ -317,6 +405,7 @@ runs:
       if: inputs.testing-type == 'coverage'
       shell: bash
       env:
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         CODE_COVERAGE_EXPECTED: ${{ inputs.code-coverage-expected }}
         CODE_COVERAGE_FILE_EXCLUSIONS: ${{ inputs.golang-unit-tests-exclusions }}
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -324,6 +413,14 @@ runs:
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
       run: |
+        # The coverage task passes -count=1 itself. This is a safeguard for a
+        # Taskfile that includes an older build/task.yml without it: a cached
+        # test result would be reported as passed without being run. It is
+        # appended in the shell, so that a GOFLAGS of the runner or of the
+        # container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:coverage --yes
     #
     # Component tests.
@@ -332,12 +429,46 @@ runs:
       if: inputs.testing-type == 'component'
       shell: bash
       env:
+        GO_CACHE_ENABLED: ${{ steps.go-cache.outputs.enabled }}
         GITHUB_TOKEN: ${{ inputs.token }}
         GTA_BASE_BRANCH: ${{ inputs.gta-base-branch }}
         GTA_PARTIAL_TESTING: ${{ inputs.gta-partial-testing }}
         TEST_TIMEOUT: ${{ inputs.test-timeout }}
       run: |
+        # The restored build cache also holds test results. Without -count=1
+        # a test whose inputs did not change is reported as passed without
+        # being run, also when it depends on a service or a container image.
+        # It is appended in the shell, so that a GOFLAGS of the runner or of
+        # the container image is kept.
+        if [[ "${GO_CACHE_ENABLED}" == "true" ]]; then
+          export GOFLAGS="${GOFLAGS:-} -count=1"
+        fi
         task remote:test-component-cicd --yes
+    #
+    # Save the Go caches, also when a test failed: the caches are just as
+    # valid, and a failing default branch would otherwise leave every pull
+    # request without them.
+    #
+    - name: save go modules
+      if: |
+        steps.go-cache.outputs.save-modules == 'true' &&
+        steps.go-cache-modules.outputs.cache-hit != 'true' &&
+        !cancelled()
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.go-cache.outputs.module-cache }}
+        key: ${{ steps.go-cache-modules.outputs.cache-primary-key }}
+    - name: save go build cache
+      if: |
+        steps.go-cache.outputs.save == 'true' &&
+        steps.go-cache-build.outputs.cache-hit != 'true' &&
+        !cancelled()
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ${{ steps.go-cache.outputs.build-cache }}
+          ~/.cache/golangci-lint
+        key: ${{ steps.go-cache-build.outputs.cache-primary-key }}
     #
     # Build binary (with optional tags)
     #
